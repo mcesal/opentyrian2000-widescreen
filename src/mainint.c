@@ -203,7 +203,8 @@ void JE_helpSystem(JE_byte startTopic)
 	const int xCenter = 320 / 2;
 	const int yMenuHeader = 30;
 	const int yMenuItems = 60;
-	const int dyMenuItems = 20;
+	/* reduce spacing to fit new Debug option */
+	const int dyMenuItems = 17;
 	const int hMenuItem = 13;
 	int wMenuItem[COUNTOF(topicName) - 1] = { 0 };
 
@@ -1528,7 +1529,7 @@ JE_boolean JE_inGameSetup(void)
 		MENU_ITEM_EFFECTS_VOLUME,
 		MENU_ITEM_DETAIL_LEVEL,
 		MENU_ITEM_GAME_SPEED,
-		MENU_ITEM_EQUIPMENT,
+		MENU_ITEM_DEBUG,
 		MENU_ITEM_RETURN_TO_GAME,
 		MENU_ITEM_QUIT,
 	};
@@ -1546,7 +1547,7 @@ JE_boolean JE_inGameSetup(void)
 			inGameText[1],
 			inGameText[2],
 					   inGameText[3],
-					   "Equipment",
+					   "Debug",
 					   inGameText[4],
 					   inGameText[5],
 	};
@@ -1555,7 +1556,8 @@ JE_boolean JE_inGameSetup(void)
 	size_t selectedIndex = MENU_ITEM_MUSIC_VOLUME;
 
 	const int yMenuItems = 20;
-	const int dyMenuItems = 20;
+	/* tighter spacing prevents overlap with help text */
+	const int dyMenuItems = 17;
 	const int xMenuItem = 10;
 	const int xMenuItemName = xMenuItem;
 	const int wMenuItemName = 110;
@@ -1619,7 +1621,7 @@ JE_boolean JE_inGameSetup(void)
 				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, gameSpeedText[gameSpeed - 1], normal_font, left_aligned, 15, -4 + (selected ? 2 : 0), false, 2);
 				break;
 			}
-			case MENU_ITEM_EQUIPMENT:
+			case MENU_ITEM_DEBUG:
 			{
 				break;
 			}
@@ -1817,13 +1819,13 @@ JE_boolean JE_inGameSetup(void)
 				JE_playSampleNum(S_SELECT);
 				break;
 			}
-			case MENU_ITEM_EQUIPMENT:
+			case MENU_ITEM_DEBUG:
 			{
 				JE_playSampleNum(S_SELECT);
 
-				JE_equipmentMenu();
+				JE_debugMenu();
 				restart = true;
-				break;
+				continue; /* redraw menu after exiting debug */
 			}
 			case MENU_ITEM_RETURN_TO_GAME:
 			{
@@ -1941,7 +1943,7 @@ JE_boolean JE_inGameSetup(void)
 	return result;
 }
 
-void JE_equipmentMenu(void)
+void JE_debugMenu(void)
 {
 	SDL_Surface* temp_surface = VGAScreen;
 	VGAScreen = VGAScreenSeg;
@@ -3609,7 +3611,7 @@ void JE_pauseGame(void)
 
 		if (newkey && lastkey_scan == SDL_SCANCODE_E)
 		{
-			JE_equipmentMenu();
+			JE_debugMenu();
 			newkey = false;
 			continue;
 		}

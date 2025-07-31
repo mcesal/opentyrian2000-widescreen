@@ -1528,13 +1528,12 @@ JE_boolean JE_inGameSetup(void)
 		MENU_ITEM_EFFECTS_VOLUME,
 		MENU_ITEM_DETAIL_LEVEL,
 		MENU_ITEM_GAME_SPEED,
-		MENU_ITEM_DIFFICULTY,
 		MENU_ITEM_EQUIPMENT,
 		MENU_ITEM_RETURN_TO_GAME,
 		MENU_ITEM_QUIT,
 	};
 
-	const size_t helpIndexes[] = { 14, 14, 27, 28, 25, 26 };
+	const size_t helpIndexes[] = { 14, 14, 27, 28, 26, 26, 26 };
 
 	if (shopSpriteSheet.data == NULL)
 		JE_loadCompShapes(&shopSpriteSheet, '1');  // need mouse pointer sprites
@@ -1546,11 +1545,10 @@ JE_boolean JE_inGameSetup(void)
 			inGameText[0],
 			inGameText[1],
 			inGameText[2],
-			inGameText[3],
-			"Difficulty",
-			"Equipment",
-			inGameText[4],
-			inGameText[5],
+					   inGameText[3],
+					   "Equipment",
+					   inGameText[4],
+					   inGameText[5],
 	};
 
 	const size_t menuItemsCount = COUNTOF(menuNames);
@@ -1619,11 +1617,6 @@ JE_boolean JE_inGameSetup(void)
 			case MENU_ITEM_GAME_SPEED:
 			{
 				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, gameSpeedText[gameSpeed - 1], normal_font, left_aligned, 15, -4 + (selected ? 2 : 0), false, 2);
-				break;
-			}
-			case MENU_ITEM_DIFFICULTY:
-			{
-				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, difficultyNameB[difficultyLevel], normal_font, left_aligned, 15, -4 + (selected ? 2 : 0), false, 2);
 				break;
 			}
 			case MENU_ITEM_EQUIPMENT:
@@ -1897,14 +1890,6 @@ JE_boolean JE_inGameSetup(void)
 				JE_setNewGameSpeed();
 				break;
 			}
-			case MENU_ITEM_DIFFICULTY:
-			{
-				JE_playSampleNum(S_CURSOR);
-
-				if (difficultyLevel > DIFFICULTY_WIMP)
-					difficultyLevel -= 1;
-				break;
-			}
 			default:
 				break;
 			}
@@ -1945,14 +1930,6 @@ JE_boolean JE_inGameSetup(void)
 				JE_setNewGameSpeed();
 				break;
 			}
-			case MENU_ITEM_DIFFICULTY:
-			{
-				JE_playSampleNum(S_CURSOR);
-
-				if (difficultyLevel < DIFFICULTY_10)
-					difficultyLevel += 1;
-				break;
-			}
 			default:
 				break;
 			}
@@ -1970,24 +1947,27 @@ void JE_equipmentMenu(void)
 	VGAScreen = VGAScreenSeg;
 
 	const char* menuItems[] = {
-			"Ship",
-			"Front Weapon",
-			"Front Power",
-			"Rear Weapon",
-			"Rear Power",
-			"Shield",
-			"Generator",
-			"Sidekick L",
-			"Sidekick R",
-			"Special",
-			"Inf Sidekick Ammo",
-			"Inf Shields",
-			"Inf Armor",
-			"Return"
+						"Ship",
+						"Front Weapon",
+						"Front Power",
+						"Rear Weapon",
+						"Rear Power",
+						"Shield",
+						"Generator",
+						"Sidekick L",
+						"Sidekick R",
+						"Special",
+						"Difficulty",
+						"Inf Sidekick Ammo",
+						"Inf Shields",
+						"Inf Armor",
+						"Return"
 	};
 
 	const size_t menuCount = sizeof(menuItems) / sizeof(menuItems[0]);
 	size_t selected = 0;
+
+	wait_noinput(false, false, true);
 
 	bool done = false;
 	while (!done)
@@ -2014,17 +1994,16 @@ void JE_equipmentMenu(void)
 			case 7:  snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[LEFT_SIDEKICK]].name); break;
 			case 8:  snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[RIGHT_SIDEKICK]].name); break;
 			case 9:  snprintf(buf, sizeof(buf), "%s", special[player[0].items.special].name); break;
-			case 10: sprintf(buf, "%s", cheatInfiniteSidekickAmmo ? "ON" : "OFF"); break;
-			case 11: sprintf(buf, "%s", cheatInfiniteShields ? "ON" : "OFF"); break;
-			case 12: sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF"); break;
+			case 10: snprintf(buf, sizeof(buf), "%s", difficultyNameB[difficultyLevel]); break;
+			case 11: sprintf(buf, "%s", cheatInfiniteSidekickAmmo ? "ON" : "OFF"); break;
+			case 12: sprintf(buf, "%s", cheatInfiniteShields ? "ON" : "OFF"); break;
+			case 13: sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF"); break;
 			default: buf[0] = '\0'; break;
 			}
 			JE_outText(VGAScreen, 180, y, buf, 15, 4);
 		}
 
 		JE_showVGA();
-
-		wait_noinput(false, false, true);
 
 		push_joysticks_as_keyboard();
 		service_SDL_events(true);
@@ -2052,9 +2031,10 @@ void JE_equipmentMenu(void)
 				case 7: if (player[0].items.sidekick[LEFT_SIDEKICK] > 0) --player[0].items.sidekick[LEFT_SIDEKICK]; break;
 				case 8: if (player[0].items.sidekick[RIGHT_SIDEKICK] > 0) --player[0].items.sidekick[RIGHT_SIDEKICK]; break;
 				case 9: if (player[0].items.special > 0) --player[0].items.special; break;
-				case 10: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
-				case 11: cheatInfiniteShields = !cheatInfiniteShields; break;
-				case 12: cheatInfiniteArmor = !cheatInfiniteArmor; break;
+				case 10: if (difficultyLevel > DIFFICULTY_WIMP) --difficultyLevel; break;
+				case 11: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
+				case 12: cheatInfiniteShields = !cheatInfiniteShields; break;
+				case 13: cheatInfiniteArmor = !cheatInfiniteArmor; break;
 				default: break;
 				}
 				break;
@@ -2071,9 +2051,10 @@ void JE_equipmentMenu(void)
 				case 7: ++player[0].items.sidekick[LEFT_SIDEKICK]; break;
 				case 8: ++player[0].items.sidekick[RIGHT_SIDEKICK]; break;
 				case 9: ++player[0].items.special; break;
-				case 10: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
-				case 11: cheatInfiniteShields = !cheatInfiniteShields; break;
-				case 12: cheatInfiniteArmor = !cheatInfiniteArmor; break;
+				case 10: if (difficultyLevel < DIFFICULTY_10) ++difficultyLevel; break;
+				case 11: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
+				case 12: cheatInfiniteShields = !cheatInfiniteShields; break;
+				case 13: cheatInfiniteArmor = !cheatInfiniteArmor; break;
 				default: break;
 				}
 				break;
@@ -2081,7 +2062,7 @@ void JE_equipmentMenu(void)
 			case SDL_SCANCODE_SPACE:
 				if (selected == menuCount - 1)
 					done = true;
-				else if (selected >= 10 && selected <= 12)
+				else if (selected >= 11 && selected <= 13)
 				{
 					// toggles handled above
 				}

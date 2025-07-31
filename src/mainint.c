@@ -2002,7 +2002,12 @@ void JE_debugMenu(void)
 			case 13: sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF"); break;
 			default: buf[0] = '\0'; break;
 			}
-			JE_outText(VGAScreen, 180, y, buf, 15, 4);
+
+			/* trim trailing whitespace */
+			for (int j = (int)strlen(buf) - 1; j >= 0 && isspace((unsigned char)buf[j]); --j)
+				buf[j] = '\0';
+
+			draw_font_hv(VGAScreen, 250, y, buf, small_font, right_aligned, 15, 4);
 		}
 
 		JE_showVGA();
@@ -2045,9 +2050,9 @@ void JE_debugMenu(void)
 				{
 				case 0: ++player[0].items.ship; break;
 				case 1: ++player[0].items.weapon[FRONT_WEAPON].id; break;
-				case 2: ++player[0].items.weapon[FRONT_WEAPON].power; break;
+				case 2: if (player[0].items.weapon[FRONT_WEAPON].power < 11) ++player[0].items.weapon[FRONT_WEAPON].power; break;
 				case 3: ++player[0].items.weapon[REAR_WEAPON].id; break;
-				case 4: ++player[0].items.weapon[REAR_WEAPON].power; break;
+				case 4: if (player[0].items.weapon[REAR_WEAPON].power < 11) ++player[0].items.weapon[REAR_WEAPON].power; break;
 				case 5: ++player[0].items.shield; break;
 				case 6: ++player[0].items.generator; break;
 				case 7: ++player[0].items.sidekick[LEFT_SIDEKICK]; break;

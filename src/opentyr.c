@@ -90,11 +90,27 @@ static size_t getScalingModePickerItemsCount(void)
 	return (size_t)ScalingMode_MAX;
 }
 
-static const char *getScalingModePickerItem(size_t i, char *buffer, size_t bufferSize)
+static const char* getScalingModePickerItem(size_t i, char* buffer, size_t bufferSize)
 {
 	(void)buffer, (void)bufferSize;
 
 	return scaling_mode_names[i];
+}
+
+static const int fps_options[] = { 0, 35, 60, 120 };
+
+static size_t getFPSPickerItemsCount(void)
+{
+	return COUNTOF(fps_options);
+}
+
+static const char* getFPSPickerItem(size_t i, char* buffer, size_t bufferSize)
+{
+	if (fps_options[i] == 0)
+		return "Uncapped";
+
+	snprintf(buffer, bufferSize, "%d", fps_options[i]);
+	return buffer;
 }
 
 void setupMenu(void)
@@ -110,6 +126,7 @@ void setupMenu(void)
 		MENU_ITEM_DISPLAY,
 		MENU_ITEM_SCALER,
 		MENU_ITEM_SCALING_MODE,
+		MENU_ITEM_FPS,
 		MENU_ITEM_MUSIC_VOLUME,
 		MENU_ITEM_SOUND_VOLUME,
 	} MenuItemId;
@@ -154,11 +171,12 @@ void setupMenu(void)
 			.items = {
 				{ MENU_ITEM_DISPLAY, "Display:", "Change the display mode.", getDisplayPickerItemsCount, getDisplayPickerItem },
 				{ MENU_ITEM_SCALER, "Scaler:", "Change the pixel art scaling algorithm.", getScalerPickerItemsCount, getScalerPickerItem },
-				{ MENU_ITEM_SCALING_MODE, "Scaling Mode:", "Change the scaling mode.", getScalingModePickerItemsCount, getScalingModePickerItem },
-				{ MENU_ITEM_DONE, "Done", "Return to the previous menu." },
-				{ -1 }
-			},
-		},
+								{ MENU_ITEM_SCALING_MODE, "Scaling Mode:", "Change the scaling mode.", getScalingModePickerItemsCount, getScalingModePickerItem },
+								{ MENU_ITEM_FPS, "FPS:", "Limit frames per second.", getFPSPickerItemsCount, getFPSPickerItem },
+								{ MENU_ITEM_DONE, "Done", "Return to the previous menu." },
+								{ -1 }
+						},
+				},
 		[MENU_SOUND] = {
 			.header = "Sound",
 			.items = {
@@ -259,6 +277,14 @@ void setupMenu(void)
 
 			case MENU_ITEM_SCALING_MODE:
 				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, scaling_mode_names[scaling_mode], normal_font, left_aligned, 15, -3 + (selected ? 2 : 0) + (disabled ? -4 : 0), false, 2);
+				break;
+
+			case MENU_ITEM_FPS:
+				if (fps_cap == 0)
+					snprintf(buffer, sizeof(buffer), "Uncapped");
+				else
+					snprintf(buffer, sizeof(buffer), "%d", fps_cap);
+				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, buffer, normal_font, left_aligned, 15, -3 + (selected ? 2 : 0) + (disabled ? -4 : 0), false, 2);
 				break;
 
 			case MENU_ITEM_MUSIC_VOLUME:
@@ -376,6 +402,7 @@ void setupMenu(void)
 									case MENU_ITEM_DISPLAY:
 									case MENU_ITEM_SCALER:
 									case MENU_ITEM_SCALING_MODE:
+									case MENU_ITEM_FPS:
 									{
 										action = true;
 										break;
@@ -461,6 +488,16 @@ void setupMenu(void)
 						JE_playSampleNum(S_CURSOR);
 						break;
 					}
+					case MENU_ITEM_FPS:
+					{
+						if (fps_cap > 5)
+							fps_cap -= 5;
+						else
+							fps_cap = 0;
+						set_fps(fps_cap);
+						JE_playSampleNum(S_CURSOR);
+						break;
+					}
 					default:
 						break;
 					}
@@ -481,6 +518,13 @@ void setupMenu(void)
 					{
 						JE_changeVolume(&tyrMusicVolume, 0, &fxVolume, 8);
 
+						JE_playSampleNum(S_CURSOR);
+						break;
+					}
+					case MENU_ITEM_FPS:
+					{
+						fps_cap += 5;
+						set_fps(fps_cap);
 						JE_playSampleNum(S_CURSOR);
 						break;
 					}
@@ -733,6 +777,12 @@ void setupMenu(void)
 				case MENU_ITEM_SCALING_MODE:
 				{
 					scaling_mode = pickerSelectedIndex;
+					break;
+				}
+				case MENU_ITEM_FPS:
+				{
+					fps_cap = fps_options[pickerSelectedIndex];
+					set_fps(fps_cap);
 					break;
 				}
 				default:

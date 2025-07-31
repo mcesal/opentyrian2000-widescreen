@@ -35,6 +35,9 @@ extern JE_word tyrMusicVolume, fxVolume;
 extern const JE_word fxPlayVol;
 extern JE_word tempVolume;
 
+extern int fps_cap;
+void set_fps(int fps);
+
 void setDelay(int delay);
 void setDelay2(int delay);
 Uint32 getDelayTicks(void);

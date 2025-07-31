@@ -235,14 +235,17 @@ bool load_opentyrian_config(void)
 	if (section != NULL)
 	{
 		config_get_int_option(section, "fullscreen", &fullscreen_display);
-		
-		const char *scaler;
+
+		const char* scaler;
 		if (config_get_string_option(section, "scaler", &scaler))
 			set_scaler_by_name(scaler);
-		
-		const char *scaling_mode;
+
+		const char* scaling_mode;
 		if (config_get_string_option(section, "scaling_mode", &scaling_mode))
 			set_scaling_mode_by_name(scaling_mode);
+
+		config_get_int_option(section, "fps", &fps_cap);
+		set_fps(fps_cap);
 	}
 
 	section = config_find_section(config, "keyboard", NULL);
@@ -300,6 +303,8 @@ bool save_opentyrian_config(void)
 	config_set_string_option(section, "scaler", scalers[scaler].name);
 	
 	config_set_string_option(section, "scaling_mode", scaling_mode_names[scaling_mode]);
+
+	config_set_int_option(section, "fps", fps_cap);
 
 	section = config_find_or_add_section(config, "keyboard", NULL);
 	if (section == NULL)

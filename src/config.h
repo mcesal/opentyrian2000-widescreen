@@ -179,6 +179,7 @@ extern JE_byte processorType;
 extern JE_SaveFilesType saveFiles;
 extern JE_SaveGameTemp saveTemp;
 extern JE_word editorLevel;
+extern int fps_cap;
 
 extern Config opentyrian_config;
 

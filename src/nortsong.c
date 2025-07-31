@@ -39,14 +39,25 @@ JE_word tyrMusicVolume, fxVolume;
 const JE_word fxPlayVol = 4;
 JE_word tempVolume;
 
+int fps_cap = 35;
+static float delayPeriod = 1000.0f / (35 * 2);
+
 // The period of the x86 programmable interval timer in milliseconds.
 static const float pitPeriod = (12.0f / 14318180.0f) * 1000.0f;
 
 static Uint16 delaySpeed = 0x4300;
-static float delayPeriod = 0x4300 * ((12.0f / 14318180.0f) * 1000.0f);
 
 static Uint32 target = 0;
 static Uint32 target2 = 0;
+
+void set_fps(int fps)
+{
+	fps_cap = fps;
+	if (fps_cap > 0)
+		delayPeriod = ((float)delaySpeed / 0x4300) * (1000.0f / (fps_cap * 2));
+	else
+		delayPeriod = 0;
+}
 
 void setDelay(int delay)  // FKA NortSong.frameCount
 {
@@ -250,7 +261,10 @@ void JE_playSampleNum(JE_byte samplenum)
 void setDelaySpeed(Uint16 speed)  // FKA NortSong.speed and NortSong.setTimerInt
 {
 	delaySpeed = speed;
-	delayPeriod = speed * pitPeriod;
+	if (fps_cap > 0)
+		delayPeriod = ((float)speed / 0x4300) * (1000.0f / (fps_cap * 2));
+	else
+		delayPeriod = 0;
 }
 
 void JE_changeVolume(JE_word *music, int music_delta, JE_word *sample, int sample_delta)

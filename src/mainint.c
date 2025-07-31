@@ -1528,6 +1528,8 @@ JE_boolean JE_inGameSetup(void)
 		MENU_ITEM_EFFECTS_VOLUME,
 		MENU_ITEM_DETAIL_LEVEL,
 		MENU_ITEM_GAME_SPEED,
+		MENU_ITEM_DIFFICULTY,
+		MENU_ITEM_EQUIPMENT,
 		MENU_ITEM_RETURN_TO_GAME,
 		MENU_ITEM_QUIT,
 	};
@@ -1539,7 +1541,19 @@ JE_boolean JE_inGameSetup(void)
 
 	bool restart = true;
 
-	const size_t menuItemsCount = COUNTOF(inGameText);
+	const char* const menuNames[] =
+	{
+			inGameText[0],
+			inGameText[1],
+			inGameText[2],
+			inGameText[3],
+			"Difficulty",
+			"Equipment",
+			inGameText[4],
+			inGameText[5],
+	};
+
+	const size_t menuItemsCount = COUNTOF(menuNames);
 	size_t selectedIndex = MENU_ITEM_MUSIC_VOLUME;
 
 	const int yMenuItems = 20;
@@ -1579,7 +1593,7 @@ JE_boolean JE_inGameSetup(void)
 		{
 			const int y = yMenuItems + dyMenuItems * i;
 
-			const char *const name = inGameText[i];
+			const char* const name = menuNames[i];
 
 			const bool selected = i == selectedIndex;
 
@@ -1604,7 +1618,16 @@ JE_boolean JE_inGameSetup(void)
 			}
 			case MENU_ITEM_GAME_SPEED:
 			{
-				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, gameSpeedText[gameSpeed-1], normal_font, left_aligned, 15, -4 + (selected ? 2 : 0), false, 2);
+				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, gameSpeedText[gameSpeed - 1], normal_font, left_aligned, 15, -4 + (selected ? 2 : 0), false, 2);
+				break;
+			}
+			case MENU_ITEM_DIFFICULTY:
+			{
+				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, difficultyNameB[difficultyLevel], normal_font, left_aligned, 15, -4 + (selected ? 2 : 0), false, 2);
+				break;
+			}
+			case MENU_ITEM_EQUIPMENT:
+			{
 				break;
 			}
 			}
@@ -1801,6 +1824,14 @@ JE_boolean JE_inGameSetup(void)
 				JE_playSampleNum(S_SELECT);
 				break;
 			}
+			case MENU_ITEM_EQUIPMENT:
+			{
+				JE_playSampleNum(S_SELECT);
+
+				JE_equipmentMenu();
+				restart = true;
+				break;
+			}
 			case MENU_ITEM_RETURN_TO_GAME:
 			{
 				JE_playSampleNum(S_SELECT);
@@ -1866,6 +1897,14 @@ JE_boolean JE_inGameSetup(void)
 				JE_setNewGameSpeed();
 				break;
 			}
+			case MENU_ITEM_DIFFICULTY:
+			{
+				JE_playSampleNum(S_CURSOR);
+
+				if (difficultyLevel > DIFFICULTY_WIMP)
+					difficultyLevel -= 1;
+				break;
+			}
 			default:
 				break;
 			}
@@ -1906,10 +1945,18 @@ JE_boolean JE_inGameSetup(void)
 				JE_setNewGameSpeed();
 				break;
 			}
+			case MENU_ITEM_DIFFICULTY:
+			{
+				JE_playSampleNum(S_CURSOR);
+
+				if (difficultyLevel < DIFFICULTY_10)
+					difficultyLevel += 1;
+				break;
+			}
 			default:
 				break;
 			}
-		}
+				}
 	}
 
 	VGAScreen = temp_surface; /* side-effect of game_screen */
@@ -1954,19 +2001,19 @@ void JE_equipmentMenu(void)
 			bool sel = (i == selected);
 			draw_font_hv_shadow(VGAScreen, 10, y, menuItems[i], normal_font, left_aligned, 15, -4 + (sel ? 2 : 0), false, 2);
 
-			char buf[20];
+			char buf[40];
 			switch (i)
 			{
-			case 0:  sprintf(buf, "%d", player[0].items.ship); break;
-			case 1:  sprintf(buf, "%d", player[0].items.weapon[FRONT_WEAPON].id); break;
-			case 2:  sprintf(buf, "%d", player[0].items.weapon[FRONT_WEAPON].power); break;
-			case 3:  sprintf(buf, "%d", player[0].items.weapon[REAR_WEAPON].id); break;
-			case 4:  sprintf(buf, "%d", player[0].items.weapon[REAR_WEAPON].power); break;
-			case 5:  sprintf(buf, "%d", player[0].items.shield); break;
-			case 6:  sprintf(buf, "%d", player[0].items.generator); break;
-			case 7:  sprintf(buf, "%d", player[0].items.sidekick[LEFT_SIDEKICK]); break;
-			case 8:  sprintf(buf, "%d", player[0].items.sidekick[RIGHT_SIDEKICK]); break;
-			case 9:  sprintf(buf, "%d", player[0].items.special); break;
+			case 0:  snprintf(buf, sizeof(buf), "%s", ships[player[0].items.ship].name); break;
+			case 1:  snprintf(buf, sizeof(buf), "%s", weaponPort[player[0].items.weapon[FRONT_WEAPON].id].name); break;
+			case 2:  snprintf(buf, sizeof(buf), "%d", player[0].items.weapon[FRONT_WEAPON].power); break;
+			case 3:  snprintf(buf, sizeof(buf), "%s", weaponPort[player[0].items.weapon[REAR_WEAPON].id].name); break;
+			case 4:  snprintf(buf, sizeof(buf), "%d", player[0].items.weapon[REAR_WEAPON].power); break;
+			case 5:  snprintf(buf, sizeof(buf), "%s", shields[player[0].items.shield].name); break;
+			case 6:  snprintf(buf, sizeof(buf), "%s", powerSys[player[0].items.generator].name); break;
+			case 7:  snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[LEFT_SIDEKICK]].name); break;
+			case 8:  snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[RIGHT_SIDEKICK]].name); break;
+			case 9:  snprintf(buf, sizeof(buf), "%s", special[player[0].items.special].name); break;
 			case 10: sprintf(buf, "%s", cheatInfiniteSidekickAmmo ? "ON" : "OFF"); break;
 			case 11: sprintf(buf, "%s", cheatInfiniteShields ? "ON" : "OFF"); break;
 			case 12: sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF"); break;

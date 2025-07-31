@@ -71,6 +71,14 @@ JE_boolean useLastBank; /* See if I want to use the last 16 colors for DisplayTe
 
 bool pause_pressed = false, ingamemenu_pressed = false;
 
+/* debug submenu dimensions for in-game setup */
+#define DEBUG_MENU_X      3
+#define DEBUG_MENU_Y      13
+#define DEBUG_MENU_WIDTH  (257 - DEBUG_MENU_X + 1)
+#define DEBUG_MENU_HEIGHT (177 - DEBUG_MENU_Y + 1)
+
+static Uint8 debug_menu_backup[DEBUG_MENU_WIDTH * DEBUG_MENU_HEIGHT];
+
 /* Draws a message at the bottom text window on the playing screen */
 void JE_drawTextWindow(const char *text)
 {
@@ -1823,7 +1831,26 @@ JE_boolean JE_inGameSetup(void)
 			{
 				JE_playSampleNum(S_SELECT);
 
+				/* capture debug menu area */
+				for (int yy = 0; yy < DEBUG_MENU_HEIGHT; ++yy)
+				{
+					memcpy(&debug_menu_backup[yy * DEBUG_MENU_WIDTH],
+						(Uint8*)VGAScreen->pixels +
+						(DEBUG_MENU_Y + yy) * VGAScreen->pitch + DEBUG_MENU_X,
+						DEBUG_MENU_WIDTH);
+				}
+
 				JE_debugMenu();
+
+				/* restore debug menu area */
+				for (int yy = 0; yy < DEBUG_MENU_HEIGHT; ++yy)
+				{
+					memcpy((Uint8*)VGAScreen->pixels +
+						(DEBUG_MENU_Y + yy) * VGAScreen->pitch + DEBUG_MENU_X,
+						&debug_menu_backup[yy * DEBUG_MENU_WIDTH],
+						DEBUG_MENU_WIDTH);
+				}
+
 				restart = true;
 				continue; /* redraw menu after exiting debug */
 			}
@@ -1979,7 +2006,9 @@ void JE_debugMenu(void)
 
 		for (size_t i = 0; i < menuCount; ++i)
 		{
-			int y = 25 + i * 10;
+			/* start a bit higher so the menu is vertically
+			 * centered within its border */
+			int y = 21 + i * 10;
 			bool sel = (i == selected);
 			draw_font_hv_shadow(VGAScreen, 10, y, menuItems[i], normal_font, left_aligned, 15, -4 + (sel ? 2 : 0), false, 2);
 
@@ -2030,9 +2059,9 @@ void JE_debugMenu(void)
 				{
 				case 0: if (player[0].items.ship > 0) --player[0].items.ship; break;
 				case 1: if (player[0].items.weapon[FRONT_WEAPON].id > 0) --player[0].items.weapon[FRONT_WEAPON].id; break;
-				case 2: if (player[0].items.weapon[FRONT_WEAPON].power > 0) --player[0].items.weapon[FRONT_WEAPON].power; break;
+				case 2: if (player[0].items.weapon[FRONT_WEAPON].power > 1) --player[0].items.weapon[FRONT_WEAPON].power; break;
 				case 3: if (player[0].items.weapon[REAR_WEAPON].id > 0) --player[0].items.weapon[REAR_WEAPON].id; break;
-				case 4: if (player[0].items.weapon[REAR_WEAPON].power > 0) --player[0].items.weapon[REAR_WEAPON].power; break;
+				case 4: if (player[0].items.weapon[REAR_WEAPON].power > 1) --player[0].items.weapon[REAR_WEAPON].power; break;
 				case 5: if (player[0].items.shield > 0) --player[0].items.shield; break;
 				case 6: if (player[0].items.generator > 0) --player[0].items.generator; break;
 				case 7: if (player[0].items.sidekick[LEFT_SIDEKICK] > 0) --player[0].items.sidekick[LEFT_SIDEKICK]; break;

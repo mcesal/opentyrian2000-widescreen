@@ -1917,6 +1917,143 @@ JE_boolean JE_inGameSetup(void)
 	return result;
 }
 
+void JE_equipmentMenu(void)
+{
+	SDL_Surface* temp_surface = VGAScreen;
+	VGAScreen = VGAScreenSeg;
+
+	const char* menuItems[] = {
+			"Ship",
+			"Front Weapon",
+			"Front Power",
+			"Rear Weapon",
+			"Rear Power",
+			"Shield",
+			"Generator",
+			"Sidekick L",
+			"Sidekick R",
+			"Special",
+			"Inf Sidekick Ammo",
+			"Inf Shields",
+			"Inf Armor",
+			"Return"
+	};
+
+	const size_t menuCount = sizeof(menuItems) / sizeof(menuItems[0]);
+	size_t selected = 0;
+
+	bool done = false;
+	while (!done)
+	{
+		JE_barShade(VGAScreen, 3, 13, 257, 177);
+		JE_barShade(VGAScreen, 5, 15, 255, 175);
+
+		for (size_t i = 0; i < menuCount; ++i)
+		{
+			int y = 25 + i * 10;
+			bool sel = (i == selected);
+			draw_font_hv_shadow(VGAScreen, 10, y, menuItems[i], normal_font, left_aligned, 15, -4 + (sel ? 2 : 0), false, 2);
+
+			char buf[20];
+			switch (i)
+			{
+			case 0:  sprintf(buf, "%d", player[0].items.ship); break;
+			case 1:  sprintf(buf, "%d", player[0].items.weapon[FRONT_WEAPON].id); break;
+			case 2:  sprintf(buf, "%d", player[0].items.weapon[FRONT_WEAPON].power); break;
+			case 3:  sprintf(buf, "%d", player[0].items.weapon[REAR_WEAPON].id); break;
+			case 4:  sprintf(buf, "%d", player[0].items.weapon[REAR_WEAPON].power); break;
+			case 5:  sprintf(buf, "%d", player[0].items.shield); break;
+			case 6:  sprintf(buf, "%d", player[0].items.generator); break;
+			case 7:  sprintf(buf, "%d", player[0].items.sidekick[LEFT_SIDEKICK]); break;
+			case 8:  sprintf(buf, "%d", player[0].items.sidekick[RIGHT_SIDEKICK]); break;
+			case 9:  sprintf(buf, "%d", player[0].items.special); break;
+			case 10: sprintf(buf, "%s", cheatInfiniteSidekickAmmo ? "ON" : "OFF"); break;
+			case 11: sprintf(buf, "%s", cheatInfiniteShields ? "ON" : "OFF"); break;
+			case 12: sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF"); break;
+			default: buf[0] = '\0'; break;
+			}
+			JE_outText(VGAScreen, 180, y, buf, 15, 4);
+		}
+
+		JE_showVGA();
+
+		wait_noinput(false, false, true);
+
+		push_joysticks_as_keyboard();
+		service_SDL_events(true);
+
+		if (newkey)
+		{
+			switch (lastkey_scan)
+			{
+			case SDL_SCANCODE_UP:
+				selected = (selected == 0) ? menuCount - 1 : selected - 1;
+				break;
+			case SDL_SCANCODE_DOWN:
+				selected = (selected + 1) % menuCount;
+				break;
+			case SDL_SCANCODE_LEFT:
+				switch (selected)
+				{
+				case 0: if (player[0].items.ship > 0) --player[0].items.ship; break;
+				case 1: if (player[0].items.weapon[FRONT_WEAPON].id > 0) --player[0].items.weapon[FRONT_WEAPON].id; break;
+				case 2: if (player[0].items.weapon[FRONT_WEAPON].power > 0) --player[0].items.weapon[FRONT_WEAPON].power; break;
+				case 3: if (player[0].items.weapon[REAR_WEAPON].id > 0) --player[0].items.weapon[REAR_WEAPON].id; break;
+				case 4: if (player[0].items.weapon[REAR_WEAPON].power > 0) --player[0].items.weapon[REAR_WEAPON].power; break;
+				case 5: if (player[0].items.shield > 0) --player[0].items.shield; break;
+				case 6: if (player[0].items.generator > 0) --player[0].items.generator; break;
+				case 7: if (player[0].items.sidekick[LEFT_SIDEKICK] > 0) --player[0].items.sidekick[LEFT_SIDEKICK]; break;
+				case 8: if (player[0].items.sidekick[RIGHT_SIDEKICK] > 0) --player[0].items.sidekick[RIGHT_SIDEKICK]; break;
+				case 9: if (player[0].items.special > 0) --player[0].items.special; break;
+				case 10: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
+				case 11: cheatInfiniteShields = !cheatInfiniteShields; break;
+				case 12: cheatInfiniteArmor = !cheatInfiniteArmor; break;
+				default: break;
+				}
+				break;
+			case SDL_SCANCODE_RIGHT:
+				switch (selected)
+				{
+				case 0: ++player[0].items.ship; break;
+				case 1: ++player[0].items.weapon[FRONT_WEAPON].id; break;
+				case 2: ++player[0].items.weapon[FRONT_WEAPON].power; break;
+				case 3: ++player[0].items.weapon[REAR_WEAPON].id; break;
+				case 4: ++player[0].items.weapon[REAR_WEAPON].power; break;
+				case 5: ++player[0].items.shield; break;
+				case 6: ++player[0].items.generator; break;
+				case 7: ++player[0].items.sidekick[LEFT_SIDEKICK]; break;
+				case 8: ++player[0].items.sidekick[RIGHT_SIDEKICK]; break;
+				case 9: ++player[0].items.special; break;
+				case 10: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
+				case 11: cheatInfiniteShields = !cheatInfiniteShields; break;
+				case 12: cheatInfiniteArmor = !cheatInfiniteArmor; break;
+				default: break;
+				}
+				break;
+			case SDL_SCANCODE_RETURN:
+			case SDL_SCANCODE_SPACE:
+				if (selected == menuCount - 1)
+					done = true;
+				else if (selected >= 10 && selected <= 12)
+				{
+					// toggles handled above
+				}
+				break;
+			case SDL_SCANCODE_ESCAPE:
+				done = true;
+				break;
+			default:
+				break;
+			}
+
+			newkey = false;
+		}
+	}
+
+	VGAScreen = temp_surface;
+}
+
+
 void JE_inGameHelp(void)
 {
 	SDL_Surface *temp_surface = VGAScreen;
@@ -3442,8 +3579,15 @@ void JE_pauseGame(void)
 		push_joysticks_as_keyboard();
 		service_SDL_events(true);
 
+		if (newkey && lastkey_scan == SDL_SCANCODE_E)
+		{
+			JE_equipmentMenu();
+			newkey = false;
+			continue;
+		}
+
 		if ((newkey && lastkey_scan != SDL_SCANCODE_LCTRL && lastkey_scan != SDL_SCANCODE_RCTRL && lastkey_scan != SDL_SCANCODE_LALT && lastkey_scan != SDL_SCANCODE_RALT) ||
-		    JE_mousePosition(&mouseX, &mouseY) > 0)
+			JE_mousePosition(&mouseX, &mouseY) > 0)
 		{
 #ifdef WITH_NETWORK
 			if (isNetworkGame)
@@ -4558,9 +4702,9 @@ redo:
 							}
 							else
 							{
-								const int ammo_max = this_player->sidekick[i].ammo_max;
+								const int ammo_max = cheatInfiniteSidekickAmmo ? 0 : this_player->sidekick[i].ammo_max;
 
-								if (ammo_max > 0)  // sidekick has limited ammo
+								if (!cheatInfiniteSidekickAmmo && ammo_max > 0)  // sidekick has limited ammo
 								{
 									if (this_player->sidekick[i].ammo_refill_ticks > 0)
 									{
@@ -4578,11 +4722,12 @@ redo:
 										draw_segmented_gauge(VGAScreenSeg, 284, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
 									}
 
-									if (button[1 + i] && this_player->sidekick[i].ammo > 0)
+									if (button[1 + i] && (cheatInfiniteSidekickAmmo || this_player->sidekick[i].ammo > 0))
 									{
 										b = player_shot_create(this_option->wport, shot_i, this_player->sidekick[i].x, this_player->sidekick[i].y, *mouseX_, *mouseY_, this_option->wpnum + this_player->sidekick[i].charge, playerNum_);
 
-										--this_player->sidekick[i].ammo;
+										if (!cheatInfiniteSidekickAmmo)
+											--this_player->sidekick[i].ammo;
 										if (this_player->sidekick[i].charge > 0)
 										{
 											shotMultiPos[shot_i] = 0;
@@ -4593,8 +4738,11 @@ redo:
 
 										// draw sidekick discharge ammo gauge
 										const int y = hud_sidekick_y[twoPlayerMode ? 1 : 0][i] + 13;
-										fill_rectangle_xy(VGAScreenSeg, 284, y, 312, y + 2, 0);
-										draw_segmented_gauge(VGAScreenSeg, 284, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
+										if (!cheatInfiniteSidekickAmmo)
+										{
+											fill_rectangle_xy(VGAScreenSeg, 284, y, 312, y + 2, 0);
+											draw_segmented_gauge(VGAScreenSeg, 284, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
+										}
 									}
 								}
 								else  // has infinite ammo

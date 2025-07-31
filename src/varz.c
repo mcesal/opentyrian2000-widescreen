@@ -282,6 +282,9 @@ JE_byte     nextSpecialWait;
 JE_boolean  spraySpecial;
 JE_byte     doIced;
 JE_boolean  infiniteShot;
+JE_boolean  cheatInfiniteSidekickAmmo = false;
+JE_boolean  cheatInfiniteShields = false;
+JE_boolean  cheatInfiniteArmor = false;
 
 /*PlayerData*/
 JE_boolean allPlayersGone; /*Both players dead and finished exploding*/
@@ -1044,6 +1047,9 @@ JE_byte JE_playerDamage(JE_byte temp,
 	int playerDamage = 0;
 	soundQueue[7] = S_SHIELD_HIT;
 
+	if (cheatInfiniteShields)
+		return 0;
+
 	/* Player Damage Routines */
 	if (this_player->shield < temp)
 	{
@@ -1051,7 +1057,7 @@ JE_byte JE_playerDamage(JE_byte temp,
 		temp -= this_player->shield;
 		this_player->shield = 0;
 
-		if (temp > 0)
+		if (temp > 0 && !cheatInfiniteArmor)
 		{
 			/*Through Shields - Now Armor */
 

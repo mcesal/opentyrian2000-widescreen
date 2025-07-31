@@ -50,6 +50,7 @@ void JE_nextEpisode(void);
 void JE_helpSystem(JE_byte startTopic);
 void JE_doInGameSetup(void);
 JE_boolean JE_inGameSetup(void);
+void JE_equipmentMenu(void);
 void JE_inGameHelp(void);
 void JE_sortHighScores(void);
 void JE_highScoreCheck(void);

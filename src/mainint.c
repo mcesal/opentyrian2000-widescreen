@@ -1999,10 +1999,11 @@ void JE_debugMenu(bool center)
 						"Sidekick L",
 						"Sidekick R",
 						"Special",
-						"Difficulty",
+						"Autofire Special",
 						"Inf Sidekick Ammo",
 						"Inf Shields",
 						"Inf Armor",
+						"Difficulty",
 						"Return"
 	};
 
@@ -2021,7 +2022,7 @@ void JE_debugMenu(bool center)
 		{
 			/* start a bit higher so the menu is vertically
 			 * centered within its border */
-			int y = 21 + i * 10 + off_y;
+			int y = 15 + i * 10 + off_y;
 			bool sel = (i == selected);
 			draw_font_hv_shadow(VGAScreen, 10 + off_x, y, menuItems[i], normal_font, left_aligned, 15, -4 + (sel ? 2 : 0), false, 2);
 
@@ -2038,10 +2039,11 @@ void JE_debugMenu(bool center)
 			case 7:  snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[LEFT_SIDEKICK]].name); break;
 			case 8:  snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[RIGHT_SIDEKICK]].name); break;
 			case 9:  snprintf(buf, sizeof(buf), "%s", special[player[0].items.special].name); break;
-			case 10: snprintf(buf, sizeof(buf), "%s", difficultyNameB[difficultyLevel]); break;
+			case 10: sprintf(buf, "%s", autoFireSpecial ? "ON" : "OFF"); break;
 			case 11: sprintf(buf, "%s", cheatInfiniteSidekickAmmo ? "ON" : "OFF"); break;
 			case 12: sprintf(buf, "%s", cheatInfiniteShields ? "ON" : "OFF"); break;
 			case 13: sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF"); break;
+			case 14: snprintf(buf, sizeof(buf), "%s", difficultyNameB[difficultyLevel]); break;
 			default: buf[0] = '\0'; break;
 			}
 
@@ -2080,10 +2082,11 @@ void JE_debugMenu(bool center)
 				case 7: if (player[0].items.sidekick[LEFT_SIDEKICK] > 0) --player[0].items.sidekick[LEFT_SIDEKICK]; break;
 				case 8: if (player[0].items.sidekick[RIGHT_SIDEKICK] > 0) --player[0].items.sidekick[RIGHT_SIDEKICK]; break;
 				case 9: if (player[0].items.special > 0) --player[0].items.special; break;
-				case 10: if (difficultyLevel > DIFFICULTY_WIMP) --difficultyLevel; break;
+				case 10: autoFireSpecial = !autoFireSpecial; break;
 				case 11: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
 				case 12: cheatInfiniteShields = !cheatInfiniteShields; break;
 				case 13: cheatInfiniteArmor = !cheatInfiniteArmor; break;
+				case 14: if (difficultyLevel > DIFFICULTY_WIMP) --difficultyLevel; break;
 				default: break;
 				}
 				break;
@@ -2100,10 +2103,11 @@ void JE_debugMenu(bool center)
 				case 7: ++player[0].items.sidekick[LEFT_SIDEKICK]; break;
 				case 8: ++player[0].items.sidekick[RIGHT_SIDEKICK]; break;
 				case 9: ++player[0].items.special; break;
-				case 10: if (difficultyLevel < DIFFICULTY_10) ++difficultyLevel; break;
+				case 10: autoFireSpecial = !autoFireSpecial; break;
 				case 11: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
 				case 12: cheatInfiniteShields = !cheatInfiniteShields; break;
 				case 13: cheatInfiniteArmor = !cheatInfiniteArmor; break;
+				case 14: if (difficultyLevel < DIFFICULTY_10) ++difficultyLevel; break;
 				default: break;
 				}
 				break;
@@ -2111,7 +2115,7 @@ void JE_debugMenu(bool center)
 			case SDL_SCANCODE_SPACE:
 				if (selected == menuCount - 1)
 					done = true;
-				else if (selected >= 11 && selected <= 13)
+				else if (selected == 10 || (selected >= 12 && selected <= 14))
 				{
 					// toggles handled above
 				}

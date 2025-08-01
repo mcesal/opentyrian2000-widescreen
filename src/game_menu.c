@@ -138,6 +138,31 @@ static Uint8 *playeritem_map(PlayerItems *items, uint i)
 	return map[i];
 }
 
+static void ensure_equipped_items_visible(void)
+{
+	/* Add currently equipped items to the shop inventory if they are not
+	 * already present. This mirrors the initial setup performed when the
+	 * buy/sell screen is entered and is required when equipment is changed
+	 * via the debug menu. */
+	for (int i = 0; i < 7; i++)
+	{
+		int item = *playeritem_map(&player[0].items, i);
+
+		int slot = 0;
+		for (; slot < itemAvailMax[itemAvailMap[i] - 1]; ++slot)
+		{
+			if (itemAvail[itemAvailMap[i] - 1][slot] == item)
+				break;
+		}
+
+		if (slot == itemAvailMax[itemAvailMap[i] - 1])
+		{
+			itemAvail[itemAvailMap[i] - 1][slot] = item;
+			itemAvailMax[itemAvailMap[i] - 1]++;
+		}
+	}
+}
+
 static void load_debug_levels(void)
 {
 	FILE* f = dir_fopen_die(data_dir(), episode_file, "rb");
@@ -2830,6 +2855,7 @@ void JE_menuFunction(JE_byte select)
 			break;
 		case 8: //equipment
 			JE_debugMenu(true);
+			ensure_equipped_items_visible();
 			old_items[0] = player[0].items;
 			player[0].last_items = player[0].items;
 			break;

@@ -285,6 +285,7 @@ JE_boolean  infiniteShot;
 JE_boolean  cheatInfiniteSidekickAmmo = false;
 JE_boolean  cheatInfiniteShields = false;
 JE_boolean  cheatInfiniteArmor = false;
+JE_boolean  autoFireSpecial = false;
 
 /*PlayerData*/
 JE_boolean allPlayersGone; /*Both players dead and finished exploding*/
@@ -771,6 +772,12 @@ void JE_doSpecialShot(JE_byte playerNum, uint *armor, uint *shield)
 		}
 
 	}  /*Main End*/
+
+	if (autoFireSpecial && playerNum == 1 && player[0].items.special > 0 &&
+		shotRepeat[SHOT_SPECIAL] == 0 && specialWait == 0 && flareDuration == 0)
+	{
+		JE_specialComplete(playerNum, player[0].items.special);
+	}
 
 	if (astralDuration > 0)
 		astralDuration--;

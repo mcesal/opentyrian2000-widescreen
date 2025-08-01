@@ -302,6 +302,7 @@ extern JE_boolean infiniteShot;
 extern JE_boolean cheatInfiniteSidekickAmmo;
 extern JE_boolean cheatInfiniteShields;
 extern JE_boolean cheatInfiniteArmor;
+extern JE_boolean autoFireSpecial;
 extern JE_boolean allPlayersGone;
 extern const uint shadowYDist;
 extern JE_real optionSatelliteRotate;

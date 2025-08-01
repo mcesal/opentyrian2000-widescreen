@@ -2424,11 +2424,15 @@ void JE_drawMainMenuHelpText(void)
 	}
 	else if (curMenu < MENU_PLAY_NEXT_LEVEL || curMenu >= MENU_2_PLAYER_ARCADE)
 	{
-		if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 7)
+		if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 6)
+		{
+			snprintf(tempStr, sizeof(tempStr), "Debug: equip your ship.");
+		}
+		else if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 8)
 		{
 			snprintf(tempStr, sizeof(tempStr), "Debug: select a level.");
 		}
-		else if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 8)
+		else if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 9)
 		{
 			memcpy(tempStr, mainMenuHelp[5 - 1], sizeof(tempStr));
 		}

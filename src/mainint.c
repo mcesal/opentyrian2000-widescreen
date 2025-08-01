@@ -1838,7 +1838,7 @@ JE_boolean JE_inGameSetup(void)
 				JE_playSampleNum(S_SELECT);
 
 				/* capture debug menu area */
-				for (int yy = 0; yy < DEBUG_MENU_HEIGHT+10; ++yy)
+				for (int yy = 0; yy < DEBUG_MENU_HEIGHT; ++yy)
 				{
 					memcpy(&debug_menu_backup[yy * DEBUG_MENU_WIDTH],
 						(Uint8*)VGAScreen2->pixels +
@@ -1849,7 +1849,7 @@ JE_boolean JE_inGameSetup(void)
 				JE_debugMenu(false);
 
 				/* restore debug menu area */
-				for (int yy = 00; yy < DEBUG_MENU_HEIGHT+10; ++yy)
+				for (int yy = 00; yy < DEBUG_MENU_HEIGHT; ++yy)
 				{
 					memcpy((Uint8*)VGAScreen->pixels +
 						(DEBUG_MENU_Y + yy) * VGAScreen->pitch + DEBUG_MENU_X,

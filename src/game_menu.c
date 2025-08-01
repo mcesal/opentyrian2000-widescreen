@@ -151,7 +151,7 @@ static void load_debug_levels(void)
 
 		if (s[0] == ']' && s[1] == 'L')
 		{
-			debugMapSection[debugLevelCount] = atoi(s+3);
+			debugMapSection[debugLevelCount] = atoi(s + 9);
 
 			char name_buf[10];
 			SDL_strlcpy(name_buf, s + 13, sizeof(name_buf));

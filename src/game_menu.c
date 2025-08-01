@@ -113,7 +113,7 @@ static char debugLevelName[50][18];
 static uint debugLevelCount;
 static bool debugPlayMenu;
 
-static const JE_MenuChoiceType menuChoicesDefault = { 8, 9, 9, 0, 0, 11, (SAVE_FILES_NUM / 2) + 2, 0, 0, 6, 4, 6, 7, 5, 6, 0 };
+static const JE_MenuChoiceType menuChoicesDefault = { 9, 9, 9, 0, 0, 11, (SAVE_FILES_NUM / 2) + 2, 0, 0, 6, 4, 6, 7, 5, 6, 0 };
 static const JE_byte menuEsc[MENU_MAX] = { 0, 1, 1, 1, 2, 3, 3, 1, 8, 0, 0, 11, 3, 0, 2, 1 };
 static const JE_byte itemAvailMap[7] = { 1, 2, 3, 9, 4, 6, 7 };
 static const JE_word planetX[21] = { 200, 150, 240, 300, 270, 280, 320, 260, 220, 150, 160, 210, 80, 240, 220, 180, 310, 330, 150, 240, 200 };
@@ -2790,7 +2790,10 @@ void JE_menuFunction(JE_byte select)
 		case 5: //options
 			curMenu = MENU_OPTIONS;
 			break;
-		case 6: //nextlevel
+		case 6: //equipment
+			JE_debugMenu();
+			break;
+		case 7: //nextlevel
 			curMenu = MENU_PLAY_NEXT_LEVEL;
 			newPal = 18;
 			JE_computeDots();
@@ -2808,7 +2811,7 @@ void JE_menuFunction(JE_byte select)
 			}
 			strcpy(menuInt[4][x + 1], miscText[5]);
 			break;
-		case 7: // debug play level
+		case 8: // debug play level
 			load_debug_levels();
 			curMenu = MENU_DEBUG_PLAY_LEVEL;
 			newPal = 18;
@@ -2824,7 +2827,7 @@ void JE_menuFunction(JE_byte select)
 			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][debugLevelCount + 1], miscText[5]);
 			debugPlayMenu = true;
 			break;
-		case 8: //quit
+		case 9: //quit
 			if (JE_quitRequest())
 			{
 				gameLoaded = true;

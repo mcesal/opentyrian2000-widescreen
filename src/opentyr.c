@@ -825,10 +825,13 @@ int main(int argc, char *argv[])
 
 	JE_loadHelpText();
 
-	/* Insert debug level option in the buy/sell menu */
+	/* Insert debug equipment and level select options in the buy/sell menu */
+	strncpy(menuInt[1][8], menuInt[1][7], sizeof(menuInt[1][8]));
 	strncpy(menuInt[1][7], menuInt[1][6], sizeof(menuInt[1][7]));
-	strncpy(menuInt[1][6], "Level Select", sizeof(menuInt[1][6]));
+	strncpy(menuInt[1][6], "Equipment", sizeof(menuInt[1][6]));
 	menuInt[1][6][sizeof(menuInt[1][6]) - 1] = '\0';
+	strncpy(menuInt[1][7], "Level Select", sizeof(menuInt[1][7]));
+	menuInt[1][7][sizeof(menuInt[1][7]) - 1] = '\0';
 
 	/*debuginfo("Help text complete");*/
 

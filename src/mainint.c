@@ -1835,8 +1835,8 @@ JE_boolean JE_inGameSetup(void)
 				for (int yy = 0; yy < DEBUG_MENU_HEIGHT; ++yy)
 				{
 					memcpy(&debug_menu_backup[yy * DEBUG_MENU_WIDTH],
-						(Uint8*)VGAScreen->pixels +
-						(DEBUG_MENU_Y + yy) * VGAScreen->pitch + DEBUG_MENU_X,
+						(Uint8*)VGAScreen2->pixels +
+						(DEBUG_MENU_Y + yy) * VGAScreen2->pitch + DEBUG_MENU_X,
 						DEBUG_MENU_WIDTH);
 				}
 

@@ -143,15 +143,20 @@ static void load_debug_levels(void)
 	FILE* f = dir_fopen_die(data_dir(), episode_file, "rb");
 
 	debugLevelCount = 0;
+	JE_word section = 0;
 	long end = ftell_eof(f);
 	char s[256];
 	while (ftell(f) < end && debugLevelCount < COUNTOF(debugMapSection))
 	{
 		read_encrypted_pascal_string(s, sizeof(s), f);
 
+		if (s[0] == '*')
+		{
+			section++;
+		}
 		if (s[0] == ']' && s[1] == 'L')
 		{
-			debugMapSection[debugLevelCount] = atoi(s + 9);
+			debugMapSection[debugLevelCount] = section;
 
 			char name_buf[10];
 			SDL_strlcpy(name_buf, s + 13, sizeof(name_buf));

@@ -2838,6 +2838,22 @@ void JE_menuFunction(JE_byte select)
 		}
 		break;
 
+	case MENU_DEBUG_PLAY_LEVEL:
+		if (select == menuChoices[MENU_DEBUG_PLAY_LEVEL])
+		{
+			curMenu = MENU_FULL_GAME;
+			newPal = 1;
+			debugPlayMenu = false;
+		}
+		else
+		{
+			mainLevel = debugMapSection[curSelect - 2];
+			lvlFileNum = debugLvlFileNum[curSelect - 2];
+			debugPlayMenu = false;
+			jumpSection = true;
+		}
+		break;
+
 	case MENU_UPGRADE_SUB:
 		if (curSel[MENU_UPGRADE_SUB] < menuChoices[MENU_UPGRADE_SUB])
 		{

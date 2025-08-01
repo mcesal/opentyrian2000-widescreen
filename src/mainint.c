@@ -72,9 +72,9 @@ bool pause_pressed = false, ingamemenu_pressed = false;
 
 /* debug submenu dimensions for in-game setup */
 #define DEBUG_MENU_X      3
-#define DEBUG_MENU_Y      13
+#define DEBUG_MENU_Y      9
 #define DEBUG_MENU_WIDTH  (257 - DEBUG_MENU_X + 1)
-#define DEBUG_MENU_HEIGHT (177 - DEBUG_MENU_Y + 1)
+#define DEBUG_MENU_HEIGHT (181 - DEBUG_MENU_Y + 1)
 
 static Uint8 debug_menu_backup[DEBUG_MENU_WIDTH * DEBUG_MENU_HEIGHT];
 

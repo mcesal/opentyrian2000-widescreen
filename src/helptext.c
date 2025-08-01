@@ -45,7 +45,8 @@ const JE_byte menuHelp[MENU_MAX][11] = /* [1..maxmenu, 1..11] */
 	{ 16, 17, 15, 15, 12,                   0, 0, 0, 0, 0, 0 },
 	{ 31, 31, 31, 31, 32, 12,                  0, 0, 0, 0, 0 },
 	{  4, 34,  3,  5,                    0, 0, 0, 0, 0, 0, 0 },
-	{ 35, 35, 35, 36, 12,                   0, 0, 0, 0, 0, 0 }
+	{ 35, 35, 35, 36, 12,                   0, 0, 0, 0, 0, 0 },
+	{                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 JE_byte verticalHeight = 7;
@@ -187,7 +188,7 @@ void JE_HBox(SDL_Surface *screen, int x, int y, unsigned int  messagenum, unsign
 
 void JE_loadHelpText(void)
 {
-	const unsigned int menuInt_entries[MENU_MAX + 1] = { -1, 7, 9, 9, -1, -1, 11, -1, -1, -1, 6, 4, 7, 7, 5, 6 };
+	const unsigned int menuInt_entries[MENU_MAX + 1] = { -1, 7, 9, 9, -1, -1, 11, -1, -1, -1, 6, 4, 7, 7, 5, 6, 0 };
 	const unsigned int setup_entries[10] = {10, 5, 4, 4, 5, 7, 7, 21, 3, 3};
 	
 	FILE *f = dir_fopen_die(data_dir(), "tyrian.hdt", "rb");

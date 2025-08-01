@@ -59,8 +59,9 @@ enum
 	MENU_1_PLAYER_ARCADE = 10,  // Also networked games.
 	MENU_LIMITED_OPTIONS = 11,  // Hides save/load menus.
 	MENU_JOYSTICK_CONFIG = 12,
-	MENU_SUPER_TYRIAN    = 13,
-	MENU_MOUSE_CONFIG    = 14,  // T2000
+	MENU_SUPER_TYRIAN = 13,
+	MENU_MOUSE_CONFIG = 14,  // T2000
+	MENU_DEBUG_PLAY_LEVEL = 15,
 };
 
 /*** Structs ***/
@@ -105,8 +106,15 @@ static PlayerItems old_items[2];  // TODO: should not be global if possible
 
 static struct cube_struct cube[4];
 
-static const JE_MenuChoiceType menuChoicesDefault = { 7, 9, 9, 0, 0, 11, (SAVE_FILES_NUM / 2) + 2, 0, 0, 6, 4, 6, 7, 5, 6 };
-static const JE_byte menuEsc[MENU_MAX] = { 0, 1, 1, 1, 2, 3, 3, 1, 8, 0, 0, 11, 3, 0, 2 };
+/* Debug level menu data */
+static JE_word debugMapSection[50];
+static JE_byte debugLvlFileNum[50];
+static char debugLevelName[50][18];
+static uint debugLevelCount;
+static bool debugPlayMenu;
+
+static const JE_MenuChoiceType menuChoicesDefault = { 8, 9, 9, 0, 0, 11, (SAVE_FILES_NUM / 2) + 2, 0, 0, 6, 4, 6, 7, 5, 6, 0 };
+static const JE_byte menuEsc[MENU_MAX] = { 0, 1, 1, 1, 2, 3, 3, 1, 8, 0, 0, 11, 3, 0, 2, 1 };
 static const JE_byte itemAvailMap[7] = { 1, 2, 3, 9, 4, 6, 7 };
 static const JE_word planetX[21] = { 200, 150, 240, 300, 270, 280, 320, 260, 220, 150, 160, 210, 80, 240, 220, 180, 310, 330, 150, 240, 200 };
 static const JE_word planetY[21] = {  40,  90,  90,  80, 170,  30,  50, 130, 120, 150, 220, 200, 80,  50, 160,  10,  55,  55,  90,  90,  40 };
@@ -128,6 +136,29 @@ static Uint8 *playeritem_map(PlayerItems *items, uint i)
 	};
 	assert(i < COUNTOF(map));
 	return map[i];
+}
+
+static void load_debug_levels(void)
+{
+	FILE* f = dir_fopen_die(data_dir(), episode_file, "rb");
+
+	debugLevelCount = 0;
+	long end = ftell_eof(f);
+	char s[256];
+	while (ftell(f) < end && debugLevelCount < COUNTOF(debugMapSection))
+	{
+		read_encrypted_pascal_string(s, sizeof(s), f);
+
+		if (s[0] == ']' && s[1] == 'L')
+		{
+			debugMapSection[debugLevelCount] = atoi(s + 9);
+			SDL_strlcpy(debugLevelName[debugLevelCount], s + 13, sizeof(debugLevelName[0]));
+			debugLvlFileNum[debugLevelCount] = atoi(s + 25);
+			debugLevelCount++;
+		}
+	}
+
+	fclose(f);
 }
 
 JE_longint JE_cashLeft(void)
@@ -1147,7 +1178,7 @@ void JE_itemScreen(void)
 			    mouseX < 308 &&
 			    curMenu != MENU_DATA_CUBE_SUB)
 			{
-				const JE_byte mouseSelectionY[MENU_MAX] = { 16, 16, 16, 16, 26, 12, 11, 28, 0, 16, 16, 16, 8, 16, 24 };
+				const JE_byte mouseSelectionY[MENU_MAX] = { 16, 16, 16, 16, 26, 12, 11, 28, 0, 16, 16, 16, 8, 16, 24, 16 };
 
 				int selection = (mouseY - 38) / mouseSelectionY[curMenu]+2;
 
@@ -1161,8 +1192,8 @@ void JE_itemScreen(void)
 
 				if (curMenu == MENU_FULL_GAME)
 				{
-					if (selection > 7)
-						selection = 7;
+					if (selection > 8)
+						selection = 8;
 				}
 
 				// is play next level screen?
@@ -1945,7 +1976,7 @@ void JE_drawMenuChoices(void)
 
 		if (curMenu == MENU_FULL_GAME)
 		{
-			if (x == 7)
+			if (x == 8)
 			{
 				tempY += 16;
 			}
@@ -2713,7 +2744,21 @@ void JE_menuFunction(JE_byte select)
 			}
 			strcpy(menuInt[4][x + 1], miscText[5]);
 			break;
-		case 7: //quit
+		case 7: // debug play level
+			load_debug_levels();
+			curMenu = MENU_DEBUG_PLAY_LEVEL;
+			newPal = 18;
+			menuChoices[MENU_DEBUG_PLAY_LEVEL] = debugLevelCount + 2;
+			curSel[MENU_DEBUG_PLAY_LEVEL] = 2;
+			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][0], "Debug Level");
+			for (x = 0; x < debugLevelCount; x++)
+			{
+				strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][x + 1], debugLevelName[x]);
+			}
+			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][debugLevelCount + 1], miscText[5]);
+			debugPlayMenu = true;
+			break;
+		case 8: //quit
 			if (JE_quitRequest())
 			{
 				gameLoaded = true;
@@ -2775,10 +2820,20 @@ void JE_menuFunction(JE_byte select)
 		{
 			curMenu = MENU_FULL_GAME;
 			newPal = 1;
+			debugPlayMenu = false;
 		}
 		else
 		{
-			mainLevel = mapSection[curSelect - 2];
+			if (debugPlayMenu)
+			{
+				mainLevel = debugMapSection[curSelect - 2];
+				lvlFileNum = debugLvlFileNum[curSelect - 2];
+				debugPlayMenu = false;
+			}
+			else
+			{
+				mainLevel = mapSection[curSelect - 2];
+			}
 			jumpSection = true;
 		}
 		break;

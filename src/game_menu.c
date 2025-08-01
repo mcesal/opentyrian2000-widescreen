@@ -2710,6 +2710,20 @@ void JE_drawScore(void)
 	}
 }
 
+/*
+ * Helper used by debug and normal level selection. Mirrors the
+ * behaviour of the "Next Level" menu and ensures that all variables
+ * required for a level jump are updated consistently.
+ */
+static void select_level(JE_word section, JE_byte file_num)
+{
+	mainLevel = (JE_byte)section;
+	if (file_num != 0)
+		lvlFileNum = file_num;
+	nextLevel = mainLevel;
+	jumpSection = true;
+}
+
 void JE_menuFunction(JE_byte select)
 {
 	JE_byte x;
@@ -2839,16 +2853,14 @@ void JE_menuFunction(JE_byte select)
 		{
 			if (debugPlayMenu)
 			{
-				mainLevel = debugMapSection[curSelect - 2];
-				lvlFileNum = debugLvlFileNum[curSelect - 2];
+				select_level(debugMapSection[curSelect - 2],
+					debugLvlFileNum[curSelect - 2]);
 				debugPlayMenu = false;
 			}
 			else
 			{
-				mainLevel = mapSection[curSelect - 2];
+				select_level(mapSection[curSelect - 2], 0);
 			}
-			nextLevel = mainLevel;
-			jumpSection = true;
 		}
 		break;
 
@@ -2861,11 +2873,9 @@ void JE_menuFunction(JE_byte select)
 		}
 		else
 		{
-			mainLevel = debugMapSection[curSelect - 2];
-			lvlFileNum = debugLvlFileNum[curSelect - 2];
+			select_level(debugMapSection[curSelect - 2],
+				debugLvlFileNum[curSelect - 2]);
 			debugPlayMenu = false;
-			nextLevel = mainLevel;
-			jumpSection = true;
 		}
 		break;
 

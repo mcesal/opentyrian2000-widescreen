@@ -1480,7 +1480,7 @@ void JE_doInGameSetup(void)
 					else if (SDLNet_Read16(&packet_in[0]->data[0]) == PACKET_GAME_QUIT)
 					{
 						reallyEndLevel = true;
-						playerEndLevel = true;
+						playerEndLevel = true;;
 
 						network_check();
 						break;

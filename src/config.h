@@ -30,7 +30,7 @@
 
 /* These are necessary because the size of the structure has changed from the original, but we
    need to know the original sizes in order to find things in TYRIAN.SAV */
-#define SAVE_FILES_SIZE 2398
+#define SAVE_FILES_SIZE 2486
 #define SIZEOF_SAVEGAMETEMP SAVE_FILES_SIZE + 4 + 100
 #define SAVE_FILE_SIZE (SIZEOF_SAVEGAMETEMP - 4)
 
@@ -101,6 +101,10 @@ typedef struct
 	JE_longint    highScore2;  // unused
 	char          highScoreName[30]; /* string [29] */
 	JE_byte       highScoreDiff;
+	JE_boolean    autoFireSpecial;
+	JE_boolean    cheatInfiniteSidekickAmmo;
+	JE_boolean    cheatInfiniteShields;
+	JE_boolean    cheatInfiniteArmor;
 } JE_SaveFileType;
 
 typedef JE_SaveFileType JE_SaveFilesType[SAVE_FILES_NUM]; /* [1..savefilesnum] */

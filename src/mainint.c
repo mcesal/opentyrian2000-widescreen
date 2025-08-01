@@ -1846,7 +1846,7 @@ JE_boolean JE_inGameSetup(void)
 						DEBUG_MENU_WIDTH);
 				}
 
-				JE_debugMenu();
+				JE_debugMenu(false);
 
 				/* restore debug menu area */
 				for (int yy = 0; yy < DEBUG_MENU_HEIGHT; ++yy)
@@ -1976,10 +1976,17 @@ JE_boolean JE_inGameSetup(void)
 	return result;
 }
 
-void JE_debugMenu(void)
+void JE_debugMenu(bool center)
 {
 	SDL_Surface* temp_surface = VGAScreen;
 	VGAScreen = VGAScreenSeg;
+
+	int off_x = 0, off_y = 0;
+	if (center)
+	{
+		off_x = (vga_width - DEBUG_MENU_WIDTH) / 2 - DEBUG_MENU_X;
+		off_y = (vga_height - DEBUG_MENU_HEIGHT) / 2 - DEBUG_MENU_Y;
+	}
 
 	const char* menuItems[] = {
 						"Ship",
@@ -2007,16 +2014,16 @@ void JE_debugMenu(void)
 	bool done = false;
 	while (!done)
 	{
-		JE_barShade(VGAScreen, 3, 13, 257, 177);
-		JE_barShade(VGAScreen, 5, 15, 255, 175);
+		JE_barShade(VGAScreen, 3 + off_x, 13 + off_y, 257 + off_x, 177 + off_y);
+		JE_barShade(VGAScreen, 5 + off_x, 15 + off_y, 255 + off_x, 175 + off_y);
 
 		for (size_t i = 0; i < menuCount; ++i)
 		{
 			/* start a bit higher so the menu is vertically
 			 * centered within its border */
-			int y = 21 + i * 10;
+			int y = 21 + i * 10 + off_y;
 			bool sel = (i == selected);
-			draw_font_hv_shadow(VGAScreen, 10, y, menuItems[i], normal_font, left_aligned, 15, -4 + (sel ? 2 : 0), false, 2);
+			draw_font_hv_shadow(VGAScreen, 10 + off_x, y, menuItems[i], normal_font, left_aligned, 15, -4 + (sel ? 2 : 0), false, 2);
 
 			char buf[40];
 			switch (i)
@@ -2042,7 +2049,7 @@ void JE_debugMenu(void)
 			for (int j = (int)strlen(buf) - 1; j >= 0 && isspace((unsigned char)buf[j]); --j)
 				buf[j] = '\0';
 
-			draw_font_hv(VGAScreen, 250, y, buf, small_font, right_aligned, 15, 4);
+			draw_font_hv(VGAScreen, 250 + off_x, y, buf, small_font, right_aligned, 15, 4);
 		}
 
 		JE_showVGA();
@@ -3651,7 +3658,7 @@ void JE_pauseGame(void)
 
 		if (newkey && lastkey_scan == SDL_SCANCODE_E)
 		{
-			JE_debugMenu();
+			JE_debugMenu(false);
 			newkey = false;
 			continue;
 		}

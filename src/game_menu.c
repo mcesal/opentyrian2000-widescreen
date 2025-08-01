@@ -2829,7 +2829,9 @@ void JE_menuFunction(JE_byte select)
 			debugPlayMenu = true;
 			break;
 		case 8: //equipment
-			JE_debugMenu();
+			JE_debugMenu(true);
+			old_items[0] = player[0].items;
+			player[0].last_items = player[0].items;
 			break;
 		case 9: //quit
 			if (JE_quitRequest())

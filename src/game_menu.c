@@ -152,7 +152,15 @@ static void load_debug_levels(void)
 		if (s[0] == ']' && s[1] == 'L')
 		{
 			debugMapSection[debugLevelCount] = atoi(s + 9);
-			SDL_strlcpy(debugLevelName[debugLevelCount], s + 13, sizeof(debugLevelName[0]));
+
+			char name_buf[10];
+			SDL_strlcpy(name_buf, s + 13, sizeof(name_buf));
+			size_t len = strlen(name_buf);
+			while (len > 0 && name_buf[len - 1] == ' ')
+				name_buf[--len] = '\0';
+			SDL_strlcpy(debugLevelName[debugLevelCount], name_buf,
+				sizeof(debugLevelName[0]));
+
 			debugLvlFileNum[debugLevelCount] = atoi(s + 25);
 			debugLevelCount++;
 		}
@@ -2005,17 +2013,22 @@ void JE_drawMenuChoices(void)
 			tempY += (x-2) * 8;
 		}
 
-		str = malloc(strlen(menuInt[curMenu + 1][x-1])+2);
+		str = malloc(strlen(menuInt[curMenu + 1][x - 1]) + 2);
 		if (curSel[curMenu] == x)
 		{
 			str[0] = '~';
-			strcpy(str+1, menuInt[curMenu + 1][x-1]);
+			strcpy(str + 1, menuInt[curMenu + 1][x - 1]);
 		}
 		else
 		{
-			strcpy(str, menuInt[curMenu + 1][x-1]);
+			strcpy(str, menuInt[curMenu + 1][x - 1]);
 		}
-		JE_dString(VGAScreen, 166, tempY, str, SMALL_FONT_SHAPES);
+
+		unsigned int font = (curMenu == MENU_DEBUG_PLAY_LEVEL)
+			? TINY_FONT : SMALL_FONT_SHAPES;
+		int text_x = (curMenu == MENU_DEBUG_PLAY_LEVEL)
+			? JE_fontCenter(str, font) : 166;
+		JE_dString(VGAScreen, text_x, tempY, str, font);
 		free(str);
 	}
 }

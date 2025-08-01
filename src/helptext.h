@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 
-#define MENU_MAX 15
+#define MENU_MAX 16
 
 #define DESTRUCT_MODES 5
 

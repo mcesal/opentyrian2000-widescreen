@@ -27,7 +27,6 @@
 #include "fonthand.h"
 #include "game_menu.h"
 #include "helptext.h"
-#include "helptext.h"
 #include "joystick.h"
 #include "keyboard.h"
 #include "lds_play.h"

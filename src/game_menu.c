@@ -59,8 +59,9 @@ enum
 	MENU_1_PLAYER_ARCADE = 10,  // Also networked games.
 	MENU_LIMITED_OPTIONS = 11,  // Hides save/load menus.
 	MENU_JOYSTICK_CONFIG = 12,
-	MENU_SUPER_TYRIAN    = 13,
-	MENU_MOUSE_CONFIG    = 14,  // T2000
+	MENU_SUPER_TYRIAN = 13,
+	MENU_MOUSE_CONFIG = 14,  // T2000
+	MENU_DEBUG_PLAY_LEVEL = 15,
 };
 
 /*** Structs ***/
@@ -105,8 +106,15 @@ static PlayerItems old_items[2];  // TODO: should not be global if possible
 
 static struct cube_struct cube[4];
 
-static const JE_MenuChoiceType menuChoicesDefault = { 7, 9, 9, 0, 0, 11, (SAVE_FILES_NUM / 2) + 2, 0, 0, 6, 4, 6, 7, 5, 6 };
-static const JE_byte menuEsc[MENU_MAX] = { 0, 1, 1, 1, 2, 3, 3, 1, 8, 0, 0, 11, 3, 0, 2 };
+/* Debug level menu data */
+static JE_word debugMapSection[50];
+static JE_byte debugLvlFileNum[50];
+static char debugLevelName[50][18];
+static uint debugLevelCount;
+static bool debugPlayMenu;
+
+static const JE_MenuChoiceType menuChoicesDefault = { 8, 9, 9, 0, 0, 11, (SAVE_FILES_NUM / 2) + 2, 0, 0, 6, 4, 6, 7, 5, 6, 0 };
+static const JE_byte menuEsc[MENU_MAX] = { 0, 1, 1, 1, 2, 3, 3, 1, 8, 0, 0, 11, 3, 0, 2, 1 };
 static const JE_byte itemAvailMap[7] = { 1, 2, 3, 9, 4, 6, 7 };
 static const JE_word planetX[21] = { 200, 150, 240, 300, 270, 280, 320, 260, 220, 150, 160, 210, 80, 240, 220, 180, 310, 330, 150, 240, 200 };
 static const JE_word planetY[21] = {  40,  90,  90,  80, 170,  30,  50, 130, 120, 150, 220, 200, 80,  50, 160,  10,  55,  55,  90,  90,  40 };
@@ -128,6 +136,42 @@ static Uint8 *playeritem_map(PlayerItems *items, uint i)
 	};
 	assert(i < COUNTOF(map));
 	return map[i];
+}
+
+static void load_debug_levels(void)
+{
+	FILE* f = dir_fopen_die(data_dir(), episode_file, "rb");
+
+	debugLevelCount = 0;
+	JE_word section = 0;
+	long end = ftell_eof(f);
+	char s[256];
+	while (ftell(f) < end && debugLevelCount < COUNTOF(debugMapSection))
+	{
+		read_encrypted_pascal_string(s, sizeof(s), f);
+
+		if (s[0] == '*')
+		{
+			section++;
+		}
+		if (s[0] == ']' && s[1] == 'L')
+		{
+			debugMapSection[debugLevelCount] = section;
+
+			char name_buf[10];
+			SDL_strlcpy(name_buf, s + 13, sizeof(name_buf));
+			size_t len = strlen(name_buf);
+			while (len > 0 && name_buf[len - 1] == ' ')
+				name_buf[--len] = '\0';
+			SDL_strlcpy(debugLevelName[debugLevelCount], name_buf,
+				sizeof(debugLevelName[0]));
+
+			debugLvlFileNum[debugLevelCount] = atoi(s + 25);
+			debugLevelCount++;
+		}
+	}
+
+	fclose(f);
 }
 
 JE_longint JE_cashLeft(void)
@@ -1147,7 +1191,7 @@ void JE_itemScreen(void)
 			    mouseX < 308 &&
 			    curMenu != MENU_DATA_CUBE_SUB)
 			{
-				const JE_byte mouseSelectionY[MENU_MAX] = { 16, 16, 16, 16, 26, 12, 11, 28, 0, 16, 16, 16, 8, 16, 24 };
+				const JE_byte mouseSelectionY[MENU_MAX] = { 16, 16, 16, 16, 26, 12, 11, 28, 0, 16, 16, 16, 8, 16, 24, 16 };
 
 				int selection = (mouseY - 38) / mouseSelectionY[curMenu]+2;
 
@@ -1161,8 +1205,8 @@ void JE_itemScreen(void)
 
 				if (curMenu == MENU_FULL_GAME)
 				{
-					if (selection > 7)
-						selection = 7;
+					if (selection > 8)
+						selection = 8;
 				}
 
 				// is play next level screen?
@@ -1941,11 +1985,12 @@ void JE_drawMenuChoices(void)
 
 	for (x = 2; x <= menuChoices[curMenu]; x++)
 	{
-		int tempY = 38 + (x-1) * 16;
+		int line_height = (curMenu == MENU_DEBUG_PLAY_LEVEL) ? 8 : 16;
+		int tempY = 38 + (x - 1) * line_height;
 
 		if (curMenu == MENU_FULL_GAME)
 		{
-			if (x == 7)
+			if (x == 8)
 			{
 				tempY += 16;
 			}
@@ -1964,9 +2009,9 @@ void JE_drawMenuChoices(void)
 		}
 
 		if (!(curMenu == MENU_PLAY_NEXT_LEVEL &&
-		      x == menuChoices[curMenu]))
+			x == menuChoices[curMenu]))
 		{
-			tempY -= 16;
+			tempY -= line_height;
 		}
 
 		if (curMenu == MENU_MOUSE_CONFIG)
@@ -1974,17 +2019,25 @@ void JE_drawMenuChoices(void)
 			tempY += (x-2) * 8;
 		}
 
-		str = malloc(strlen(menuInt[curMenu + 1][x-1])+2);
+		str = malloc(strlen(menuInt[curMenu + 1][x - 1]) + 2);
 		if (curSel[curMenu] == x)
 		{
 			str[0] = '~';
-			strcpy(str+1, menuInt[curMenu + 1][x-1]);
+			strcpy(str + 1, menuInt[curMenu + 1][x - 1]);
 		}
 		else
 		{
-			strcpy(str, menuInt[curMenu + 1][x-1]);
+			strcpy(str, menuInt[curMenu + 1][x - 1]);
 		}
-		JE_dString(VGAScreen, 166, tempY, str, SMALL_FONT_SHAPES);
+
+		unsigned int font = (curMenu == MENU_DEBUG_PLAY_LEVEL)
+			? TINY_FONT : SMALL_FONT_SHAPES;
+		int text_x = 166;
+		if (curMenu == MENU_DEBUG_PLAY_LEVEL)
+		{
+			text_x = 176;
+		}
+		JE_dString(VGAScreen, text_x, tempY, str, font);
 		free(str);
 	}
 }
@@ -2666,6 +2719,20 @@ void JE_drawScore(void)
 	}
 }
 
+/*
+ * Helper used by debug and normal level selection. Mirrors the
+ * behaviour of the "Next Level" menu and ensures that all variables
+ * required for a level jump are updated consistently.
+ */
+static void select_level(JE_word section, JE_byte file_num)
+{
+	mainLevel = (JE_byte)section;
+	if (file_num != 0)
+		lvlFileNum = file_num;
+	nextLevel = mainLevel;
+	jumpSection = true;
+}
+
 void JE_menuFunction(JE_byte select)
 {
 	JE_byte x;
@@ -2713,7 +2780,21 @@ void JE_menuFunction(JE_byte select)
 			}
 			strcpy(menuInt[4][x + 1], miscText[5]);
 			break;
-		case 7: //quit
+		case 7: // debug play level
+			load_debug_levels();
+			curMenu = MENU_DEBUG_PLAY_LEVEL;
+			newPal = 18;
+			menuChoices[MENU_DEBUG_PLAY_LEVEL] = debugLevelCount + 2;
+			curSel[MENU_DEBUG_PLAY_LEVEL] = 2;
+			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][0], "Debug Level");
+			for (x = 0; x < debugLevelCount; x++)
+			{
+				strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][x + 1], debugLevelName[x]);
+			}
+			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][debugLevelCount + 1], miscText[5]);
+			debugPlayMenu = true;
+			break;
+		case 8: //quit
 			if (JE_quitRequest())
 			{
 				gameLoaded = true;
@@ -2775,11 +2856,35 @@ void JE_menuFunction(JE_byte select)
 		{
 			curMenu = MENU_FULL_GAME;
 			newPal = 1;
+			debugPlayMenu = false;
 		}
 		else
 		{
-			mainLevel = mapSection[curSelect - 2];
-			jumpSection = true;
+			if (debugPlayMenu)
+			{
+				select_level(debugMapSection[curSelect - 2],
+					debugLvlFileNum[curSelect - 2]);
+				debugPlayMenu = false;
+			}
+			else
+			{
+				select_level(mapSection[curSelect - 2], 0);
+			}
+		}
+		break;
+
+	case MENU_DEBUG_PLAY_LEVEL:
+		if (select == menuChoices[MENU_DEBUG_PLAY_LEVEL])
+		{
+			curMenu = MENU_FULL_GAME;
+			newPal = 1;
+			debugPlayMenu = false;
+		}
+		else
+		{
+			select_level(debugMapSection[curSelect - 2],
+				debugLvlFileNum[curSelect - 2]);
+			debugPlayMenu = false;
 		}
 		break;
 

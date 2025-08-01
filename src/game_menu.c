@@ -2001,7 +2001,7 @@ void JE_drawMenuChoices(void)
 
 		if (curMenu == MENU_FULL_GAME)
 		{
-			if (x == 8)
+			if (x == menuChoices[MENU_FULL_GAME])
 			{
 				tempY += 16;
 			}
@@ -2424,13 +2424,13 @@ void JE_drawMainMenuHelpText(void)
 	}
 	else if (curMenu < MENU_PLAY_NEXT_LEVEL || curMenu >= MENU_2_PLAYER_ARCADE)
 	{
-		if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 6)
+		if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 7)
 		{
-			snprintf(tempStr, sizeof(tempStr), "Debug: equip your ship.");
+			snprintf(tempStr, sizeof(tempStr), "Debug: select a level.");
 		}
 		else if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 8)
 		{
-			snprintf(tempStr, sizeof(tempStr), "Debug: select a level.");
+			snprintf(tempStr, sizeof(tempStr), "Debug: equip your ship.");
 		}
 		else if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 9)
 		{
@@ -2794,10 +2794,7 @@ void JE_menuFunction(JE_byte select)
 		case 5: //options
 			curMenu = MENU_OPTIONS;
 			break;
-		case 6: //equipment
-			JE_debugMenu();
-			break;
-		case 7: //nextlevel
+		case 6: //nextlevel
 			curMenu = MENU_PLAY_NEXT_LEVEL;
 			newPal = 18;
 			JE_computeDots();
@@ -2807,7 +2804,7 @@ void JE_menuFunction(JE_byte select)
 			newNavY = navY;
 			menuChoices[MENU_PLAY_NEXT_LEVEL] = mapPNum + 2;
 			curSel[MENU_PLAY_NEXT_LEVEL] = 2;
-			strcpy(menuInt[4][0], "Next Level");
+			strcpy(menuInt[4][0], "Start Level");
 			for (x = 0; x < mapPNum; x++)
 			{
 				temp = mapPlanet[x];
@@ -2815,7 +2812,7 @@ void JE_menuFunction(JE_byte select)
 			}
 			strcpy(menuInt[4][x + 1], miscText[5]);
 			break;
-		case 8: // debug play level
+		case 7: // debug play level
 			load_debug_levels();
 			curMenu = MENU_DEBUG_PLAY_LEVEL;
 			newPal = 18;
@@ -2830,6 +2827,9 @@ void JE_menuFunction(JE_byte select)
 			}
 			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][debugLevelCount + 1], miscText[5]);
 			debugPlayMenu = true;
+			break;
+		case 8: //equipment
+			JE_debugMenu();
 			break;
 		case 9: //quit
 			if (JE_quitRequest())

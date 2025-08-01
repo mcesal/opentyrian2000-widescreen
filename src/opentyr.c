@@ -827,7 +827,7 @@ int main(int argc, char *argv[])
 
 	/* Insert debug level option in the buy/sell menu */
 	strncpy(menuInt[1][7], menuInt[1][6], sizeof(menuInt[1][7]));
-	strncpy(menuInt[1][6], "Debug Play Level", sizeof(menuInt[1][6]));
+	strncpy(menuInt[1][6], "Level Select", sizeof(menuInt[1][6]));
 	menuInt[1][6][sizeof(menuInt[1][6]) - 1] = '\0';
 
 	/*debuginfo("Help text complete");*/

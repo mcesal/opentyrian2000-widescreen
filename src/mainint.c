@@ -1636,7 +1636,14 @@ JE_boolean JE_inGameSetup(void)
 		}
 
 		// Draw help text.
-		JE_outTextAdjust(VGAScreen, 10, 147, mainMenuHelp[helpIndexes[selectedIndex]], 14, 6, TINY_FONT, true);
+		const char* pause_help = mainMenuHelp[helpIndexes[selectedIndex]];
+		if (selectedIndex == MENU_ITEM_DEBUG)
+			pause_help = "Open debug menu.";
+		else if (selectedIndex == MENU_ITEM_RETURN_TO_GAME)
+			pause_help = "Return to game.";
+		else if (selectedIndex == MENU_ITEM_QUIT)
+			pause_help = "Quit playing the level.";
+		JE_outTextAdjust(VGAScreen, 10, 147, pause_help, 14, 6, TINY_FONT, true);
 
 		service_SDL_events(true);
 

@@ -686,7 +686,8 @@ void JE_itemScreen(void)
 		if ((curMenu >= MENU_FULL_GAME && curMenu <= MENU_OPTIONS) ||
 		    curMenu == MENU_KEYBOARD_CONFIG ||
 		    curMenu == MENU_LOAD_SAVE ||
-		    curMenu >= MENU_2_PLAYER_ARCADE ||
+			(curMenu >= MENU_2_PLAYER_ARCADE &&
+				curMenu != MENU_DEBUG_PLAY_LEVEL) ||
 		    (curMenu == MENU_UPGRADE_SUB &&
 		     (curSel[MENU_UPGRADES] == 2 || curSel[MENU_UPGRADES] == 5)))
 		{
@@ -1986,7 +1987,17 @@ void JE_drawMenuChoices(void)
 	for (x = 2; x <= menuChoices[curMenu]; x++)
 	{
 		int line_height = (curMenu == MENU_DEBUG_PLAY_LEVEL) ? 8 : 16;
-		int tempY = 38 + (x - 1) * line_height;
+		int tempY;
+		if (curMenu == MENU_DEBUG_PLAY_LEVEL)
+		{
+			int index = x - 2;
+			int row = index / 2;
+			tempY = 38 + (row + 1) * line_height;
+		}
+		else
+		{
+			tempY = 38 + (x - 1) * line_height;
+		}
 
 		if (curMenu == MENU_FULL_GAME)
 		{
@@ -2035,9 +2046,15 @@ void JE_drawMenuChoices(void)
 		int text_x = 166;
 		if (curMenu == MENU_DEBUG_PLAY_LEVEL)
 		{
-			text_x = 176;
+			int index = x - 2;
+			int col = index % 2;
+			text_x = 165 + col * 80;
+			JE_outTextAndDarken(VGAScreen, text_x, tempY, str, 15, 2, TINY_FONT);
 		}
-		JE_dString(VGAScreen, text_x, tempY, str, font);
+		else
+		{
+			JE_dString(VGAScreen, text_x, tempY, str, font);
+		}
 		free(str);
 	}
 }
@@ -2407,7 +2424,18 @@ void JE_drawMainMenuHelpText(void)
 	}
 	else if (curMenu < MENU_PLAY_NEXT_LEVEL || curMenu >= MENU_2_PLAYER_ARCADE)
 	{
-		memcpy(tempStr, mainMenuHelp[(menuHelp[curMenu][temp])-1], sizeof(tempStr));
+		if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 7)
+		{
+			snprintf(tempStr, sizeof(tempStr), "Debug: select a level.");
+		}
+		else if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 8)
+		{
+			memcpy(tempStr, mainMenuHelp[5 - 1], sizeof(tempStr));
+		}
+		else
+		{
+			memcpy(tempStr, mainMenuHelp[(menuHelp[curMenu][temp]) - 1], sizeof(tempStr));
+		}
 	}
 	else if (curMenu == MENU_KEYBOARD_CONFIG &&
 	         curSel[MENU_KEYBOARD_CONFIG] == 10)
@@ -2784,9 +2812,11 @@ void JE_menuFunction(JE_byte select)
 			load_debug_levels();
 			curMenu = MENU_DEBUG_PLAY_LEVEL;
 			newPal = 18;
+			/* clear ship area to avoid leftover graphics */
+			fill_rectangle_xy(VGAScreen, 1, 1, 145, 170, 0);
 			menuChoices[MENU_DEBUG_PLAY_LEVEL] = debugLevelCount + 2;
 			curSel[MENU_DEBUG_PLAY_LEVEL] = 2;
-			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][0], "Debug Level");
+			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][0], "Level Select");
 			for (x = 0; x < debugLevelCount; x++)
 			{
 				strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][x + 1], debugLevelName[x]);

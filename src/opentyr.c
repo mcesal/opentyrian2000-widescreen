@@ -824,6 +824,12 @@ int main(int argc, char *argv[])
 		xmas = xmas_time();
 
 	JE_loadHelpText();
+
+	/* Insert debug level option in the buy/sell menu */
+	strncpy(menuInt[1][7], menuInt[1][6], sizeof(menuInt[1][7]));
+	strncpy(menuInt[1][6], "Debug Play Level", sizeof(menuInt[1][6]));
+	menuInt[1][6][sizeof(menuInt[1][6]) - 1] = '\0';
+
 	/*debuginfo("Help text complete");*/
 
 	JE_loadConfiguration();

@@ -1985,7 +1985,8 @@ void JE_drawMenuChoices(void)
 
 	for (x = 2; x <= menuChoices[curMenu]; x++)
 	{
-		int tempY = 38 + (x-1) * 16;
+		int line_height = (curMenu == MENU_DEBUG_PLAY_LEVEL) ? 8 : 16;
+		int tempY = 38 + (x - 1) * line_height;
 
 		if (curMenu == MENU_FULL_GAME)
 		{
@@ -2008,9 +2009,9 @@ void JE_drawMenuChoices(void)
 		}
 
 		if (!(curMenu == MENU_PLAY_NEXT_LEVEL &&
-		      x == menuChoices[curMenu]))
+			x == menuChoices[curMenu]))
 		{
-			tempY -= 16;
+			tempY -= line_height;
 		}
 
 		if (curMenu == MENU_MOUSE_CONFIG)
@@ -2031,8 +2032,11 @@ void JE_drawMenuChoices(void)
 
 		unsigned int font = (curMenu == MENU_DEBUG_PLAY_LEVEL)
 			? TINY_FONT : SMALL_FONT_SHAPES;
-		int text_x = (curMenu == MENU_DEBUG_PLAY_LEVEL)
-			? JE_fontCenter(str, font) : 166;
+		int text_x = 166;
+		if (curMenu == MENU_DEBUG_PLAY_LEVEL)
+		{
+			text_x = 176;
+		}
 		JE_dString(VGAScreen, text_x, tempY, str, font);
 		free(str);
 	}

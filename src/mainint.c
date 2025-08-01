@@ -1554,7 +1554,7 @@ JE_boolean JE_inGameSetup(void)
 			inGameText[1],
 			inGameText[2],
 					   inGameText[3],
-					   "Debug",
+					   "Equipment",
 					   inGameText[4],
 					   inGameText[5],
 	};
@@ -1838,7 +1838,7 @@ JE_boolean JE_inGameSetup(void)
 				JE_playSampleNum(S_SELECT);
 
 				/* capture debug menu area */
-				for (int yy = 0; yy < DEBUG_MENU_HEIGHT; ++yy)
+				for (int yy = 0; yy < DEBUG_MENU_HEIGHT+10; ++yy)
 				{
 					memcpy(&debug_menu_backup[yy * DEBUG_MENU_WIDTH],
 						(Uint8*)VGAScreen2->pixels +
@@ -1849,7 +1849,7 @@ JE_boolean JE_inGameSetup(void)
 				JE_debugMenu(false);
 
 				/* restore debug menu area */
-				for (int yy = 0; yy < DEBUG_MENU_HEIGHT; ++yy)
+				for (int yy = 00; yy < DEBUG_MENU_HEIGHT+10; ++yy)
 				{
 					memcpy((Uint8*)VGAScreen->pixels +
 						(DEBUG_MENU_Y + yy) * VGAScreen->pitch + DEBUG_MENU_X,
@@ -2015,8 +2015,8 @@ void JE_debugMenu(bool center)
 	bool done = false;
 	while (!done)
 	{
-		JE_barShade(VGAScreen, 3 + off_x, 13 + off_y, 257 + off_x, 177 + off_y);
-		JE_barShade(VGAScreen, 5 + off_x, 15 + off_y, 255 + off_x, 175 + off_y);
+		JE_barShade(VGAScreen, 3 + off_x, 9 + off_y, 257 + off_x, 181 + off_y);
+		JE_barShade(VGAScreen, 5 + off_x, 11 + off_y, 255 + off_x, 179 + off_y);
 
 		for (size_t i = 0; i < menuCount; ++i)
 		{
@@ -2051,7 +2051,7 @@ void JE_debugMenu(bool center)
 			for (int j = (int)strlen(buf) - 1; j >= 0 && isspace((unsigned char)buf[j]); --j)
 				buf[j] = '\0';
 
-			draw_font_hv(VGAScreen, 250 + off_x, y, buf, small_font, right_aligned, 15, 4);
+			draw_font_hv(VGAScreen, 250 + off_x, y + 2, buf, small_font, right_aligned, 15, 4);
 		}
 
 		JE_showVGA();

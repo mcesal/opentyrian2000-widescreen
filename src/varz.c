@@ -774,7 +774,8 @@ void JE_doSpecialShot(JE_byte playerNum, uint *armor, uint *shield)
 	}  /*Main End*/
 
 	if (autoFireSpecial && playerNum == 1 && player[0].items.special > 0 &&
-		shotRepeat[SHOT_SPECIAL] == 0 && specialWait == 0 && flareDuration == 0)
+		shotRepeat[SHOT_SPECIAL] == 0 && specialWait == 0 && flareDuration == 0 &&
+		(button[0] || (superArcadeMode != SA_NONE && (button[1] || button[2]))))
 	{
 		JE_specialComplete(playerNum, player[0].items.special);
 	}

@@ -2834,6 +2834,7 @@ void JE_menuFunction(JE_byte select)
 			{
 				mainLevel = mapSection[curSelect - 2];
 			}
+			nextLevel = mainLevel;
 			jumpSection = true;
 		}
 		break;
@@ -2850,6 +2851,7 @@ void JE_menuFunction(JE_byte select)
 			mainLevel = debugMapSection[curSelect - 2];
 			lvlFileNum = debugLvlFileNum[curSelect - 2];
 			debugPlayMenu = false;
+			nextLevel = mainLevel;
 			jumpSection = true;
 		}
 		break;

@@ -113,6 +113,9 @@ static char debugLevelName[50][18];
 static uint debugLevelCount;
 static bool debugPlayMenu;
 
+#define DEBUG_MENU_MAX (50 + 2)
+static char debugMenuInt[DEBUG_MENU_MAX][18];
+
 static const JE_MenuChoiceType menuChoicesDefault = { 9, 9, 9, 0, 0, 11, (SAVE_FILES_NUM / 2) + 2, 0, 0, 6, 4, 6, 7, 5, 6, 0 };
 static const JE_byte menuEsc[MENU_MAX] = { 0, 1, 1, 1, 2, 3, 3, 1, 8, 0, 0, 11, 3, 0, 2, 1 };
 static const JE_byte itemAvailMap[7] = { 1, 2, 3, 9, 4, 6, 7 };
@@ -1998,7 +2001,10 @@ void JE_drawMenuHeader(void)
 			strcpy(tempStr, menuInt[3][performSave + 1]);
 			break;
 		default:
-			strcpy(tempStr, menuInt[curMenu + 1][0]);
+			if (curMenu == MENU_DEBUG_PLAY_LEVEL)
+				strcpy(tempStr, debugMenuInt[0]);
+			else
+				strcpy(tempStr, menuInt[curMenu + 1][0]);
 			break;
 	}
 	JE_dString(VGAScreen, 74 + JE_fontCenter(tempStr, FONT_SHAPES), 10, tempStr, FONT_SHAPES);
@@ -2055,15 +2061,19 @@ void JE_drawMenuChoices(void)
 			tempY += (x-2) * 8;
 		}
 
-		str = malloc(strlen(menuInt[curMenu + 1][x - 1]) + 2);
+		const char* entry = (curMenu == MENU_DEBUG_PLAY_LEVEL)
+			? debugMenuInt[x - 1]
+			: menuInt[curMenu + 1][x - 1];
+
+		str = malloc(strlen(entry) + 2);
 		if (curSel[curMenu] == x)
 		{
 			str[0] = '~';
-			strcpy(str + 1, menuInt[curMenu + 1][x - 1]);
+			strcpy(str + 1, entry);
 		}
 		else
 		{
-			strcpy(str, menuInt[curMenu + 1][x - 1]);
+			strcpy(str, entry);
 		}
 
 		unsigned int font = (curMenu == MENU_DEBUG_PLAY_LEVEL)
@@ -2843,14 +2853,16 @@ void JE_menuFunction(JE_byte select)
 			newPal = 18;
 			/* clear ship area to avoid leftover graphics */
 			fill_rectangle_xy(VGAScreen, 1, 1, 145, 170, 0);
-			menuChoices[MENU_DEBUG_PLAY_LEVEL] = debugLevelCount + 2;
+			unsigned int count = MIN(debugLevelCount, DEBUG_MENU_MAX - 2);
+			menuChoices[MENU_DEBUG_PLAY_LEVEL] = count + 2;
 			curSel[MENU_DEBUG_PLAY_LEVEL] = 2;
-			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][0], "Level Select");
-			for (x = 0; x < debugLevelCount; x++)
+
+			SDL_strlcpy(debugMenuInt[0], "Level Select", sizeof(debugMenuInt[0]));
+			for (x = 0; x < count; x++)
 			{
-				strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][x + 1], debugLevelName[x]);
+				SDL_strlcpy(debugMenuInt[x + 1], debugLevelName[x], sizeof(debugMenuInt[x + 1]));
 			}
-			strcpy(menuInt[MENU_DEBUG_PLAY_LEVEL + 1][debugLevelCount + 1], miscText[5]);
+			SDL_strlcpy(debugMenuInt[count + 1], miscText[5], sizeof(debugMenuInt[count + 1]));
 			debugPlayMenu = true;
 			break;
 		case 8: //equipment

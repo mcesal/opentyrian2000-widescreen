@@ -4828,8 +4828,12 @@ redo:
 								}
 								else  // has infinite ammo
 								{
+									/*
 									// Tyrian 2000: weapons with charge stages do not auto-fire
 									if ((button[0] && !this_option->pwr) || button[1 + i])
+									*/
+
+									if (button[0] || button[1 + i])
 									{
 										b = player_shot_create(this_option->wport, shot_i, this_player->sidekick[i].x, this_player->sidekick[i].y, *mouseX_, *mouseY_, this_option->wpnum + this_player->sidekick[i].charge, playerNum_);
 

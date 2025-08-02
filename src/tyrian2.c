@@ -106,7 +106,7 @@ void JE_starShowVGA(void)
 		else if (starShowVGASpecialCode == 2 && processorType >= 2)
 		{
 			lighty = 172 - player[0].y;
-			lightx = 281 - player[0].x;
+			lightx = (PLAYFIELD_WIDTH - PLAYFIELD_X_SHIFT + 5) - player[0].x;
 
 			for (y = 184; y; y--)
 			{

@@ -68,7 +68,11 @@ void blit_background_row(SDL_Surface *surface, int x, int y, Uint8 **map)
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
 	
-	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	// Use two extra tiles to ensure the playfield is fully covered when the
+		// horizontal scroll position is negative.  A single extra tile left a
+		// small uncovered strip on the right edge of the playfield, resulting in
+		// intermittent black bars.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
 	const int row_width = tile_count * 24;
 	for (int y = 0; y < 28; y++)
 	{
@@ -116,7 +120,9 @@ void blit_background_row_blend(SDL_Surface *surface, int x, int y, Uint8 **map)
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
 	
-	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	// See comment in blit_background_row() above for rationale on the
+		// additional tile.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
 	const int row_width = tile_count * 24;
 	for (int y = 0; y < 28; y++)
 	{
@@ -160,7 +166,9 @@ void draw_background_1(SDL_Surface *surface)
 {
 	SDL_FillRect(surface, NULL, 0);
 	
-	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	// Two extra tiles guarantee full coverage regardless of horizontal
+		// scroll offset.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
 	Uint8** map = (Uint8**)mapYPos + mapXbpPos - tile_count;
 	
 	for (int i = -1; i < 7; i++)
@@ -175,7 +183,9 @@ void draw_background_2(SDL_Surface *surface)
 {
 	if (map2YDelayMax > 1 && backMove2 < 2)
 		backMove2 = (map2YDelay == 1) ? 1 : 0;
-	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	// Two extra tiles guarantee full coverage regardless of horizontal
+		// scroll offset.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
 	if (background2 != 0)
 	{
 		// water effect combines background 1 and 2 by synchronizing the x coordinate
@@ -212,7 +222,9 @@ void draw_background_2_blend(SDL_Surface *surface)
 	if (map2YDelayMax > 1 && backMove2 < 2)
 		backMove2 = (map2YDelay == 1) ? 1 : 0;
 	
-	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	// Two extra tiles guarantee full coverage regardless of horizontal
+		// scroll offset.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
 	Uint8** map = (Uint8**)mapY2Pos + mapX2bpPos - tile_count;
 	
 	for (int i = -1; i < 7; i++)
@@ -250,7 +262,9 @@ void draw_background_3(SDL_Surface *surface)
 		mapY3Pos -= 15;   /*Map Width*/
 	}
 	
-	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	// Two extra tiles guarantee full coverage regardless of horizontal
+		// scroll offset.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
 	Uint8** map = (Uint8**)mapY3Pos + mapX3bpPos - tile_count;
 	
 	for (int i = -1; i < 7; i++)

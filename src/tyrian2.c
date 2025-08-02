@@ -4236,20 +4236,20 @@ void JE_createNewEventEnemy(JE_byte enemyTypeOfs, JE_word enemyOffset, Sint16 un
 		switch (enemyOffset)
 		{
 		case 0:
-			enemy[b-1].ex = eventRec[eventLoc-1].eventdat2 - (mapX - 1) * 24;
-			enemy[b-1].ey -= backMove2;
+			enemy[b - 1].ex = eventRec[eventLoc - 1].eventdat2 - (mapX - 2) * 24;
+			enemy[b - 1].ey -= backMove2;
 			break;
 		case 25:
 		case 75:
-			enemy[b-1].ex = eventRec[eventLoc-1].eventdat2 - (mapX - 1) * 24 - 12;
-			enemy[b-1].ey -= backMove;
+			enemy[b - 1].ex = eventRec[eventLoc - 1].eventdat2 - (mapX - 2) * 24 - 12;
+			enemy[b - 1].ey -= backMove;
 			break;
 		case 50:
 			if (background3x1)
-				enemy[b-1].ex = eventRec[eventLoc-1].eventdat2 - (mapX - 1) * 24 - 12;
+				enemy[b - 1].ex = eventRec[eventLoc - 1].eventdat2 - (mapX - 2) * 24 - 12;
 			else
-				enemy[b-1].ex = eventRec[eventLoc-1].eventdat2 - mapX3 * 24 - 24 * 2 + 6;
-			enemy[b-1].ey -= backMove3;
+				enemy[b - 1].ex = eventRec[eventLoc - 1].eventdat2 - mapX3 * 24 - 24 + 6;
+			enemy[b - 1].ey -= backMove3;
 
 			if (background3x1b)
 				enemy[b-1].ex -= 6;

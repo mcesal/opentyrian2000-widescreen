@@ -360,26 +360,29 @@ void lava_filter(SDL_Surface *dst, SDL_Surface *src)
 		dst_pixel -= (dst_pitch - vga_width);  // in case pitch differs
 		src_pixel -= (src_pitch - vga_width);  // in case pitch differs
 
-		for (int x = vga_width - 1; x >= 0; x -= 8)
+		for (int x = vga_width; x > 0; )
 		{
 			int waver = abs(((w >> 9) & 0x0f) - 8) - 1;
 			w -= 8;
-			
-			for (int xi = 8 - 1; xi >= 0; --xi)
+
+			int count = MIN(8, x);
+			x -= count;
+
+			for (int xi = 0; xi < count; ++xi)
 			{
 				--dst_pixel;
 				--src_pixel;
-				
+
 				// value is average value of source pixel (2x), destination pixel above, and destination pixel below (all with waver)
 				// hue is red
 				Uint8 value = 0;
-				
+
 				if (src_pixel + waver >= src_pixel_ll)
 					value += (*(src_pixel + waver) & 0x0f) * 2;
 				value += *(dst_pixel + waver + dst_pitch) & 0x0f;
 				if (dst_pixel + waver - dst_pitch >= dst_pixel_ll)
 					value += *(dst_pixel + waver - dst_pitch) & 0x0f;
-				
+
 				*dst_pixel = (value / 4) | 0x70;
 			}
 		}
@@ -407,16 +410,19 @@ void water_filter(SDL_Surface *dst, SDL_Surface *src)
 		dst_pixel -= (dst_pitch - vga_width);  // in case pitch differs
 		src_pixel -= (src->pitch - vga_width);  // in case pitch differs
 
-		for (int x = vga_width - 1; x >= 0; x -= 8)
+		for (int x = vga_width; x > 0; )
 		{
 			int waver = abs(((w >> 10) & 0x07) - 4) - 1;
 			w -= 8;
-			
-			for (int xi = 8 - 1; xi >= 0; --xi)
+
+			int count = MIN(8, x);
+			x -= count;
+
+			for (int xi = 0; xi < count; ++xi)
 			{
 				--dst_pixel;
 				--src_pixel;
-				
+
 				// pixel is copied from source if not blue
 				// otherwise, value is average of value of source pixel and destination pixel below (with waver)
 				if ((*src_pixel & 0x30) == 0)

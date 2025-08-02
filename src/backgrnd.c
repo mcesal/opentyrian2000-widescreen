@@ -51,12 +51,12 @@ void JE_darkenBackground(JE_word neat)  /* wild detail level */
 	
 	for (y = 184; y; y--)
 	{
-		for (x = 264; x; x--)
+		for (x = PLAYFIELD_WIDTH; x; x--)
 		{
-			*s = ((((*s & 0x0f) << 4) - (*s & 0x0f) + ((((x - neat - y) >> 2) + *(s-2) + (y == 184 ? 0 : *(s-(VGAScreen->pitch-1)))) & 0x0f)) >> 4) | (*s & 0xf0);
+			*s = ((((*s & 0x0f) << 4) - (*s & 0x0f) + ((((x - neat - y) >> 2) + *(s - 2) + (y == 184 ? 0 : *(s - (VGAScreen->pitch - 1)))) & 0x0f)) >> 4) | (*s & 0xf0);
 			s++;
 		}
-		s += VGAScreen->pitch - 264;
+		s += VGAScreen->pitch - PLAYFIELD_WIDTH;
 	}
 }
 
@@ -285,12 +285,12 @@ void JE_filterScreen(JE_shortint col, JE_shortint int_)
 		
 		for (y = 184; y; y--)
 		{
-			for (x = 264; x; x--)
+			for (x = PLAYFIELD_WIDTH; x; x--)
 			{
 				*s = col | (*s & 0x0f);
 				s++;
 			}
-			s += VGAScreen->pitch - 264;
+			s += VGAScreen->pitch - PLAYFIELD_WIDTH;
 		}
 	}
 	
@@ -301,13 +301,13 @@ void JE_filterScreen(JE_shortint col, JE_shortint int_)
 		
 		for (y = 184; y; y--)
 		{
-			for (x = 264; x; x--)
+			for (x = PLAYFIELD_WIDTH; x; x--)
 			{
 				temp = (*s & 0x0f) + int_;
 				*s = (*s & 0xf0) | (temp >= 0x1f ? 0 : (temp >= 0x0f ? 0x0f : temp));
 				s++;
 			}
-			s += VGAScreen->pitch - 264;
+			s += VGAScreen->pitch - PLAYFIELD_WIDTH;
 		}
 	}
 }
@@ -322,7 +322,7 @@ void lava_filter(SDL_Surface *dst, SDL_Surface *src)
 	assert(src->format->BitsPerPixel == 8 && dst->format->BitsPerPixel == 8);
 	
 	/* we don't need to check for over-reading the pixel surfaces since we only
-	 * read from the top 185+1 scanlines, and there should be 320 */
+		 * read from the top 185+1 scanlines, and the playfield width is vga_width */
 	
 	const int dst_pitch = dst->pitch;
 	Uint8 *dst_pixel = (Uint8 *)dst->pixels + (185 * dst_pitch);
@@ -332,14 +332,14 @@ void lava_filter(SDL_Surface *dst, SDL_Surface *src)
 	const Uint8 *src_pixel = (Uint8 *)src->pixels + (185 * src->pitch);
 	const Uint8 * const src_pixel_ll = (Uint8 *)src->pixels;  // lower limit
 	
-	int w = 320 * 185 - 1;
+	int w = vga_width * 185 - 1;
 	
 	for (int y = 185 - 1; y >= 0; --y)
 	{
-		dst_pixel -= (dst_pitch - 320);  // in case pitch is not 320
-		src_pixel -= (src_pitch - 320);  // in case pitch is not 320
-		
-		for (int x = 320 - 1; x >= 0; x -= 8)
+		dst_pixel -= (dst_pitch - vga_width);  // in case pitch differs
+		src_pixel -= (src_pitch - vga_width);  // in case pitch differs
+
+		for (int x = vga_width - 1; x >= 0; x -= 8)
 		{
 			int waver = abs(((w >> 9) & 0x0f) - 8) - 1;
 			w -= 8;
@@ -372,21 +372,21 @@ void water_filter(SDL_Surface *dst, SDL_Surface *src)
 	Uint8 hue = smoothie_data[1] << 4;
 	
 	/* we don't need to check for over-reading the pixel surfaces since we only
-	 * read from the top 185+1 scanlines, and there should be 320 */
+		 * read from the top 185+1 scanlines, and the playfield width is vga_width */
 	
 	const int dst_pitch = dst->pitch;
 	Uint8 *dst_pixel = (Uint8 *)dst->pixels + (185 * dst_pitch);
 	
 	const Uint8 *src_pixel = (Uint8 *)src->pixels + (185 * src->pitch);
 	
-	int w = 320 * 185 - 1;
+	int w = vga_width * 185 - 1;
 	
 	for (int y = 185 - 1; y >= 0; --y)
 	{
-		dst_pixel -= (dst_pitch - 320);  // in case pitch is not 320
-		src_pixel -= (src->pitch - 320);  // in case pitch is not 320
-		
-		for (int x = 320 - 1; x >= 0; x -= 8)
+		dst_pixel -= (dst_pitch - vga_width);  // in case pitch differs
+		src_pixel -= (src->pitch - vga_width);  // in case pitch differs
+
+		for (int x = vga_width - 1; x >= 0; x -= 8)
 		{
 			int waver = abs(((w >> 10) & 0x07) - 4) - 1;
 			w -= 8;
@@ -422,7 +422,7 @@ void iced_blur_filter(SDL_Surface *dst, SDL_Surface *src)
 	
 	for (int y = 0; y < 184; ++y)
 	{
-		for (int x = 0; x < 320; ++x)
+		for (int x = 0; x < vga_width; ++x)
 		{
 			// value is average value of source pixel and destination pixel
 			// hue is icy blue
@@ -434,8 +434,8 @@ void iced_blur_filter(SDL_Surface *dst, SDL_Surface *src)
 			++src_pixel;
 		}
 		
-		dst_pixel += (dst->pitch - 320);  // in case pitch is not 320
-		src_pixel += (src->pitch - 320);  // in case pitch is not 320
+		dst_pixel += (dst->pitch - vga_width);  // in case pitch differs
+		src_pixel += (src->pitch - vga_width);  // in case pitch differs
 	}
 }
 
@@ -448,7 +448,7 @@ void blur_filter(SDL_Surface *dst, SDL_Surface *src)
 	
 	for (int y = 0; y < 184; ++y)
 	{
-		for (int x = 0; x < 320; ++x)
+		for (int x = 0; x < vga_width; ++x)
 		{
 			// value is average value of source pixel and destination pixel
 			// hue is source pixel hue
@@ -460,8 +460,8 @@ void blur_filter(SDL_Surface *dst, SDL_Surface *src)
 			++src_pixel;
 		}
 		
-		dst_pixel += (dst->pitch - 320);  // in case pitch is not 320
-		src_pixel += (src->pitch - 320);  // in case pitch is not 320
+		dst_pixel += (dst->pitch - vga_width);  // in case pitch differs
+		src_pixel += (src->pitch - vga_width);  // in case pitch differs
 	}
 }
 
@@ -480,9 +480,9 @@ int starfield_speed;
 
 void initialize_starfield(void)
 {
-	for (int i = MAX_STARS-1; i >= 0; --i)
+	for (int i = MAX_STARS - 1; i >= 0; --i)
 	{
-		starfield_stars[i].position = mt_rand() % 320 + mt_rand() % 200 * VGAScreen->pitch;
+		starfield_stars[i].position = mt_rand() % vga_width + mt_rand() % 200 * VGAScreen->pitch;
 		starfield_stars[i].speed = mt_rand() % 3 + 2;
 		starfield_stars[i].color = mt_rand() % 16 + STARFIELD_HUE;
 	}

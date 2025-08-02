@@ -122,8 +122,8 @@ void JE_mouseStart(void)
 
 		const MousePointerSpriteInfo *spriteInfo = &mousePointerSprites[mouseCursor];
 
-		mouseGrabX = MIN(MAX(spriteInfo->fx, mouse_x), 320 - (spriteInfo->w - spriteInfo->fx)) - spriteInfo->fx;
-		mouseGrabY = MIN(MAX(spriteInfo->fy, mouse_y), 200 - (spriteInfo->h - spriteInfo->fy)) - spriteInfo->fy;
+		mouseGrabX = MIN(MAX(spriteInfo->fx, mouse_x), vga_width - (spriteInfo->w - spriteInfo->fx)) - spriteInfo->fx;
+		mouseGrabY = MIN(MAX(spriteInfo->fy, mouse_y), vga_height - (spriteInfo->h - spriteInfo->fy)) - spriteInfo->fy;
 
 		JE_grabShapeTypeOne(mouseGrabX, mouseGrabY, mouseGrabShape);
 
@@ -144,8 +144,8 @@ void JE_mouseStartFilter(Uint8 filter)
 
 		const MousePointerSpriteInfo *spriteInfo = &mousePointerSprites[mouseCursor];
 
-		mouseGrabX = MIN(MAX(spriteInfo->fx, mouse_x), 320 - (spriteInfo->w - spriteInfo->fx)) - spriteInfo->fx;
-		mouseGrabY = MIN(MAX(spriteInfo->fy, mouse_y), 200 - (spriteInfo->h - spriteInfo->fy)) - spriteInfo->fy;
+		mouseGrabX = MIN(MAX(spriteInfo->fx, mouse_x), vga_width - (spriteInfo->w - spriteInfo->fx)) - spriteInfo->fx;
+		mouseGrabY = MIN(MAX(spriteInfo->fy, mouse_y), vga_height - (spriteInfo->h - spriteInfo->fy)) - spriteInfo->fy;
 
 		JE_grabShapeTypeOne(mouseGrabX, mouseGrabY, mouseGrabShape);
 

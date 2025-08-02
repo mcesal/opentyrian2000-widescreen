@@ -201,7 +201,7 @@ void setupMenu(void)
 	MenuItemId currentPicker = MENU_ITEM_NONE;
 	size_t pickerSelectedIndex = 0;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 4;
 	const int xMenuItem = 45;
 	const int xMenuItemName = xMenuItem;
@@ -218,7 +218,7 @@ void setupMenu(void)
 		if (restart)
 		{
 			JE_loadPic(VGAScreen2, 2, false);
-			fill_rectangle_wh(VGAScreen2, 0, 192, 320, 8, 0);
+			fill_rectangle_wh(VGAScreen2, 0, 192, vga_width, 8, 0);
 		}
 
 		// Restore background.

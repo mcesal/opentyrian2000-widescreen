@@ -98,7 +98,7 @@ void JE_starShowVGA(void)
 			src += game_screen->pitch * 183;
 			for (y = 0; y < 184; y++)
 			{
-				memmove(s, src, 264);
+				memmove(s, src, PLAYFIELD_WIDTH);
 				s += VGAScreenSeg->pitch;
 				src -= game_screen->pitch;
 			}
@@ -112,7 +112,7 @@ void JE_starShowVGA(void)
 			{
 				if (lighty > y)
 				{
-					for (x = 320 - 56; x; x--)
+					for (x = PLAYFIELD_WIDTH; x; x--)
 					{
 						*s = (*src & 0xf0) | ((*src >> 2) & 0x03);
 						s++;
@@ -121,7 +121,7 @@ void JE_starShowVGA(void)
 				}
 				else
 				{
-					for (x = 320 - 56; x; x--)
+					for (x = PLAYFIELD_WIDTH; x; x--)
 					{
 						lightdist = abs(lightx - x) + lighty;
 						if (lightdist < y)
@@ -134,15 +134,15 @@ void JE_starShowVGA(void)
 						src++;
 					}
 				}
-				s += 56 + VGAScreenSeg->pitch - 320;
-				src += 56 + VGAScreenSeg->pitch - 320;
+				s += VGAScreenSeg->pitch - PLAYFIELD_WIDTH;
+				src += game_screen->pitch - PLAYFIELD_WIDTH;
 			}
 		}
 		else
 		{
 			for (y = 0; y < 184; y++)
 			{
-				memmove(s, src, 264);
+				memmove(s, src, PLAYFIELD_WIDTH);
 				s += VGAScreenSeg->pitch;
 				src += game_screen->pitch;
 			}

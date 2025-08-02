@@ -68,7 +68,7 @@ bool xmas_prompt(void)
 
 	static const Uint8 dyDen = 128;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yPrompt = 85;
 	const int dyPrompt = 15;
 	const int wChoice = 40;
@@ -95,7 +95,7 @@ bool xmas_prompt(void)
 			{
 				if (flakes[i].y >= vga_height)
 				{
-					flakes[i].x = rand() % 320;
+					flakes[i].x = rand() % vga_width;
 					flakes[i].y = vga_height - 14 - flakes[i].y;
 					flakes[i].dyAcc = flakes[i].dyAdd;
 				}
@@ -110,7 +110,7 @@ bool xmas_prompt(void)
 				flakes[i].y += dy;
 			}
 
-			fill_rectangle_wh(VGAScreen, 0, 0, 320, 200, 0x8F);
+			fill_rectangle_wh(VGAScreen, 0, 0, vga_width, vga_height, 0x8F);
 
 			// Draw background snowflakes.
 			for (size_t i = 0; i < COUNTOF(flakes) * 2 / 3; ++i)

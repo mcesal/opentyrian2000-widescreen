@@ -207,7 +207,7 @@ void JE_helpSystem(JE_byte startTopic)
 	const size_t menuItemsCount = COUNTOF(topicName) - 1;
 	size_t selectedIndex = 0;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 30;
 	const int yMenuItems = 60;
 	/* reduce spacing to fit new Debug option */
@@ -390,7 +390,7 @@ static bool helpSystemPage(Uint8 *topic, bool *restart)
 {
 	Uint8 page = topicStart[*topic - 1];
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 
 	for (; ; )
 	{
@@ -644,7 +644,7 @@ bool JE_loadScreen(void)
 	const size_t menuItemsCount = 12;
 	size_t selectedIndex = 0;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 5;
 	const int xMenuItem = 10;
 	const int xMenuItemName = xMenuItem;
@@ -1134,7 +1134,7 @@ void JE_highScoreScreen(void)
 	// Five episodes, three timed battles
 	const size_t episodeCount = 8;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 3;
 	const int yEpisodeHeader = 30;
 	const int xLeftControl = 83;

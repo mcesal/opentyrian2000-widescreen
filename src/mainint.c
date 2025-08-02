@@ -181,15 +181,17 @@ void JE_drawPortConfigButtons(void) // rear weapon pattern indicator
 	if (twoPlayerMode)
 		return;
 
+	const int x_lit = HUD_X(285);
+	const int x_unlit = HUD_X(302);
 	if (player[0].weapon_mode == 1)
 	{
-		blit_sprite(VGAScreenSeg, 285, 44, OPTION_SHAPES, 18);  // lit
-		blit_sprite(VGAScreenSeg, 302, 44, OPTION_SHAPES, 19);  // unlit
+		blit_sprite(VGAScreenSeg, x_lit, 44, OPTION_SHAPES, 18);  // lit
+		blit_sprite(VGAScreenSeg, x_unlit, 44, OPTION_SHAPES, 19);  // unlit
 	}
 	else // == 2
 	{
-		blit_sprite(VGAScreenSeg, 285, 44, OPTION_SHAPES, 19);  // unlit
-		blit_sprite(VGAScreenSeg, 302, 44, OPTION_SHAPES, 18);  // lit
+		blit_sprite(VGAScreenSeg, x_lit, 44, OPTION_SHAPES, 19);  // unlit
+		blit_sprite(VGAScreenSeg, x_unlit, 44, OPTION_SHAPES, 18);  // lit
 	}
 }
 
@@ -4335,9 +4337,9 @@ redo:
 
 	if (!endLevel)
 	{
-		if (this_player->x > 256)
+		if (this_player->x > PLAYFIELD_WIDTH - 8)
 		{
-			this_player->x = 256;
+			this_player->x = PLAYFIELD_WIDTH - 8;
 			constantLastX = -constantLastX;
 		}
 		if (this_player->x < 40)
@@ -4800,7 +4802,8 @@ redo:
 
 										// draw sidekick refill ammo gauge
 										const int y = hud_sidekick_y[twoPlayerMode ? 1 : 0][i] + 13;
-										draw_segmented_gauge(VGAScreenSeg, 284, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
+										const int hud_x = HUD_X(284);
+										draw_segmented_gauge(VGAScreenSeg, hud_x, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
 									}
 
 									if (button[1 + i] && (cheatInfiniteSidekickAmmo || this_player->sidekick[i].ammo > 0))
@@ -4821,8 +4824,9 @@ redo:
 										const int y = hud_sidekick_y[twoPlayerMode ? 1 : 0][i] + 13;
 										if (!cheatInfiniteSidekickAmmo)
 										{
-											fill_rectangle_xy(VGAScreenSeg, 284, y, 312, y + 2, 0);
-											draw_segmented_gauge(VGAScreenSeg, 284, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
+											const int hud_x = HUD_X(284);
+											fill_rectangle_xy(VGAScreenSeg, hud_x, y, hud_x + 28, y + 2, 0);
+											draw_segmented_gauge(VGAScreenSeg, hud_x, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
 										}
 									}
 								}

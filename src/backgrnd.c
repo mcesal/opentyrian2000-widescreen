@@ -68,18 +68,20 @@ void blit_background_row(SDL_Surface *surface, int x, int y, Uint8 **map)
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
 	
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	const int row_width = tile_count * 24;
 	for (int y = 0; y < 28; y++)
 	{
 		// not drawing on screen yet; skip y
-		if ((pixels + (12 * 24)) < pixels_ll)
+		if ((pixels + row_width) < pixels_ll)
 		{
 			pixels += surface->pitch;
 			continue;
 		}
-		
-		for (int tile = 0; tile < 12; tile++)
+
+		for (int tile = 0; tile < tile_count; tile++)
 		{
-			Uint8 *data = *(map + tile);
+			Uint8* data = *(map + tile);
 			
 			// no tile; skip tile
 			if (data == NULL)
@@ -102,7 +104,7 @@ void blit_background_row(SDL_Surface *surface, int x, int y, Uint8 **map)
 			}
 		}
 		
-		pixels += surface->pitch - 12 * 24;
+		pixels += surface->pitch - row_width;
 	}
 }
 
@@ -114,18 +116,20 @@ void blit_background_row_blend(SDL_Surface *surface, int x, int y, Uint8 **map)
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
 	
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	const int row_width = tile_count * 24;
 	for (int y = 0; y < 28; y++)
 	{
 		// not drawing on screen yet; skip y
-		if ((pixels + (12 * 24)) < pixels_ll)
+		if ((pixels + row_width) < pixels_ll)
 		{
 			pixels += surface->pitch;
 			continue;
 		}
-		
-		for (int tile = 0; tile < 12; tile++)
+
+		for (int tile = 0; tile < tile_count; tile++)
 		{
-			Uint8 *data = *(map + tile);
+			Uint8* data = *(map + tile);
 			
 			// no tile; skip tile
 			if (data == NULL)
@@ -148,7 +152,7 @@ void blit_background_row_blend(SDL_Surface *surface, int x, int y, Uint8 **map)
 			}
 		}
 		
-		pixels += surface->pitch - 12 * 24;
+		pixels += surface->pitch - row_width;
 	}
 }
 
@@ -156,7 +160,8 @@ void draw_background_1(SDL_Surface *surface)
 {
 	SDL_FillRect(surface, NULL, 0);
 	
-	Uint8 **map = (Uint8 **)mapYPos + mapXbpPos - 12;
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	Uint8** map = (Uint8**)mapYPos + mapXbpPos - tile_count;
 	
 	for (int i = -1; i < 7; i++)
 	{
@@ -170,13 +175,13 @@ void draw_background_2(SDL_Surface *surface)
 {
 	if (map2YDelayMax > 1 && backMove2 < 2)
 		backMove2 = (map2YDelay == 1) ? 1 : 0;
-	
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
 	if (background2 != 0)
 	{
 		// water effect combines background 1 and 2 by synchronizing the x coordinate
 		int x = smoothies[1] ? mapXPos : mapX2Pos;
-		
-		Uint8 **map = (Uint8 **)mapY2Pos + (smoothies[1] ? mapXbpPos : mapX2bpPos) - 12;
+
+		Uint8** map = (Uint8**)mapY2Pos + (smoothies[1] ? mapXbpPos : mapX2bpPos) - tile_count;
 		
 		for (int i = -1; i < 7; i++)
 		{
@@ -207,7 +212,8 @@ void draw_background_2_blend(SDL_Surface *surface)
 	if (map2YDelayMax > 1 && backMove2 < 2)
 		backMove2 = (map2YDelay == 1) ? 1 : 0;
 	
-	Uint8 **map = (Uint8 **)mapY2Pos + mapX2bpPos - 12;
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	Uint8** map = (Uint8**)mapY2Pos + mapX2bpPos - tile_count;
 	
 	for (int i = -1; i < 7; i++)
 	{
@@ -244,7 +250,8 @@ void draw_background_3(SDL_Surface *surface)
 		mapY3Pos -= 15;   /*Map Width*/
 	}
 	
-	Uint8 **map = (Uint8 **)mapY3Pos + mapX3bpPos - 12;
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 1;
+	Uint8** map = (Uint8**)mapY3Pos + mapX3bpPos - tile_count;
 	
 	for (int i = -1; i < 7; i++)
 	{

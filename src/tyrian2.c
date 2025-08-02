@@ -1224,8 +1224,8 @@ level_loop:
 			{
 				old_weapon_bar[i] = item_power;
 
-				int x = twoPlayerMode ? 286 : 289,
-				    y = (i == 0) ? (twoPlayerMode ? 6 : 17) : (twoPlayerMode ? 100 : 38);
+				int x = HUD_X(twoPlayerMode ? 286 : 289),
+					y = (i == 0) ? (twoPlayerMode ? 6 : 17) : (twoPlayerMode ? 100 : 38);
 
 				fill_rectangle_xy(VGAScreenSeg, x, y, x + 1 + 10 * 2, y + 2, 0);
 
@@ -1252,10 +1252,12 @@ level_loop:
 
 			if (temp != lastPower)
 			{
+				const int hud_x1 = HUD_X(269);
+				const int hud_x2 = HUD_X(276);
 				if (temp > lastPower)
-					fill_rectangle_xy(VGAScreenSeg, 269, 113 - 11 - temp, 276, 114 - 11 - lastPower, 113 + temp / 7);
+					fill_rectangle_xy(VGAScreenSeg, hud_x1, 113 - 11 - temp, hud_x2, 114 - 11 - lastPower, 113 + temp / 7);
 				else
-					fill_rectangle_xy(VGAScreenSeg, 269, 113 - 11 - lastPower, 276, 114 - 11 - temp, 0);
+					fill_rectangle_xy(VGAScreenSeg, hud_x1, 113 - 11 - lastPower, hud_x2, 114 - 11 - temp, 0);
 				
 				lastPower = temp;
 			}

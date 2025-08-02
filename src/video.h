@@ -71,6 +71,8 @@ void deinit_video(void);
 void JE_clr256(SDL_Surface *);
 void JE_showVGA(void);
 
+void set_menu_centered(bool centered);
+
 void mapScreenPointToWindow(Sint32 *inout_x, Sint32 *inout_y);
 void mapWindowPointToScreen(Sint32 *inout_x, Sint32 *inout_y);
 void scaleWindowDistanceToScreen(Sint32 *inout_x, Sint32 *inout_y);

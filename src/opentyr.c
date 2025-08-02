@@ -943,7 +943,9 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
+			set_menu_centered(false);
 			JE_main();
+			set_menu_centered(true);
 
 			if (trentWin)
 			{

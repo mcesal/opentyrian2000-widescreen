@@ -43,6 +43,10 @@ static SDL_Rect last_output_rect = { 0, 0, vga_width, vga_height };
 SDL_Surface *VGAScreen, *VGAScreenSeg;
 SDL_Surface *VGAScreen2;
 SDL_Surface *game_screen;
+static SDL_Surface* menu_screen;
+
+static const int menu_x_offset = (vga_width - 320) / 2;
+static int current_x_offset = (vga_width - 320) / 2;
 
 SDL_Window *main_window = NULL;
 static SDL_Renderer *main_window_renderer = NULL;
@@ -60,6 +64,7 @@ static int window_get_display_index(void);
 static void window_center_in_display(int display_index);
 static void calc_dst_render_rect(SDL_Surface *src_surface, SDL_Rect *dst_rect);
 static void scale_and_flip(SDL_Surface *);
+static void blit_with_offset(SDL_Surface* src, SDL_Surface* dst, int x_offset);
 
 void init_video(void)
 {
@@ -77,12 +82,14 @@ void init_video(void)
 	VGAScreen = VGAScreenSeg = SDL_CreateRGBSurface(0, vga_width, vga_height, 8, 0, 0, 0, 0);
 	VGAScreen2 = SDL_CreateRGBSurface(0, vga_width, vga_height, 8, 0, 0, 0, 0);
 	game_screen = SDL_CreateRGBSurface(0, vga_width, vga_height, 8, 0, 0, 0, 0);
+	menu_screen = SDL_CreateRGBSurface(0, vga_width, vga_height, 8, 0, 0, 0, 0);
 
 	// The game code writes to surface->pixels directly without locking, so make sure that we
 	// indeed created software surfaces that support this.
 	assert(!SDL_MUSTLOCK(VGAScreen));
 	assert(!SDL_MUSTLOCK(VGAScreen2));
 	assert(!SDL_MUSTLOCK(game_screen));
+	assert(!SDL_MUSTLOCK(menu_screen));
 
 	JE_clr256(VGAScreen);
 
@@ -120,6 +127,7 @@ void deinit_video(void)
 	SDL_FreeSurface(VGAScreenSeg);
 	SDL_FreeSurface(VGAScreen2);
 	SDL_FreeSurface(game_screen);
+	SDL_FreeSurface(menu_screen);
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
@@ -311,9 +319,17 @@ void JE_clr256(SDL_Surface *screen)
 	SDL_FillRect(screen, NULL, 0);
 }
 
-void JE_showVGA(void) 
-{ 
-	scale_and_flip(VGAScreen); 
+void JE_showVGA(void)
+{
+	if (current_x_offset != 0)
+	{
+		blit_with_offset(VGAScreen, menu_screen, current_x_offset);
+		scale_and_flip(menu_screen);
+	}
+	else
+	{
+		scale_and_flip(VGAScreen);
+	}
 }
 
 static void calc_dst_render_rect(SDL_Surface *const src_surface, SDL_Rect *const dst_rect)
@@ -400,17 +416,34 @@ static void scale_and_flip(SDL_Surface *src_surface)
 	last_output_rect = dst_rect;
 }
 
+static void blit_with_offset(SDL_Surface* src, SDL_Surface* dst, int x_offset)
+{
+	for (int y = 0; y < vga_height; ++y)
+	{
+		Uint8* src_row = (Uint8*)src->pixels + y * src->pitch;
+		Uint8* dst_row = (Uint8*)dst->pixels + y * dst->pitch;
+		memset(dst_row, 0, dst->pitch);
+		memcpy(dst_row + x_offset, src_row, 320);
+	}
+}
+
+void set_menu_centered(bool centered)
+{
+	current_x_offset = centered ? menu_x_offset : 0;
+}
+
 /** Maps a specified point in game screen coordinates to window coordinates. */
 void mapScreenPointToWindow(Sint32 *const inout_x, Sint32 *const inout_y)
 {
-	*inout_x = (2 * *inout_x + 1) * last_output_rect.w / (2 * VGAScreen->w) + last_output_rect.x;
+	Sint32 x = *inout_x + current_x_offset;
+	*inout_x = (2 * x + 1) * last_output_rect.w / (2 * VGAScreen->w) + last_output_rect.x;
 	*inout_y = (2 * *inout_y + 1) * last_output_rect.h / (2 * VGAScreen->h) + last_output_rect.y;
 }
 
 /** Maps a specified point in window coordinates to game screen coordinates. */
 void mapWindowPointToScreen(Sint32 *const inout_x, Sint32 *const inout_y)
 {
-	*inout_x = (2 * (*inout_x - last_output_rect.x) + 1) * VGAScreen->w / (2 * last_output_rect.w);
+	*inout_x = (2 * (*inout_x - last_output_rect.x) + 1) * VGAScreen->w / (2 * last_output_rect.w) - current_x_offset;
 	*inout_y = (2 * (*inout_y - last_output_rect.y) + 1) * VGAScreen->h / (2 * last_output_rect.h);
 }
 

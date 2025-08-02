@@ -35,6 +35,7 @@
   */
 #define HUD_WIDTH 56
 #define PLAYFIELD_WIDTH (vga_width - HUD_WIDTH)
+#define PLAYFIELD_X_SHIFT (-12)
 #define HUD_X(x) ((x) + (vga_width - 320))
 
 typedef enum {

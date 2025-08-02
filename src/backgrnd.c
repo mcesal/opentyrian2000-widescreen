@@ -173,8 +173,8 @@ void draw_background_1(SDL_Surface *surface)
 	
 	for (int i = -1; i < 7; i++)
 	{
-		blit_background_row(surface, mapXPos, (i * 28) + backPos, map);
-		
+		blit_background_row(surface, mapXPos + PLAYFIELD_X_SHIFT, (i * 28) + backPos, map);
+
 		map += 14;
 	}
 }
@@ -189,7 +189,7 @@ void draw_background_2(SDL_Surface *surface)
 	if (background2 != 0)
 	{
 		// water effect combines background 1 and 2 by synchronizing the x coordinate
-		int x = smoothies[1] ? mapXPos : mapX2Pos;
+		int x = (smoothies[1] ? mapXPos : mapX2Pos) + PLAYFIELD_X_SHIFT;
 
 		Uint8** map = (Uint8**)mapY2Pos + (smoothies[1] ? mapXbpPos : mapX2bpPos) - tile_count;
 		
@@ -229,8 +229,8 @@ void draw_background_2_blend(SDL_Surface *surface)
 	
 	for (int i = -1; i < 7; i++)
 	{
-		blit_background_row_blend(surface, mapX2Pos, (i * 28) + backPos2, map);
-		
+		blit_background_row_blend(surface, mapX2Pos + PLAYFIELD_X_SHIFT, (i * 28) + backPos2, map);
+
 		map += 14;
 	}
 	
@@ -269,8 +269,8 @@ void draw_background_3(SDL_Surface *surface)
 	
 	for (int i = -1; i < 7; i++)
 	{
-		blit_background_row(surface, mapX3Pos, (i * 28) + backPos3, map);
-		
+		blit_background_row(surface, mapX3Pos + PLAYFIELD_X_SHIFT, (i * 28) + backPos3, map);
+
 		map += 15;
 	}
 }

@@ -1357,7 +1357,7 @@ level_loop:
 	/*-----------------------Ground Enemy------------------------*/
 	lastEnemyOnScreen = enemyOnScreen;
 
-	tempMapXOfs = mapXOfs;
+	tempMapXOfs = mapXOfs + PLAYFIELD_X_SHIFT;
 	tempBackMove = backMove;
 	JE_drawEnemy(50);
 	JE_drawEnemy(100);
@@ -1428,7 +1428,7 @@ level_loop:
 	{
 		lastEnemyOnScreen = enemyOnScreen;
 
-		tempMapXOfs = mapX2Ofs;
+		tempMapXOfs = mapX2Ofs + PLAYFIELD_X_SHIFT;
 		tempBackMove = 0;
 		JE_drawEnemy(25);
 
@@ -1445,7 +1445,7 @@ level_loop:
 	/* Draw Top Enemy */
 	if (!topEnemyOver)
 	{
-		tempMapXOfs = (background3x1 == 0) ? oldMapX3Ofs : mapXOfs;
+		tempMapXOfs = ((background3x1 == 0) ? oldMapX3Ofs : mapXOfs) + PLAYFIELD_X_SHIFT;
 		tempBackMove = backMove3;
 		JE_drawEnemy(75);
 	}
@@ -1887,7 +1887,7 @@ draw_player_shot_loop_end:
 	/* Draw Top Enemy */
 	if (topEnemyOver)
 	{
-		tempMapXOfs = (background3x1 == 0) ? oldMapX3Ofs : oldMapXOfs;
+		tempMapXOfs = ((background3x1 == 0) ? oldMapX3Ofs : oldMapXOfs) + PLAYFIELD_X_SHIFT;
 		tempBackMove = backMove3;
 		JE_drawEnemy(75);
 	}
@@ -1897,7 +1897,7 @@ draw_player_shot_loop_end:
 	{
 		lastEnemyOnScreen = enemyOnScreen;
 
-		tempMapXOfs = mapX2Ofs;
+		tempMapXOfs = mapX2Ofs + PLAYFIELD_X_SHIFT;
 		tempBackMove = 0;
 		JE_drawEnemy(25);
 

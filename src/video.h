@@ -23,7 +23,7 @@
 
 #include "SDL.h"
 
-#define vga_width 355
+#define vga_width 356
 #define vga_height 200
 
 typedef enum {

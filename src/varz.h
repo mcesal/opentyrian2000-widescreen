@@ -94,7 +94,7 @@ struct JE_SingleEnemyType
 	JE_word     enemydie; /* Enemy created when this one dies */
 	JE_boolean  enemyground;
 	JE_byte     explonum;
-	JE_word     mapoffset;
+	JE_integer  mapoffset;
 	JE_boolean  scoreitem;
 
 	JE_boolean  special;

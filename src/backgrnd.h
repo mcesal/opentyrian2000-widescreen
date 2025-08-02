@@ -29,7 +29,7 @@ extern JE_word backPos, backPos2, backPos3;
 extern JE_word backMove, backMove2, backMove3;
 extern JE_word mapX, mapY, mapX2, mapX3, mapY2, mapY3;
 extern JE_byte **mapYPos, **mapY2Pos, **mapY3Pos;
-extern JE_word mapXPos, oldMapXOfs, mapXOfs, mapX2Ofs, mapX2Pos, mapX3Pos, oldMapX3Ofs, mapX3Ofs, tempMapXOfs;
+extern JE_integer mapXPos, oldMapXOfs, mapXOfs, mapX2Ofs, mapX2Pos, mapX3Pos, oldMapX3Ofs, mapX3Ofs, tempMapXOfs;
 extern intptr_t mapXbpPos, mapX2bpPos, mapX3bpPos;
 extern JE_byte map1YDelay, map1YDelayMax, map2YDelay, map2YDelayMax;
 extern JE_boolean anySmoothies;  // if yes, I want one :D

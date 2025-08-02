@@ -35,7 +35,7 @@ JE_word backMove, backMove2, backMove3;
 /*Main Maps*/
 JE_word mapX, mapY, mapX2, mapX3, mapY2, mapY3;
 JE_byte **mapYPos, **mapY2Pos, **mapY3Pos;
-JE_word mapXPos, oldMapXOfs, mapXOfs, mapX2Ofs, mapX2Pos, mapX3Pos, oldMapX3Ofs, mapX3Ofs, tempMapXOfs;
+JE_integer mapXPos, oldMapXOfs, mapXOfs, mapX2Ofs, mapX2Pos, mapX3Pos, oldMapX3Ofs, mapX3Ofs, tempMapXOfs;
 intptr_t mapXbpPos, mapX2bpPos, mapX3bpPos;
 JE_byte map1YDelay, map1YDelayMax, map2YDelay, map2YDelayMax;
 

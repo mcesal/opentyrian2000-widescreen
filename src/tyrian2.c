@@ -210,7 +210,7 @@ void JE_drawEnemy(int enemyOffset) // actually does a whole lot more than just d
 				}
 			}
 
-			if (enemy[i].ex + tempMapXOfs > -29 && enemy[i].ex + tempMapXOfs < PLAYFIELD_WIDTH)
+			if (enemy[i].ex + tempMapXOfs > -29 && enemy[i].ex + tempMapXOfs < PLAYFIELD_WIDTH + 29)
 			{
 				if (enemy[i].aniactive == 1)
 				{

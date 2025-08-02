@@ -2029,20 +2029,20 @@ void JE_drawMenuChoices(void)
 		{
 			tempY = 38 + (x - 1) * line_height;
 		}
-
+		/* extra spacing after "Start Level" */
 		if (curMenu == MENU_FULL_GAME && x == 7)
 		{
-			/* extra spacing after "Start Level" */
+			
 			tempY += 16;
 		}
 		if (curMenu == MENU_FULL_GAME && x == 8)
 		{
-			/* extra spacing after "Start Level" */
+
 			tempY += 16;
 		}
 		if (curMenu == MENU_FULL_GAME && x == 9)
 		{
-			/* extra spacing after "Start Level" */
+
 			tempY += 16;
 		}
 

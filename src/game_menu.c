@@ -230,6 +230,9 @@ void JE_itemScreen(void)
 {
 	bool quit = false;
 
+	/* Center the buy/sell screen independently from the gameplay HUD */
+	set_menu_centered(true);
+
 	if (shopSpriteSheet.data == NULL)
 		JE_loadCompShapes(&shopSpriteSheet, '1');
 
@@ -311,6 +314,8 @@ void JE_itemScreen(void)
 
 	do
 	{
+		/* Re-apply centering after returning from submenus */
+		set_menu_centered(true);
 		quit = false;
 
 		JE_getShipInfo();
@@ -1728,6 +1733,8 @@ void JE_itemScreen(void)
 		}
 	}
 #endif
+
+	set_menu_centered(false);
 
 	if (gameLoaded)
 		fade_black(10);

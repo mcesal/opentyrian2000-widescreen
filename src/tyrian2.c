@@ -298,7 +298,7 @@ void JE_drawEnemy(int enemyOffset) // actually does a whole lot more than just d
 			enemy[i].ey += enemy[i].fixedmovey;
 
 			enemy[i].ex += enemy[i].exc;
-			if (enemy[i].ex < -80 || enemy[i].ex > 340)
+			if (enemy[i].ex < -80 || enemy[i].ex > vga_width + 20)
 				goto enemy_gone;
 
 			enemy[i].ey += enemy[i].eyc;
@@ -327,13 +327,13 @@ enemy_still_exists:
 			{
 				if (enemy[i].ex < -5)
 					enemy[i].ex++;
-				if (enemy[i].ex > 245)
+				if (enemy[i].ex > PLAYFIELD_WIDTH - 19)
 					enemy[i].ex--;
 			}
 
 			enemy[i].ey += tempBackMove;
 
-			if (enemy[i].ex <= -24 || enemy[i].ex >= 296)
+			if (enemy[i].ex <= -24 || enemy[i].ex >= vga_width - 24)
 				goto draw_enemy_end;
 
 			JE_integer tempX = enemy[i].ex;

@@ -210,7 +210,7 @@ void JE_drawEnemy(int enemyOffset) // actually does a whole lot more than just d
 				}
 			}
 
- 			if (enemy[i].ex + tempMapXOfs > -29 && enemy[i].ex + tempMapXOfs < 300)
+			if (enemy[i].ex + tempMapXOfs > -29 && enemy[i].ex + tempMapXOfs < PLAYFIELD_WIDTH)
 			{
 				if (enemy[i].aniactive == 1)
 				{
@@ -769,9 +769,21 @@ start_level_first:
 	
 	JE_loadPic(VGAScreen, twoPlayerMode ? 6 : 3, false);
 
+	// Relocate the HUD to the new right edge when the playfield is wider
+	const int hud_shift = vga_width - 320;
+	if (hud_shift > 0)
+	{
+		for (int y = 0; y < vga_height; ++y)
+		{
+			Uint8* row = (Uint8*)VGAScreen->pixels + y * VGAScreen->pitch;
+			memmove(row + PLAYFIELD_WIDTH, row + 320 - HUD_WIDTH, HUD_WIDTH);
+			memset(row + 320 - HUD_WIDTH, 0, hud_shift);
+		}
+	}
+
 	JE_drawOptions();
 
-	JE_outText(VGAScreen, 268, twoPlayerMode ? 76 : 118, levelName, 12, 4);
+	JE_outText(VGAScreen, HUD_X(268), twoPlayerMode ? 76 : 118, levelName, 12, 4);
 
 	JE_showVGA();
 	JE_gammaCorrect(&colors, gammaCorrection);

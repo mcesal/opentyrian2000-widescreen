@@ -23,8 +23,8 @@
 
 #include "SDL.h"
 
-#define vga_width 320
-#define vga_height 180
+#define vga_width 355
+#define vga_height 200
 
 typedef enum {
 	SCALE_CENTER,

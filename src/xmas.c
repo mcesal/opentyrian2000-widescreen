@@ -93,10 +93,10 @@ bool xmas_prompt(void)
 
 			for (size_t i = 0; i < COUNTOF(flakes); ++i)
 			{
-				if (flakes[i].y >= 200)
+				if (flakes[i].y >= vga_height)
 				{
 					flakes[i].x = rand() % 320;
-					flakes[i].y = 200 - 14 - flakes[i].y;
+					flakes[i].y = vga_height - 14 - flakes[i].y;
 					flakes[i].dyAcc = flakes[i].dyAdd;
 				}
 

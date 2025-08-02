@@ -1105,7 +1105,7 @@ static void DE_generateRings(SDL_Surface * screen, Uint8 pixel)
 			tempRadian = mt_rand_lt1() * (2 * M_PI);
 			tempPosY2 = tempPosY1 + roundf(cosf(tempRadian) * (mt_rand_lt1() * 0.1f + 0.9f) * tempSize);
 			tempPosX2 = tempPosX1 + roundf(sinf(tempRadian) * (mt_rand_lt1() * 0.1f + 0.9f) * tempSize);
-			if ((tempPosY2 > 12) && (tempPosY2 < 200) &&
+			if ((tempPosY2 > 12) && (tempPosY2 < vga_height) &&
 			    (tempPosX2 > 0) && (tempPosX2 < 319))
 			{
 				((Uint8 *)screen->pixels)[tempPosX2 + tempPosY2 * screen->pitch] = pixel;
@@ -1810,7 +1810,7 @@ static void DE_RunTickExplosions(void)
 				tempPosX -= 320;
 
 			/* We don't draw our explosion if it's out of bounds vertically */
-			if (tempPosY >= 200 || tempPosY <= 15)
+			if (tempPosY >= vga_height || tempPosY <= 15)
 				continue;
 
 			/* And now the drawing.  There are only two types of explosions

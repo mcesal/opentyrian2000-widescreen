@@ -311,7 +311,7 @@ int JE_playRunSkipDump(Uint8 *incomingBuffer, unsigned int IncomingBufferLength)
 	/* 320x200 is the only supported format.
 	 * Assert is here as a hint should our screen size ever changes.
 	 * As for how to decompress to the wrong screen size... */
-	assert(VGAScreen->h * VGAScreen->pitch == 320 * 200);
+	assert(VGAScreen->h * VGAScreen->pitch == vga_width * vga_height);
 
 	while (true)
 	{

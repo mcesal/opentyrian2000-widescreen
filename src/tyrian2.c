@@ -1953,7 +1953,7 @@ draw_player_shot_loop_end:
 			}
 			explosions[j].y += explosions[j].deltaY;
 
-			if (explosions[j].y > 200 - 14)
+			if (explosions[j].y > vga_height - 14)
 			{
 				explosions[j].ttl = 0;
 			}
@@ -2411,7 +2411,7 @@ void JE_loadMap(void)
 
 	char buffer[256];
 	int i;
-	Uint8 pic_buffer[320*200]; /* screen buffer, 8-bit specific */
+	Uint8 pic_buffer[vga_width * vga_height]; /* screen buffer, 8-bit specific */
 	Uint8 *vga, *pic, *vga2; /* screen pointer, 8-bit specific */
 
 	lastCubeMax = cubeMax;
@@ -2889,7 +2889,7 @@ new_game:
 
 									setDelay(1);
 
-									for (y = 0; y < 200; y++)
+									for (y = 0; y < vga_height; y++)
 									{
 										memcpy(vga, vga2 + z, 319 - z);
 										vga += 320 - z;

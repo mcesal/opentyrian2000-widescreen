@@ -80,34 +80,34 @@ void JE_starlib_main(void)
 		surf = VGAScreen->pixels;
 
 		/* Calculate the offset to where we wish to draw */
-		off = (stars->lastX)+(stars->lastY)*320;
+		off = (stars->lastX) + (stars->lastY) * vga_width;
 
 		/* We don't want trails in our star field.  Erase the old graphic */
-		if (off >= 640 && off < (320*200)-640)
+		if (off >= vga_width * 2 && off < (vga_width * vga_height) - vga_width * 2)
 		{
 			surf[off] = 0; /* Shade Level 0 */
 
-			surf[off-1] = 0; /* Shade Level 1, 2 */
-			surf[off+1] = 0;
-			surf[off-2] = 0;
-			surf[off+2] = 0;
+			surf[off - 1] = 0; /* Shade Level 1, 2 */
+			surf[off + 1] = 0;
+			surf[off - 2] = 0;
+			surf[off + 2] = 0;
 
-			surf[off-320] = 0;
-			surf[off+320] = 0;
-			surf[off-640] = 0;
-			surf[off+640] = 0;
+			surf[off - vga_width] = 0;
+			surf[off + vga_width] = 0;
+			surf[off - vga_width * 2] = 0;
+			surf[off + vga_width * 2] = 0;
 		}
 
 		/* Move star */
 		tempZ = stars->spZ;
-		tempX = (stars->spX / tempZ) + 160;
-		tempY = (stars->spY / tempZ) + 100;
+		tempX = (stars->spX / tempZ) + vga_width / 2;
+		tempY = (stars->spY / tempZ) + vga_height / 2;
 		tempZ -=  starlib_speed;
 
 		/* If star is out of range, make a new one */
-		if (tempZ <=  0 ||
-		    tempY ==  0 || tempY > 198 ||
-		    tempX > 318 || tempX <   1)
+		if (tempZ <= 0 ||
+			tempY == 0 || tempY > vga_height - 2 ||
+			tempX > vga_width - 2 || tempX < 1)
 		{
 			stars->spZ = 500;
 
@@ -122,7 +122,7 @@ void JE_starlib_main(void)
 			stars->lastY = tempY;
 			stars->spZ = tempZ;
 
-			off = tempX+tempY*320;
+			off = tempX + tempY * vga_width;
 
 			if (grayB)
 				tempCol = tempZ >> 1;
@@ -130,21 +130,21 @@ void JE_starlib_main(void)
 				tempCol = pColor+((tempZ >> 4) & 31);
 
 			/* Draw the pixel! */
-			if (off >= 640 && off < (320*200)-640)
+			if (off >= vga_width * 2 && off < (vga_width * vga_height) - vga_width * 2)
 			{
 				surf[off] = tempCol;
 
 				tempCol += 72;
-				surf[off-1] = tempCol;
-				surf[off+1] = tempCol;
-				surf[off-320] = tempCol;
-				surf[off+320] = tempCol;
+				surf[off - 1] = tempCol;
+				surf[off + 1] = tempCol;
+				surf[off - vga_width] = tempCol;
+				surf[off + vga_width] = tempCol;
 
 				tempCol += 72;
-				surf[off-2] = tempCol;
-				surf[off+2] = tempCol;
-				surf[off-640] = tempCol;
-				surf[off+640] = tempCol;
+				surf[off - 2] = tempCol;
+				surf[off + 2] = tempCol;
+				surf[off - vga_width * 2] = tempCol;
+				surf[off + vga_width * 2] = tempCol;
 			}
 		}
 	}

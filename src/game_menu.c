@@ -2030,12 +2030,20 @@ void JE_drawMenuChoices(void)
 			tempY = 38 + (x - 1) * line_height;
 		}
 
-		if (curMenu == MENU_FULL_GAME)
+		if (curMenu == MENU_FULL_GAME && x == 7)
 		{
-			if (x == menuChoices[MENU_FULL_GAME])
-			{
-				tempY += 16;
-			}
+			/* extra spacing after "Start Level" */
+			tempY += 16;
+		}
+		if (curMenu == MENU_FULL_GAME && x == 8)
+		{
+			/* extra spacing after "Start Level" */
+			tempY += 16;
+		}
+		if (curMenu == MENU_FULL_GAME && x == 9)
+		{
+			/* extra spacing after "Start Level" */
+			tempY += 16;
 		}
 
 		if (curMenu == MENU_2_PLAYER_ARCADE)
@@ -2461,11 +2469,11 @@ void JE_drawMainMenuHelpText(void)
 	{
 		if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 7)
 		{
-			snprintf(tempStr, sizeof(tempStr), "Debug: select a level.");
+			snprintf(tempStr, sizeof(tempStr), "Debug: equip your ship.");
 		}
 		else if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 8)
 		{
-			snprintf(tempStr, sizeof(tempStr), "Debug: equip your ship.");
+			snprintf(tempStr, sizeof(tempStr), "Debug: select a level.");
 		}
 		else if (curMenu == MENU_FULL_GAME && curSel[curMenu] == 9)
 		{
@@ -2847,7 +2855,13 @@ void JE_menuFunction(JE_byte select)
 			}
 			strcpy(menuInt[4][x + 1], miscText[5]);
 			break;
-		case 7: // debug play level
+		case 7: //equipment
+			JE_debugMenu(true);
+			ensure_equipped_items_visible();
+			old_items[0] = player[0].items;
+			player[0].last_items = player[0].items;
+			break;
+		case 8: // debug play level
 			load_debug_levels();
 			curMenu = MENU_DEBUG_PLAY_LEVEL;
 			newPal = 18;
@@ -2864,12 +2878,6 @@ void JE_menuFunction(JE_byte select)
 			}
 			SDL_strlcpy(debugMenuInt[count + 1], miscText[5], sizeof(debugMenuInt[count + 1]));
 			debugPlayMenu = true;
-			break;
-		case 8: //equipment
-			JE_debugMenu(true);
-			ensure_equipped_items_visible();
-			old_items[0] = player[0].items;
-			player[0].last_items = player[0].items;
 			break;
 		case 9: //quit
 			if (JE_quitRequest())

@@ -1554,7 +1554,7 @@ JE_boolean JE_inGameSetup(void)
 			inGameText[1],
 			inGameText[2],
 					   inGameText[3],
-					   "Equipment",
+					   "Debug Equip",
 					   inGameText[4],
 					   inGameText[5],
 	};

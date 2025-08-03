@@ -4954,7 +4954,7 @@ void JE_mainGamePlayerFunctions(void)
 		tempX = player[0].x;
 
 	const float left_bound = 40.0f;
-	const float right_bound = PLAYFIELD_WIDTH + 48;
+	const float right_bound = PLAYFIELD_WIDTH + 64;
 	float u = (tempX - left_bound) / (right_bound - left_bound);
 	if (u < 0.0f)
 		u = 0.0f;

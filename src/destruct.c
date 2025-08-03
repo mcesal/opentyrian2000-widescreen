@@ -1426,8 +1426,8 @@ static void JE_pauseScreen(void)
 	set_volume(tyrMusicVolume / 2, fxVolume);
 
 	/* Save our current screen/game world.  We don't want to screw it up while paused. */
-	memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->h * VGAScreen2->pitch);
-	JE_outText(VGAScreen, center_text(miscText[22], TINY_FONT), 90, miscText[22], 12, 5);
+        memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->h * VGAScreen2->pitch);
+        JE_outText(VGAScreen, center_text(miscText[22], TINY_FONT), 90, miscText[22], 12, 5);
 	JE_showVGA();
 
 	do  /* wait until user hits a key */

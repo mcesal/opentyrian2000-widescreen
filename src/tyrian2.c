@@ -2213,10 +2213,15 @@ draw_player_shot_loop_end:
 			soundQueue[7] = S_WARNING;
 		}
 
-		JE_textShade (VGAScreen, 140, 6, miscText[66], 7, (levelTimerCountdown % 20) / 3, FULL_SHADE);
 		// Don't use floats due to rounding.
 		sprintf(buffer, "%d.%d", levelTimerCountdown / 100, (levelTimerCountdown / 10) % 10);
-		JE_dString (VGAScreen, 100, 2, buffer, SMALL_FONT_SHAPES);
+
+		const int playfield_left = -2 * PLAYFIELD_X_SHIFT;
+		const int label_x = playfield_left + 24 + (PLAYFIELD_WIDTH - JE_textWidth(miscText[66], TINY_FONT)) / 2;
+		const int counter_x = playfield_left + (PLAYFIELD_WIDTH - JE_textWidth(buffer, SMALL_FONT_SHAPES) - 64) / 2;
+
+		JE_textShade(VGAScreen, label_x, 6, miscText[66], 7, (levelTimerCountdown % 20) / 3, FULL_SHADE);
+		JE_dString(VGAScreen, counter_x, 2, buffer, SMALL_FONT_SHAPES);
 	}
 
 	/*GAME OVER*/

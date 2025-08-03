@@ -17,34 +17,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-/* File notes:
- * Two players duke it out in a Scorched Earth style game.
- * Most of the variables referring to the players are global as
- * they are often edited and that's how the original was written.
- *
- * Currently this file is at its final stage for vanilla destruct.
- * Almost all of the left/right code duplications is gone.  Most of the
- * functions have been examined and tightened up, none of the enums
- * start with '1', and the various large functions have been divided into
- * smaller chunks.
- *
- * Destruct also supports some 'hidden' configuration that's just too awesome
- * to not have available.  Destruct has no configuration options in game, but
- * that doesn't stop us from changing various limiting vars and letting
- * people remap the keyboard.  AIs may also be introduced here; fighting a
- * stateless AI isn't really challenging after all.
- *
- * This hidden config also allows for a hidden game mode!  Though as a custom
- * game mode wouldn't show up in the data files it forces us to distinguish
- * between the constant DESTRUCT_MODES (5) and MAX_MODES (6).  DESTRUCT_MODES
- * is only used with loaded data.
- *
- * Things I wanted to do but can't: Remove references to VGAScreen.  For
- * a multitude of reasons this just isn't feasible.  It would have been nice
- * to increase the playing field though...
- */
+ /* File notes:
+  * Two players duke it out in a Scorched Earth style game.
+  * Most of the variables referring to the players are global as
+  * they are often edited and that's how the original was written.
+  *
+  * Currently this file is at its final stage for vanilla destruct.
+  * Almost all of the left/right code duplications is gone.  Most of the
+  * functions have been examined and tightened up, none of the enums
+  * start with '1', and the various large functions have been divided into
+  * smaller chunks.
+  *
+  * Destruct also supports some 'hidden' configuration that's just too awesome
+  * to not have available.  Destruct has no configuration options in game, but
+  * that doesn't stop us from changing various limiting vars and letting
+  * people remap the keyboard.  AIs may also be introduced here; fighting a
+  * stateless AI isn't really challenging after all.
+  *
+  * This hidden config also allows for a hidden game mode!  Though as a custom
+  * game mode wouldn't show up in the data files it forces us to distinguish
+  * between the constant DESTRUCT_MODES (5) and MAX_MODES (6).  DESTRUCT_MODES
+  * is only used with loaded data.
+  *
+  * Things I wanted to do but can't: Remove references to VGAScreen.  For
+  * a multitude of reasons this just isn't feasible.  It would have been nice
+  * to increase the playing field though...
+  */
 
-/*** Headers ***/
+  /*** Headers ***/
 #include "destruct.h"
 
 #include "config.h"
@@ -208,7 +208,7 @@ enum de_move_t
  * MAX_SHOTS) is not assigned to anything.  The bomb does not work.
  */
 
-/*** Structs ***/
+ /*** Structs ***/
 struct destruct_config_s
 {
 	unsigned int max_shots;
@@ -290,7 +290,7 @@ struct destruct_player_s
 	bool is_cpu;
 	struct destruct_ai_s aiMemory;
 
-	struct destruct_unit_s * unit;
+	struct destruct_unit_s* unit;
 	struct destruct_moves_s moves;
 	struct destruct_keys_s  keys;
 
@@ -319,11 +319,6 @@ struct destruct_world_s
 	unsigned int mapFlags;
 };
 
-/* Width adjustment for the expanded playfield.  All destruct objects
- * are drawn one tile (16px) to the right so that they line up with
- * the background. */
-#define DESTRUCT_X_OFFSET 16
-
 /*** Function decs ***/
 //Prep functions
 static void JE_destructMain(void);
@@ -334,22 +329,22 @@ static void JE_pauseScreen(void);
 
 //level generating functions
 static void JE_generateTerrain(void);
-static void DE_generateBaseTerrain(unsigned int, unsigned int *);
-static void DE_drawBaseTerrain(unsigned int *);
-static void DE_generateUnits(unsigned int *);
-static void DE_generateWalls(struct destruct_world_s *);
-static void DE_generateRings(SDL_Surface *, Uint8);
+static void DE_generateBaseTerrain(unsigned int, unsigned int*);
+static void DE_drawBaseTerrain(unsigned int*);
+static void DE_generateUnits(unsigned int*);
+static void DE_generateWalls(struct destruct_world_s*);
+static void DE_generateRings(SDL_Surface*, Uint8);
 static void DE_ResetLevel(void);
-static unsigned int JE_placementPosition(unsigned int, unsigned int, unsigned int *);
+static unsigned int JE_placementPosition(unsigned int, unsigned int, unsigned int*);
 
 //drawing functions
-static void JE_aliasDirt(SDL_Surface *);
+static void JE_aliasDirt(SDL_Surface*);
 static void DE_RunTickDrawCrosshairs(void);
 static void DE_RunTickDrawHUD(void);
-static void DE_GravityDrawUnit(enum de_player_t, struct destruct_unit_s *);
+static void DE_GravityDrawUnit(enum de_player_t, struct destruct_unit_s*);
 static void DE_RunTickAnimate(void);
 static void DE_RunTickDrawWalls(void);
-static void DE_DrawTrails(struct destruct_shot_s *, unsigned int, unsigned int, unsigned int);
+static void DE_DrawTrails(struct destruct_shot_s*, unsigned int, unsigned int, unsigned int);
 static void JE_tempScreenChecking(void);
 static void JE_superPixel(unsigned int, unsigned int);
 static void JE_pixCool(unsigned int, unsigned int, Uint8);
@@ -363,18 +358,18 @@ static void DE_ResetActions(void);
 static void DE_RunTickAI(void);
 
 //unit functions
-static void DE_RaiseAngle(struct destruct_unit_s *);
-static void DE_LowerAngle(struct destruct_unit_s *);
-static void DE_RaisePower(struct destruct_unit_s *);
-static void DE_LowerPower(struct destruct_unit_s *);
-static void DE_CycleWeaponUp(struct destruct_unit_s *);
-static void DE_CycleWeaponDown(struct destruct_unit_s *);
-static void DE_RunMagnet(enum de_player_t, struct destruct_unit_s *);
-static void DE_GravityFlyUnit(struct destruct_unit_s *);
-static void DE_GravityLowerUnit(struct destruct_unit_s *);
-static void DE_DestroyUnit(enum de_player_t, struct destruct_unit_s *);
+static void DE_RaiseAngle(struct destruct_unit_s*);
+static void DE_LowerAngle(struct destruct_unit_s*);
+static void DE_RaisePower(struct destruct_unit_s*);
+static void DE_LowerPower(struct destruct_unit_s*);
+static void DE_CycleWeaponUp(struct destruct_unit_s*);
+static void DE_CycleWeaponDown(struct destruct_unit_s*);
+static void DE_RunMagnet(enum de_player_t, struct destruct_unit_s*);
+static void DE_GravityFlyUnit(struct destruct_unit_s*);
+static void DE_GravityLowerUnit(struct destruct_unit_s*);
+static void DE_DestroyUnit(enum de_player_t, struct destruct_unit_s*);
 static void DE_ResetUnits(void);
-static inline bool DE_isValidUnit(struct destruct_unit_s *);
+static inline bool DE_isValidUnit(struct destruct_unit_s*);
 
 //weapon functions
 static void DE_ResetWeapons(void);
@@ -382,7 +377,7 @@ static void DE_RunTickShots(void);
 static void DE_RunTickExplosions(void);
 static void DE_TestExplosionCollision(unsigned int, unsigned int);
 static void JE_makeExplosion(unsigned int, unsigned int, enum de_shot_t);
-static void DE_MakeShot(enum de_player_t, const struct destruct_unit_s *, int);
+static void DE_MakeShot(enum de_player_t, const struct destruct_unit_s*, int);
 
 //gameplay functions
 static enum de_state_t DE_RunTick(void);
@@ -398,24 +393,24 @@ static void JE_eSound(unsigned int);
 /*** Weapon configurations ***/
 
 /* Part of me wants to leave these as bytes to save space. */
-static const bool     demolish[MAX_SHOT_TYPES] = {false, false, false, false, false, true, true, true, false, false, false, false, true, false, true, false, true};
+static const bool     demolish[MAX_SHOT_TYPES] = { false, false, false, false, false, true, true, true, false, false, false, false, true, false, true, false, true };
 //static const int        shotGr[MAX_SHOT_TYPES] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101};
-static const int     shotTrail[MAX_SHOT_TYPES] = {TRAILS_NONE, TRAILS_NONE, TRAILS_NONE, TRAILS_NORMAL, TRAILS_NORMAL, TRAILS_NORMAL, TRAILS_FULL, TRAILS_FULL, TRAILS_NONE, TRAILS_NONE, TRAILS_NONE, TRAILS_NORMAL, TRAILS_FULL, TRAILS_NORMAL, TRAILS_FULL, TRAILS_NORMAL, TRAILS_NONE};
+static const int     shotTrail[MAX_SHOT_TYPES] = { TRAILS_NONE, TRAILS_NONE, TRAILS_NONE, TRAILS_NORMAL, TRAILS_NORMAL, TRAILS_NORMAL, TRAILS_FULL, TRAILS_FULL, TRAILS_NONE, TRAILS_NONE, TRAILS_NONE, TRAILS_NORMAL, TRAILS_FULL, TRAILS_NORMAL, TRAILS_FULL, TRAILS_NORMAL, TRAILS_NONE };
 //static const int      shotFuse[MAX_SHOT_TYPES] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
-static const int     shotDelay[MAX_SHOT_TYPES] = {10, 30, 80, 20, 60, 100, 140, 200, 20, 60, 5, 15, 50, 5, 80, 16, 0};
-static const int     shotSound[MAX_SHOT_TYPES] = {S_SELECT, S_WEAPON_2, S_WEAPON_1, S_WEAPON_7, S_WEAPON_7, S_EXPLOSION_9, S_EXPLOSION_22, S_EXPLOSION_22, S_WEAPON_5, S_WEAPON_13, S_WEAPON_10, S_WEAPON_15, S_WEAPON_15, S_WEAPON_26, S_WEAPON_14, S_WEAPON_7, S_WEAPON_7};
-static const int     exploSize[MAX_SHOT_TYPES] = {4, 20, 30, 14, 22, 16, 40, 60, 10, 30, 0, 5, 10, 3, 15, 7, 0};
-static const bool   shotBounce[MAX_SHOT_TYPES] = {false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false, true};
-static const int  exploDensity[MAX_SHOT_TYPES] = {  2,  5, 10, 15, 20, 15, 25, 30, 40, 80, 0, 30, 30,  4, 30, 5, 0};
-static const int      shotDirt[MAX_SHOT_TYPES] = {EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_DIRT, EXPL_DIRT, EXPL_MAGNET, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NONE};
-static const int     shotColor[MAX_SHOT_TYPES] = {16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 10, 10, 10, 10, 16, 0};
+static const int     shotDelay[MAX_SHOT_TYPES] = { 10, 30, 80, 20, 60, 100, 140, 200, 20, 60, 5, 15, 50, 5, 80, 16, 0 };
+static const int     shotSound[MAX_SHOT_TYPES] = { S_SELECT, S_WEAPON_2, S_WEAPON_1, S_WEAPON_7, S_WEAPON_7, S_EXPLOSION_9, S_EXPLOSION_22, S_EXPLOSION_22, S_WEAPON_5, S_WEAPON_13, S_WEAPON_10, S_WEAPON_15, S_WEAPON_15, S_WEAPON_26, S_WEAPON_14, S_WEAPON_7, S_WEAPON_7 };
+static const int     exploSize[MAX_SHOT_TYPES] = { 4, 20, 30, 14, 22, 16, 40, 60, 10, 30, 0, 5, 10, 3, 15, 7, 0 };
+static const bool   shotBounce[MAX_SHOT_TYPES] = { false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false, true };
+static const int  exploDensity[MAX_SHOT_TYPES] = { 2,  5, 10, 15, 20, 15, 25, 30, 40, 80, 0, 30, 30,  4, 30, 5, 0 };
+static const int      shotDirt[MAX_SHOT_TYPES] = { EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_DIRT, EXPL_DIRT, EXPL_MAGNET, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NORMAL, EXPL_NONE };
+static const int     shotColor[MAX_SHOT_TYPES] = { 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 10, 10, 10, 10, 16, 0 };
 
-static const int     defaultWeapon[MAX_UNITS] = {SHOT_SMALL, SHOT_MICRO,     SHOT_SMALLDIRT, SHOT_INVALID, SHOT_MAGNET, SHOT_MINILASER, SHOT_MICRO, SHOT_MINI};
-static const int  defaultCpuWeapon[MAX_UNITS] = {SHOT_SMALL, SHOT_MICRO,     SHOT_DEMO,      SHOT_INVALID, SHOT_MAGNET, SHOT_MINILASER, SHOT_MICRO, SHOT_MINI};
-static const int defaultCpuWeaponB[MAX_UNITS] = {SHOT_DEMO,  SHOT_SMALLNUKE, SHOT_DEMO,      SHOT_INVALID, SHOT_MAGNET, SHOT_MEGALASER, SHOT_MICRO, SHOT_MINI};
-static const int       systemAngle[MAX_UNITS] = {true, true, true, false, false, true, false, false};
-static const int        baseDamage[MAX_UNITS] = {200, 120, 400, 300, 80, 150, 600, 40};
-static const int         systemAni[MAX_UNITS] = {false, false, false, true, false, false, false, true};
+static const int     defaultWeapon[MAX_UNITS] = { SHOT_SMALL, SHOT_MICRO,     SHOT_SMALLDIRT, SHOT_INVALID, SHOT_MAGNET, SHOT_MINILASER, SHOT_MICRO, SHOT_MINI };
+static const int  defaultCpuWeapon[MAX_UNITS] = { SHOT_SMALL, SHOT_MICRO,     SHOT_DEMO,      SHOT_INVALID, SHOT_MAGNET, SHOT_MINILASER, SHOT_MICRO, SHOT_MINI };
+static const int defaultCpuWeaponB[MAX_UNITS] = { SHOT_DEMO,  SHOT_SMALLNUKE, SHOT_DEMO,      SHOT_INVALID, SHOT_MAGNET, SHOT_MEGALASER, SHOT_MICRO, SHOT_MINI };
+static const int       systemAngle[MAX_UNITS] = { true, true, true, false, false, true, false, false };
+static const int        baseDamage[MAX_UNITS] = { 200, 120, 400, 300, 80, 150, 600, 40 };
+static const int         systemAni[MAX_UNITS] = { false, false, false, true, false, false, false, true };
 
 static bool weaponSystems[MAX_UNITS][MAX_SHOT_TYPES] =
 {
@@ -431,7 +426,7 @@ static bool weaponSystems[MAX_UNITS][MAX_SHOT_TYPES] =
 
 /* More constant configuration settings. */
 /* Music that destruct will play.  You can check out musmast.c to see what is what. */
-static const JE_byte goodsel[14] /*[1..14]*/ = {1, 2, 6, 12, 13, 14, 17, 23, 24, 26, 28, 29, 32, 33};
+static const JE_byte goodsel[14] /*[1..14]*/ = { 1, 2, 6, 12, 13, 14, 17, 23, 24, 26, 28, 29, 32, 33 };
 
 /* Unit creation.  Need to move this later: Doesn't belong here */
 static JE_byte basetypes[10][11] /*[1..8, 1..11]*/ = /* [0] is amount of units*/
@@ -490,22 +485,22 @@ static SDL_Scancode defaultKeyConfig[MAX_PLAYERS][MAX_KEY][MAX_KEY_OPTIONS] =
 };
 
 /*** Globals ***/
-static SDL_Surface *destructTempScreen;
+static SDL_Surface* destructTempScreen;
 static JE_boolean destructFirstTime;
 
 static struct destruct_config_s config = { 40, 20, 20, 40, 10, false, false, {true, false}, {true, false} };
 static struct destruct_player_s destruct_player[MAX_PLAYERS];
 static struct destruct_world_s  world;
-static struct destruct_shot_s   * shotRec;
-static struct destruct_explo_s  * exploRec;
+static struct destruct_shot_s* shotRec;
+static struct destruct_explo_s* exploRec;
 
-static const char *const player_names[] =
+static const char* const player_names[] =
 {
 	"left",
 	"right",
 };
 
-static const char *const key_names[] =
+static const char* const key_names[] =
 {
 	"left",
 	"right",
@@ -517,7 +512,7 @@ static const char *const key_names[] =
 	"next weapon",
 };
 
-static const char *const unit_names[] =
+static const char* const unit_names[] =
 {
 	"tank",
 	"nuke",
@@ -529,53 +524,53 @@ static const char *const unit_names[] =
 	"heli",
 };
 
-static enum de_unit_t get_unit_by_name(const char *unit_name)
+static enum de_unit_t get_unit_by_name(const char* unit_name)
 {
 	for (enum de_unit_t unit = UNIT_FIRST; unit < MAX_UNITS; ++unit)
 		if (strcmp(unit_name, unit_names[unit]) == 0)
 			return unit;
-	
+
 	return UNIT_NONE;
 }
 
-static void load_destruct_config(Config *config_)
+static void load_destruct_config(Config* config_)
 {
-	ConfigSection *section;
-	
+	ConfigSection* section;
+
 	section = config_find_or_add_section(config_, "destruct", NULL);
 	if (section == NULL)
 		exit(EXIT_FAILURE);  // out of memory
-	
+
 	config.alwaysalias = config_get_or_set_bool_option(section, "antialias craters", false, NO_YES);
-	
+
 	weaponSystems[UNIT_LASER][SHOT_LASERTRACER] = config_get_or_set_bool_option(section, "tracer laser", false, OFF_ON);
-	
+
 	config.max_shots = config_get_or_set_int_option(section, "max shots", 40);
 	config.max_explosions = config_get_or_set_int_option(section, "max explosions", 40);
 	config.min_walls = config_get_or_set_int_option(section, "min walls", 20);
 	config.max_walls = config_get_or_set_int_option(section, "max walls", 20);
-	
+
 	config.ai[0] = config_get_or_set_bool_option(section, "left ai", true, NO_YES);
 	config.jumper_straight[0] = config_get_or_set_bool_option(section, "left jumper fires straight", true, NO_YES);
 	config.ai[1] = config_get_or_set_bool_option(section, "right ai", false, NO_YES);
 	config.jumper_straight[1] = config_get_or_set_bool_option(section, "right jumper fires straight", false, NO_YES);
-	
+
 	// keyboard controls
-	
+
 	for (int p = 0; p < MAX_PLAYERS; ++p)
 	{
 		section = config_find_section(config_, "destruct keyboard", player_names[p]);
 		if (section == NULL)
 			if ((section = config_add_section(config_, "destruct keyboard", player_names[p])) == NULL)
 				exit(-1);
-		
-		ConfigOption *option;
-		
+
+		ConfigOption* option;
+
 		for (int k = 0; k < MAX_KEY; ++k)
 		{
 			if ((option = config_get_or_set_option(section, key_names[k], NULL)) == NULL)
 				exit(-1);
-			
+
 			foreach_option_i_value(i, value, option)
 			{
 				SDL_Scancode key = SDL_GetScancodeFromName(value);
@@ -589,7 +584,7 @@ static void load_destruct_config(Config *config_)
 					continue;
 				}
 			}
-			
+
 			if (config_get_value_count(option) > 0)
 			{
 				// unset remaining defaults
@@ -605,29 +600,29 @@ static void load_destruct_config(Config *config_)
 			}
 		}
 	}
-	
+
 	// custom destruct mode
-	
+
 	section = config_find_section(config_, "destruct custom", NULL);
 	if (section == NULL)
 		if ((section = config_add_section(config_, "destruct custom", NULL)) == NULL)
 			exit(-1);
-	
+
 	config.allow_custom = config_get_or_set_bool_option(section, "enable", false, NO_YES);
-	
+
 	char buffer[15 + 1];
-	
+
 	for (int p = 0; p < MAX_PLAYERS; ++p)
 	{
 		snprintf(buffer, sizeof(buffer), "%s num units", player_names[p]);
 		basetypes[8 + p][0] = config_get_or_set_int_option(section, buffer, basetypes[8 + p][0]);
-		
-		ConfigOption *option;
-		
+
+		ConfigOption* option;
+
 		snprintf(buffer, sizeof(buffer), "%s unit", player_names[p]);
 		if ((option = config_get_or_set_option(section, buffer, NULL)) == NULL)
 			exit(-1);
-		
+
 		foreach_option_i_value(i, value, option)
 		{
 			enum de_unit_t unit = get_unit_by_name(value);
@@ -641,7 +636,7 @@ static void load_destruct_config(Config *config_)
 				continue;
 			}
 		}
-		
+
 		if (config_get_value_count(option) > 0)
 		{
 			// set remaining units to tank
@@ -674,14 +669,14 @@ void JE_destructGame(void)
 	load_destruct_config(&opentyrian_config);
 
 	//malloc things that have customizable sizes
-	shotRec  = malloc(sizeof(struct destruct_shot_s)  * config.max_shots);
+	shotRec = malloc(sizeof(struct destruct_shot_s) * config.max_shots);
 	exploRec = malloc(sizeof(struct destruct_explo_s) * config.max_explosions);
 	world.mapWalls = malloc(sizeof(struct destruct_wall_s) * config.max_walls);
 
 	//Malloc enough structures to cover all of this session's possible needs.
 	for (i = 0; i < 10; i++)
 		config.max_installations = MAX(config.max_installations, basetypes[i][0]);
-	destruct_player[PLAYER_LEFT ].unit = malloc(sizeof(struct destruct_unit_s) * config.max_installations);
+	destruct_player[PLAYER_LEFT].unit = malloc(sizeof(struct destruct_unit_s) * config.max_installations);
 	destruct_player[PLAYER_RIGHT].unit = malloc(sizeof(struct destruct_unit_s) * config.max_installations);
 
 	destructTempScreen = game_screen;
@@ -699,7 +694,7 @@ void JE_destructGame(void)
 	free(shotRec);
 	free(exploRec);
 	free(world.mapWalls);
-	free(destruct_player[PLAYER_LEFT ].unit);
+	free(destruct_player[PLAYER_LEFT].unit);
 	free(destruct_player[PLAYER_RIGHT].unit);
 }
 
@@ -712,7 +707,7 @@ static void JE_destructMain(void)
 
 	DE_ResetPlayers();
 
-	destruct_player[PLAYER_LEFT ].is_cpu = config.ai[PLAYER_LEFT];
+	destruct_player[PLAYER_LEFT].is_cpu = config.ai[PLAYER_LEFT];
 	destruct_player[PLAYER_RIGHT].is_cpu = config.ai[PLAYER_RIGHT];
 
 	while (true)
@@ -823,7 +818,7 @@ static enum de_mode_t JE_modeSelect(void)
 				if (config.allow_custom == true)
 					mode = MODE_LAST;
 				else
-					mode = MODE_LAST-1;
+					mode = MODE_LAST - 1;
 			}
 			else
 			{
@@ -832,9 +827,9 @@ static enum de_mode_t JE_modeSelect(void)
 		}
 		if (keysactive[SDL_SCANCODE_DOWN])
 		{
-			if (mode >= MODE_LAST-1)
+			if (mode >= MODE_LAST - 1)
 			{
-				if (config.allow_custom == true && mode == MODE_LAST-1)
+				if (config.allow_custom == true && mode == MODE_LAST - 1)
 					mode++;
 				else
 					mode = MODE_FIRST;
@@ -855,13 +850,13 @@ static enum de_mode_t JE_modeSelect(void)
 static void JE_generateTerrain(void)
 {
 	/* The unique modifiers:
-	    Altered generation (really tall)
-	    Fuzzy hills
-	    Rings of dirt
+		Altered generation (really tall)
+		Fuzzy hills
+		Rings of dirt
 
 	   The non-unique ones;:
-	    Rings of not dirt (holes)
-	    Walls
+		Rings of not dirt (holes)
+		Walls
 	*/
 
 	world.mapFlags = MAP_NORMAL;
@@ -903,7 +898,7 @@ static void JE_generateTerrain(void)
 	memcpy(destructTempScreen->pixels, VGAScreen->pixels, destructTempScreen->pitch * destructTempScreen->h);
 }
 
-static void DE_generateBaseTerrain(unsigned int mapFlags, unsigned int * baseWorld)
+static void DE_generateBaseTerrain(unsigned int mapFlags, unsigned int* baseWorld)
 {
 	unsigned int i;
 	unsigned int newheight, HeightMul;
@@ -912,17 +907,17 @@ static void DE_generateBaseTerrain(unsigned int mapFlags, unsigned int * baseWor
 	/* The 'terrain' is actually the video buffer :).  If it's brown, flu... er,
 	 * brown pixels are what we check for collisions with. */
 
-	/* The ranges here are between .01 and roughly 0.07283...*/
-	sinewave    = mt_rand_lt1() * M_PI / 50 + 0.01f;
-	sinewave2   = mt_rand_lt1() * M_PI / 50 + 0.01f;
-	cosinewave  = mt_rand_lt1() * M_PI / 50 + 0.01f;
+	 /* The ranges here are between .01 and roughly 0.07283...*/
+	sinewave = mt_rand_lt1() * M_PI / 50 + 0.01f;
+	sinewave2 = mt_rand_lt1() * M_PI / 50 + 0.01f;
+	cosinewave = mt_rand_lt1() * M_PI / 50 + 0.01f;
 	cosinewave2 = mt_rand_lt1() * M_PI / 50 + 0.01f;
 	HeightMul = 20;
 
 	/* This block just exists to mix things up. */
 	if (mapFlags & MAP_FUZZY)
 	{
-		sinewave  = M_PI - mt_rand_lt1() * 0.3f;
+		sinewave = M_PI - mt_rand_lt1() * 0.3f;
 		sinewave2 = M_PI - mt_rand_lt1() * 0.3f;
 	}
 	if (mapFlags & MAP_TALL)
@@ -933,8 +928,8 @@ static void DE_generateBaseTerrain(unsigned int mapFlags, unsigned int * baseWor
 	/* Now compute a height for each of our lines. */
 	for (i = 1; i <= 318; i++)
 	{
-		newheight = roundf(sinf(sinewave   * i) * HeightMul + sinf(sinewave2   * i) * 15 +
-		                   cosf(cosinewave * i) * 10        + sinf(cosinewave2 * i) * 15) + 130;
+		newheight = roundf(sinf(sinewave * i) * HeightMul + sinf(sinewave2 * i) * 15 +
+			cosf(cosinewave * i) * 10 + sinf(cosinewave2 * i) * 15) + 130;
 
 		/* Bind it; we have mins and maxs */
 		if (newheight < 40)
@@ -946,18 +941,17 @@ static void DE_generateBaseTerrain(unsigned int mapFlags, unsigned int * baseWor
 	/* The base world has been created. */
 }
 
-static void DE_drawBaseTerrain(unsigned int * baseWorld)
+static void DE_drawBaseTerrain(unsigned int* baseWorld)
 {
 	unsigned int i;
 
 	for (i = 1; i <= 318; i++)
 	{
-		JE_rectangle(VGAScreen, i + DESTRUCT_X_OFFSET, baseWorld[i],
-			i + DESTRUCT_X_OFFSET, 199, PIXEL_DIRT);
+		JE_rectangle(VGAScreen, i, baseWorld[i], i, 199, PIXEL_DIRT);
 	}
 }
 
-static void DE_generateUnits(unsigned int * baseWorld)
+static void DE_generateUnits(unsigned int* baseWorld)
 {
 	unsigned int i, j, numSatellites;
 
@@ -969,18 +963,16 @@ static void DE_generateUnits(unsigned int * baseWorld)
 		for (j = 0; j < basetypes[baseLookup[i][world.destructMode]][0]; j++)
 		{
 			/* Not everything is the same between players */
-			unsigned int unit_map_x;
 			if (i == PLAYER_LEFT)
 			{
-				unit_map_x = (mt_rand() % 120) + 10;
+				destruct_player[i].unit[j].unitX = (mt_rand() % 120) + 10;
 			}
 			else
 			{
-				unit_map_x = 320 - ((mt_rand() % 120) + 22);
+				destruct_player[i].unit[j].unitX = 320 - ((mt_rand() % 120) + 22);
 			}
 
-			destruct_player[i].unit[j].unitX = unit_map_x + DESTRUCT_X_OFFSET;
-			destruct_player[i].unit[j].unitY = JE_placementPosition(unit_map_x - 1, 14, baseWorld);
+			destruct_player[i].unit[j].unitY = JE_placementPosition(destruct_player[i].unit[j].unitX - 1, 14, baseWorld);
 			destruct_player[i].unit[j].unitType = basetypes[baseLookup[i][world.destructMode]][(mt_rand() % 10) + 1];
 
 			/* Sats are special cases since they are useless.  They don't count
@@ -1022,9 +1014,9 @@ static void DE_generateUnits(unsigned int * baseWorld)
 	}
 }
 
-static void DE_generateWalls(struct destruct_world_s * gameWorld)
+static void DE_generateWalls(struct destruct_world_s* gameWorld)
 {
-	unsigned int i, j, wallX_map;
+	unsigned int i, j, wallX;
 	unsigned int wallHeight, remainWalls;
 	unsigned int tries;
 	bool isGood;
@@ -1055,7 +1047,7 @@ static void DE_generateWalls(struct destruct_world_s * gameWorld)
 		do
 		{
 			isGood = true;
-			wallX_map = (mt_rand() % 300) + 10;
+			wallX = (mt_rand() % 300) + 10;
 
 			/* Is this X already occupied?  In the original Tyrian we only
 			 * checked to make sure four units on each side were unobscured.
@@ -1068,8 +1060,8 @@ static void DE_generateWalls(struct destruct_world_s * gameWorld)
 			{
 				for (j = 0; j < config.max_installations; j++)
 				{
-					if ((wallX_map > destruct_player[i].unit[j].unitX - DESTRUCT_X_OFFSET - 12) &&
-						(wallX_map < destruct_player[i].unit[j].unitX - DESTRUCT_X_OFFSET + 13))
+					if ((wallX > destruct_player[i].unit[j].unitX - 12) &&
+						(wallX < destruct_player[i].unit[j].unitX + 13))
 					{
 						isGood = false;
 						goto label_outer_break; /* I do feel that outer breaking is a legitimate goto use. */
@@ -1077,7 +1069,7 @@ static void DE_generateWalls(struct destruct_world_s * gameWorld)
 				}
 			}
 
-label_outer_break:
+		label_outer_break:
 			tries++;
 
 		} while (isGood == false && tries < 5);
@@ -1086,8 +1078,8 @@ label_outer_break:
 		for (i = 1; i <= wallHeight; i++)
 		{
 			gameWorld->mapWalls[remainWalls - i].wallExist = true;
-			gameWorld->mapWalls[remainWalls - i].wallX = wallX_map + DESTRUCT_X_OFFSET;
-			gameWorld->mapWalls[remainWalls - i].wallY = JE_placementPosition(wallX_map, 12, gameWorld->baseMap) - 14 * i;
+			gameWorld->mapWalls[remainWalls - i].wallX = wallX;
+			gameWorld->mapWalls[remainWalls - i].wallY = JE_placementPosition(wallX, 12, gameWorld->baseMap) - 14 * i;
 		}
 
 		remainWalls -= wallHeight;
@@ -1095,7 +1087,7 @@ label_outer_break:
 	} while (remainWalls != 0);
 }
 
-static void DE_generateRings(SDL_Surface * screen, Uint8 pixel)
+static void DE_generateRings(SDL_Surface* screen, Uint8 pixel)
 {
 	unsigned int i, j, tempSize, rings;
 	int tempPosX1, tempPosY1, tempPosX2, tempPosY2;
@@ -1104,7 +1096,7 @@ static void DE_generateRings(SDL_Surface * screen, Uint8 pixel)
 	rings = mt_rand() % 6 + 1;
 	for (i = 1; i <= rings; i++)
 	{
-		tempPosX1 = (mt_rand() % 320) + DESTRUCT_X_OFFSET;
+		tempPosX1 = (mt_rand() % 320);
 		tempPosY1 = (mt_rand() % 160) + 20;
 		tempSize = (mt_rand() % 40) + 10;  /*Size*/
 
@@ -1113,8 +1105,8 @@ static void DE_generateRings(SDL_Surface * screen, Uint8 pixel)
 			tempRadian = mt_rand_lt1() * (2 * M_PI);
 			tempPosY2 = tempPosY1 + roundf(cosf(tempRadian) * (mt_rand_lt1() * 0.1f + 0.9f) * tempSize);
 			tempPosX2 = tempPosX1 + roundf(sinf(tempRadian) * (mt_rand_lt1() * 0.1f + 0.9f) * tempSize);
-			if ((tempPosY2 > 12) && (tempPosY2 < vga_height) &&
-				(tempPosX2 > DESTRUCT_X_OFFSET) && (tempPosX2 < 319 + DESTRUCT_X_OFFSET))
+			if ((tempPosY2 > 12) && (tempPosY2 < 200) &&
+				(tempPosX2 > 0) && (tempPosX2 < 319))
 			{
 				((Uint8*)screen->pixels)[tempPosX2 + tempPosY2 * screen->pitch] = pixel;
 			}
@@ -1122,7 +1114,7 @@ static void DE_generateRings(SDL_Surface * screen, Uint8 pixel)
 	}
 }
 
-static unsigned int aliasDirtPixel(const SDL_Surface * screen, unsigned int x, unsigned int y, const Uint8 * s)
+static unsigned int aliasDirtPixel(const SDL_Surface* screen, unsigned int x, unsigned int y, const Uint8* s)
 {
 	//A helper function used when aliasing dirt.  That's a messy process;
 	//let's contain the mess here.
@@ -1142,7 +1134,7 @@ static unsigned int aliasDirtPixel(const SDL_Surface * screen, unsigned int x, u
 	return PIXEL_BLACK;
 }
 
-static void JE_aliasDirt(SDL_Surface * screen)
+static void JE_aliasDirt(SDL_Surface* screen)
 {
 	/* This complicated looking function goes through the whole screen
 	 * looking for brown pixels which just happen to be next to non-brown
@@ -1151,7 +1143,7 @@ static void JE_aliasDirt(SDL_Surface * screen)
 
 	/* This is a pointer to a screen.  If you don't like pointer arithmetic,
 	 * you won't like this function. */
-	Uint8 *s = screen->pixels;
+	Uint8* s = screen->pixels;
 	s += 12 * screen->pitch;
 
 	for (y = 12; y < (unsigned int)screen->h; y++)
@@ -1166,7 +1158,7 @@ static void JE_aliasDirt(SDL_Surface * screen)
 	}
 }
 
-static unsigned int JE_placementPosition(unsigned int passed_x, unsigned int width, unsigned int * world)
+static unsigned int JE_placementPosition(unsigned int passed_x, unsigned int width, unsigned int* world)
 {
 	unsigned int i, new_y;
 
@@ -1195,7 +1187,7 @@ static unsigned int JE_placementPosition(unsigned int passed_x, unsigned int wid
 static bool JE_stabilityCheck(unsigned int x, unsigned int y)
 {
 	unsigned int i, numDirtPixels;
-	Uint8 * s;
+	Uint8* s;
 
 	numDirtPixels = 0;
 	s = destructTempScreen->pixels;
@@ -1216,10 +1208,10 @@ static bool JE_stabilityCheck(unsigned int x, unsigned int y)
 
 static void JE_tempScreenChecking(void) /*and copy to vgascreen*/
 {
-	Uint8 *s = VGAScreen->pixels;
+	Uint8* s = VGAScreen->pixels;
 	s += 12 * VGAScreen->pitch;
 
-	Uint8 *temps = destructTempScreen->pixels;
+	Uint8* temps = destructTempScreen->pixels;
 	temps += 12 * destructTempScreen->pitch;
 
 	for (int y = 12; y < VGAScreen->h; y++)
@@ -1283,14 +1275,14 @@ static void JE_makeExplosion(unsigned int tempPosX, unsigned int tempPosY, enum 
 			JE_eSound(11);
 		}
 
-		exploRec[i].explomax  = tempExploSize;
+		exploRec[i].explomax = tempExploSize;
 		exploRec[i].explofill = exploDensity[shottype];
 		exploRec[i].exploType = shotDirt[shottype];
 	}
 	else
 	{
 		JE_eSound(4);
-		exploRec[i].explomax  = (mt_rand() % 40) + 10;
+		exploRec[i].explomax = (mt_rand() % 40) + 10;
 		exploRec[i].explofill = (mt_rand() % 60) + 20;
 		exploRec[i].exploType = EXPL_NORMAL;
 	}
@@ -1327,7 +1319,7 @@ static void JE_superPixel(unsigned int tempPosX, unsigned int tempPosY)
 
 	int x, y, maxX, maxY;
 	unsigned int rowLen;
-	Uint8 *s;
+	Uint8* s;
 
 	maxX = destructTempScreen->pitch;
 	maxY = destructTempScreen->h;
@@ -1347,7 +1339,7 @@ static void JE_superPixel(unsigned int tempPosX, unsigned int tempPosY)
 		for (x = 0; x < 5; x++, s++)
 		{
 			if ((signed)tempPosX + x - 2 < 0 ||
-			    (signed)tempPosX + x - 2 >= maxX)
+				(signed)tempPosX + x - 2 >= maxX)
 			{
 				continue;
 			}
@@ -1378,10 +1370,10 @@ static void JE_helpScreen(void)
 
 	for (i = 0; i < 2; i++)
 	{
-		JE_outText(VGAScreen, 100,  5 + i * 90, destructHelp[i * 12 + 0], 2, 4);
+		JE_outText(VGAScreen, 100, 5 + i * 90, destructHelp[i * 12 + 0], 2, 4);
 		JE_outText(VGAScreen, 100, 15 + i * 90, destructHelp[i * 12 + 1], 2, 1);
 		for (j = 3; j <= 12; j++)
-			JE_outText(VGAScreen, ((j - 1) % 2) * 160 + 10, 15 + ((j - 1) / 2) * 12 + i * 90, destructHelp[i * 12 + j-1], 1, 3);
+			JE_outText(VGAScreen, ((j - 1) % 2) * 160 + 10, 15 + ((j - 1) / 2) * 12 + i * 90, destructHelp[i * 12 + j - 1], 1, 3);
 	}
 	JE_outText(VGAScreen, 30, 190, destructHelp[24], 3, 4);
 	JE_showVGA();
@@ -1476,7 +1468,7 @@ static void DE_ResetLevel(void)
 static void DE_ResetAI(void)
 {
 	unsigned int i, j;
-	struct destruct_unit_s * ptr;
+	struct destruct_unit_s* ptr;
 
 	for (i = PLAYER_LEFT; i < MAX_PLAYERS; i++)
 	{
@@ -1613,7 +1605,7 @@ static enum de_state_t DE_RunTick(void)
 static void DE_RunTickCycleDeadUnits(void)
 {
 	unsigned int i;
-	struct destruct_unit_s * unit;
+	struct destruct_unit_s* unit;
 
 	/* This code automatically switches the active unit if it is destroyed
 	 * and skips over the useless satellite */
@@ -1624,7 +1616,7 @@ static void DE_RunTickCycleDeadUnits(void)
 
 		unit = &(destruct_player[i].unit[destruct_player[i].unitSelected]);
 		while (DE_isValidUnit(unit) == false ||
-		       unit->shotType == SHOT_INVALID)
+			unit->shotType == SHOT_INVALID)
 		{
 			destruct_player[i].unitSelected++;
 			unit++;
@@ -1640,7 +1632,7 @@ static void DE_RunTickCycleDeadUnits(void)
 static void DE_RunTickGravity(void)
 {
 	unsigned int i, j;
-	struct destruct_unit_s * unit;
+	struct destruct_unit_s* unit;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -1674,7 +1666,7 @@ static void DE_RunTickGravity(void)
 	}
 }
 
-static void DE_GravityDrawUnit(enum de_player_t team, struct destruct_unit_s * unit)
+static void DE_GravityDrawUnit(enum de_player_t team, struct destruct_unit_s* unit)
 {
 	unsigned int anim_index;
 
@@ -1695,7 +1687,7 @@ static void DE_GravityDrawUnit(enum de_player_t team, struct destruct_unit_s * u
 	blit_sprite2(VGAScreen, unit->unitX, roundf(unit->unitY) - 13, destructSpriteSheet, anim_index);
 }
 
-static void DE_GravityLowerUnit(struct destruct_unit_s * unit)
+static void DE_GravityLowerUnit(struct destruct_unit_s* unit)
 {
 	/* units fall at a constant speed.  The heli is an odd case though;
 	 * we simply give it a downward velocity, but due to a buggy implementation
@@ -1726,7 +1718,7 @@ static void DE_GravityLowerUnit(struct destruct_unit_s * unit)
 	}
 }
 
-static void DE_GravityFlyUnit(struct destruct_unit_s * unit)
+static void DE_GravityFlyUnit(struct destruct_unit_s* unit)
 {
 	if (unit->unitY + unit->unitYMov > 199) /* would hit bottom of screen */
 	{
@@ -1759,7 +1751,7 @@ static void DE_GravityFlyUnit(struct destruct_unit_s * unit)
 static void DE_RunTickAnimate(void)
 {
 	unsigned int p, u;
-	struct destruct_unit_s * ptr;
+	struct destruct_unit_s* ptr;
 
 	for (p = 0; p < MAX_PLAYERS; ++p)
 	{
@@ -1818,7 +1810,7 @@ static void DE_RunTickExplosions(void)
 				tempPosX -= 320;
 
 			/* We don't draw our explosion if it's out of bounds vertically */
-			if (tempPosY >= vga_height || tempPosY <= 15)
+			if (tempPosY >= 200 || tempPosY <= 15)
 				continue;
 
 			/* And now the drawing.  There are only two types of explosions
@@ -1826,18 +1818,18 @@ static void DE_RunTickExplosions(void)
 			 * flares explode and have a star formation. */
 			switch (exploRec[i].exploType)
 			{
-				case EXPL_DIRT:
-					((Uint8 *)destructTempScreen->pixels)[tempPosX + tempPosY * destructTempScreen->pitch] = PIXEL_DIRT;
-					break;
+			case EXPL_DIRT:
+				((Uint8*)destructTempScreen->pixels)[tempPosX + tempPosY * destructTempScreen->pitch] = PIXEL_DIRT;
+				break;
 
-				case EXPL_NORMAL:
-					JE_superPixel(tempPosX, tempPosY);
-					DE_TestExplosionCollision(tempPosX, tempPosY);
-					break;
+			case EXPL_NORMAL:
+				JE_superPixel(tempPosX, tempPosY);
+				DE_TestExplosionCollision(tempPosX, tempPosY);
+				break;
 
-				default:
-					assert(false);
-					break;
+			default:
+				assert(false);
+				break;
 			}
 		}
 
@@ -1853,7 +1845,7 @@ static void DE_RunTickExplosions(void)
 static void DE_TestExplosionCollision(unsigned int PosX, unsigned int PosY)
 {
 	unsigned int i, j;
-	struct destruct_unit_s * unit;
+	struct destruct_unit_s* unit;
 
 	for (i = PLAYER_LEFT; i < MAX_PLAYERS; i++)
 	{
@@ -1861,8 +1853,8 @@ static void DE_TestExplosionCollision(unsigned int PosX, unsigned int PosY)
 		for (j = 0; j < config.max_installations; j++, unit++)
 		{
 			if (DE_isValidUnit(unit) == true &&
-			    PosX > unit->unitX && PosX < unit->unitX + 11 &&
-		 	    PosY < unit->unitY && PosY > unit->unitY - 11)
+				PosX > unit->unitX && PosX < unit->unitX + 11 &&
+				PosY < unit->unitY && PosY > unit->unitY - 11)
 			{
 				unit->health--;
 				if (unit->health <= 0)
@@ -1872,7 +1864,7 @@ static void DE_TestExplosionCollision(unsigned int PosX, unsigned int PosY)
 	}
 }
 
-static void DE_DestroyUnit(enum de_player_t playerID, struct destruct_unit_s * unit)
+static void DE_DestroyUnit(enum de_player_t playerID, struct destruct_unit_s* unit)
 {
 	/* This function call was an evil evil piece of brilliance before.  Go on.
 	 * Look at the older revisions.  It passed the result of a comparison.
@@ -1891,7 +1883,7 @@ static void DE_RunTickShots(void)
 	unsigned int i, j, k;
 	unsigned int tempTrails;
 	unsigned int tempPosX, tempPosY;
-	struct destruct_unit_s * unit;
+	struct destruct_unit_s* unit;
 
 	for (i = 0; i < config.max_shots; i++)
 	{
@@ -1957,7 +1949,7 @@ static void DE_RunTickShots(void)
 					continue;
 
 				if (tempPosX > unit->unitX && tempPosX < unit->unitX + 11 &&
-				    tempPosY < unit->unitY && tempPosY > unit->unitY - 13)
+					tempPosY < unit->unitY && tempPosY > unit->unitY - 13)
 				{
 					shotRec[i].isAvailable = true;
 					JE_makeExplosion(tempPosX, tempPosY, shotRec[i].shottype);
@@ -1985,8 +1977,8 @@ static void DE_RunTickShots(void)
 		for (j = 0; j < config.max_walls; j++)
 		{
 			if (world.mapWalls[j].wallExist == true &&
-			    tempPosX >= world.mapWalls[j].wallX && tempPosX <= world.mapWalls[j].wallX + 11 &&
-			    tempPosY >= world.mapWalls[j].wallY && tempPosY <= world.mapWalls[j].wallY + 14)
+				tempPosX >= world.mapWalls[j].wallX && tempPosX <= world.mapWalls[j].wallX + 11 &&
+				tempPosY >= world.mapWalls[j].wallY && tempPosY <= world.mapWalls[j].wallY + 14)
 			{
 				if (demolish[shotRec[i].shottype])
 				{
@@ -2000,12 +1992,12 @@ static void DE_RunTickShots(void)
 				{
 					/* Otherwise, bounce. */
 					if (shotRec[i].x - shotRec[i].xmov < world.mapWalls[j].wallX ||
-					    shotRec[i].x - shotRec[i].xmov > world.mapWalls[j].wallX + 11)
+						shotRec[i].x - shotRec[i].xmov > world.mapWalls[j].wallX + 11)
 					{
 						shotRec[i].xmov = -shotRec[i].xmov;
 					}
 					if (shotRec[i].y - shotRec[i].ymov < world.mapWalls[j].wallY ||
-					    shotRec[i].y - shotRec[i].ymov > world.mapWalls[j].wallY + 14)
+						shotRec[i].y - shotRec[i].ymov > world.mapWalls[j].wallY + 14)
 					{
 						if (shotRec[i].ymov < 0)
 							shotRec[i].ymov = -shotRec[i].ymov;
@@ -2020,7 +2012,7 @@ static void DE_RunTickShots(void)
 		}
 
 		/* Our last collision check, at least for now.  We hit dirt. */
-		if ((((Uint8 *)destructTempScreen->pixels)[tempPosX + tempPosY * destructTempScreen->pitch]) == PIXEL_DIRT)
+		if ((((Uint8*)destructTempScreen->pixels)[tempPosX + tempPosY * destructTempScreen->pitch]) == PIXEL_DIRT)
 		{
 			shotRec[i].isAvailable = true;
 			JE_makeExplosion(tempPosX, tempPosY, shotRec[i].shottype);
@@ -2029,11 +2021,11 @@ static void DE_RunTickShots(void)
 	}
 }
 
-static void DE_DrawTrails(struct destruct_shot_s * shot, unsigned int count, unsigned int decay, unsigned int startColor)
+static void DE_DrawTrails(struct destruct_shot_s* shot, unsigned int count, unsigned int decay, unsigned int startColor)
 {
 	int i;
 
-	for (i = count-1; i >= 0; i--) /* going in reverse is important as it affects how we draw */
+	for (i = count - 1; i >= 0; i--) /* going in reverse is important as it affects how we draw */
 	{
 		if (shot->trailc[i] > 0 && shot->traily[i] > 12) /* If it exists and if it's not out of bounds, draw it. */
 		{
@@ -2048,11 +2040,11 @@ static void DE_DrawTrails(struct destruct_shot_s * shot, unsigned int count, uns
 		}
 		else /* The newer trails decay into the older trails.*/
 		{
-			shot->trailx[i] = shot->trailx[i-1];
-			shot->traily[i] = shot->traily[i-1];
-			if (shot->trailc[i-1] > 0)
+			shot->trailx[i] = shot->trailx[i - 1];
+			shot->traily[i] = shot->traily[i - 1];
+			if (shot->trailc[i - 1] > 0)
 			{
-				shot->trailc[i] = shot->trailc[i-1] - decay;
+				shot->trailc[i] = shot->trailc[i - 1] - decay;
 			}
 		}
 	}
@@ -2061,8 +2053,8 @@ static void DE_DrawTrails(struct destruct_shot_s * shot, unsigned int count, uns
 static void DE_RunTickAI(void)
 {
 	unsigned int i, j;
-	struct destruct_player_s * ptrPlayer, * ptrTarget;
-	struct destruct_unit_s * ptrUnit, * ptrCurUnit;
+	struct destruct_player_s* ptrPlayer, * ptrTarget;
+	struct destruct_unit_s* ptrUnit, * ptrCurUnit;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -2077,7 +2069,7 @@ static void DE_RunTickAI(void)
 		if (j >= MAX_PLAYERS)
 			j = 0;
 
-		ptrTarget  = &(destruct_player[j]);
+		ptrTarget = &(destruct_player[j]);
 		ptrCurUnit = &(ptrPlayer->unit[ptrPlayer->unitSelected]);
 
 		/* This is the start of the original AI.  Heh.  AI. */
@@ -2093,16 +2085,16 @@ static void DE_RunTickAI(void)
 			if (ptrPlayer->aiMemory.c_Angle > 1)
 				ptrPlayer->aiMemory.c_Angle = 1;
 			else
-			if (ptrPlayer->aiMemory.c_Angle < -1)
-				ptrPlayer->aiMemory.c_Angle = -1;
+				if (ptrPlayer->aiMemory.c_Angle < -1)
+					ptrPlayer->aiMemory.c_Angle = -1;
 		}
 		if (mt_rand() % 100 > 90)
 		{
-			if (ptrPlayer->aiMemory.c_Angle > 0 && ptrCurUnit->angle > (M_PI_2) - (M_PI / 9))
+			if (ptrPlayer->aiMemory.c_Angle > 0 && ptrCurUnit->angle > (M_PI_2)-(M_PI / 9))
 				ptrPlayer->aiMemory.c_Angle = 0;
 			else
-			if (ptrPlayer->aiMemory.c_Angle < 0 && ptrCurUnit->angle < M_PI / 8)
-				ptrPlayer->aiMemory.c_Angle = 0;
+				if (ptrPlayer->aiMemory.c_Angle < 0 && ptrCurUnit->angle < M_PI / 8)
+					ptrPlayer->aiMemory.c_Angle = 0;
 		}
 
 		if (mt_rand() % 100 > 93)
@@ -2112,19 +2104,19 @@ static void DE_RunTickAI(void)
 			if (ptrPlayer->aiMemory.c_Power > 1)
 				ptrPlayer->aiMemory.c_Power = 1;
 			else
-			if (ptrPlayer->aiMemory.c_Power < -1)
-				ptrPlayer->aiMemory.c_Power = -1;
+				if (ptrPlayer->aiMemory.c_Power < -1)
+					ptrPlayer->aiMemory.c_Power = -1;
 		}
 		if (mt_rand() % 100 > 90)
 		{
 			if (ptrPlayer->aiMemory.c_Power > 0 && ptrCurUnit->power > 4)
 				ptrPlayer->aiMemory.c_Power = 0;
 			else
-			if (ptrPlayer->aiMemory.c_Power < 0 && ptrCurUnit->power < 3)
-				ptrPlayer->aiMemory.c_Power = 0;
-			else
-			if (ptrCurUnit->power < 2)
-				ptrPlayer->aiMemory.c_Power = 1;
+				if (ptrPlayer->aiMemory.c_Power < 0 && ptrCurUnit->power < 3)
+					ptrPlayer->aiMemory.c_Power = 0;
+				else
+					if (ptrCurUnit->power < 2)
+						ptrPlayer->aiMemory.c_Power = 1;
 		}
 
 		// prefer helicopter
@@ -2255,7 +2247,7 @@ static void DE_RunTickDrawCrosshairs(void)
 	unsigned int i;
 	int tempPosX, tempPosY;
 	int direction;
-	struct destruct_unit_s * curUnit;
+	struct destruct_unit_s* curUnit;
 
 	/* Draw the crosshairs.  Most vehicles aim left or right.  Helis can aim
 	 * either way and this must be accounted for.
@@ -2284,15 +2276,15 @@ static void DE_RunTickDrawCrosshairs(void)
 				if (tempPosY > 13)
 				{
 					/* Top pixel */
-					JE_pix(VGAScreen, tempPosX,     tempPosY - 2,  3);
+					JE_pix(VGAScreen, tempPosX, tempPosY - 2, 3);
 				}
 				/* Middle three pixels */
-				JE_pix(VGAScreen, tempPosX + 3, tempPosY,      3);
-				JE_pix(VGAScreen, tempPosX,     tempPosY,     14);
-				JE_pix(VGAScreen, tempPosX - 3, tempPosY,      3);
+				JE_pix(VGAScreen, tempPosX + 3, tempPosY, 3);
+				JE_pix(VGAScreen, tempPosX, tempPosY, 14);
+				JE_pix(VGAScreen, tempPosX - 3, tempPosY, 3);
 			}
 			/* Bottom pixel */
-			JE_pix(VGAScreen, tempPosX,     tempPosY + 2,  3);
+			JE_pix(VGAScreen, tempPosX, tempPosY + 2, 3);
 		}
 	}
 }
@@ -2302,27 +2294,27 @@ static void DE_RunTickDrawHUD(void)
 	unsigned int i;
 	unsigned int startX;
 	char tempstr[16]; /* Max size needed: 16 assuming 10 digit int max. */
-	struct destruct_unit_s * curUnit;
+	struct destruct_unit_s* curUnit;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		curUnit = &(destruct_player[i].unit[destruct_player[i].unitSelected]);
 		startX = ((i == PLAYER_LEFT) ? 0 : 320 - 150);
 
-		fill_rectangle_xy(VGAScreen, startX +  5, 3, startX +  14, 8, 241);
-		JE_rectangle(VGAScreen, startX +  4, 2, startX +  15, 9, 242);
-		JE_rectangle(VGAScreen, startX +  3, 1, startX +  16, 10, 240);
+		fill_rectangle_xy(VGAScreen, startX + 5, 3, startX + 14, 8, 241);
+		JE_rectangle(VGAScreen, startX + 4, 2, startX + 15, 9, 242);
+		JE_rectangle(VGAScreen, startX + 3, 1, startX + 16, 10, 240);
 		fill_rectangle_xy(VGAScreen, startX + 18, 3, startX + 140, 8, 241);
 		JE_rectangle(VGAScreen, startX + 17, 2, startX + 143, 9, 242);
 		JE_rectangle(VGAScreen, startX + 16, 1, startX + 144, 10, 240);
 
-		blit_sprite2(VGAScreen, startX +  4, 0, destructSpriteSheet, 191 + curUnit->shotType);
+		blit_sprite2(VGAScreen, startX + 4, 0, destructSpriteSheet, 191 + curUnit->shotType);
 
-		JE_outText   (VGAScreen, startX + 20, 3, weaponNames[curUnit->shotType], 15, 2);
-		sprintf      (tempstr, "dmg~%d~", curUnit->health);
-		JE_outText   (VGAScreen, startX + 75, 3, tempstr, 15, 0);
-		sprintf      (tempstr, "pts~%d~", destruct_player[i].score);
-		JE_outText   (VGAScreen, startX + 110, 3, tempstr, 15, 0);
+		JE_outText(VGAScreen, startX + 20, 3, weaponNames[curUnit->shotType], 15, 2);
+		sprintf(tempstr, "dmg~%d~", curUnit->health);
+		JE_outText(VGAScreen, startX + 75, 3, tempstr, 15, 0);
+		sprintf(tempstr, "pts~%d~", destruct_player[i].score);
+		JE_outText(VGAScreen, startX + 110, 3, tempstr, 15, 0);
 	}
 }
 
@@ -2354,8 +2346,8 @@ static void DE_RunTickGetInput(void)
 
 					/* Some keys we want to toggle afterwards */
 					if (key_index == KEY_CHANGE ||
-					    key_index == KEY_CYUP   ||
-					    key_index == KEY_CYDN)
+						key_index == KEY_CYUP ||
+						key_index == KEY_CYDN)
 					{
 						keysactive[key] = false;
 					}
@@ -2371,7 +2363,7 @@ static void DE_ProcessInput(void)
 	int direction;
 
 	unsigned int player_index;
-	struct destruct_unit_s * curUnit;
+	struct destruct_unit_s* curUnit;
 
 	for (player_index = 0; player_index < MAX_PLAYERS; player_index++)
 	{
@@ -2434,7 +2426,7 @@ static void DE_ProcessInput(void)
 					curUnit->unitYMov -= 0.1f;
 				}
 				else if (curUnit->unitType == UNIT_JUMPER &&
-				         curUnit->isYInAir == false)
+					curUnit->isYInAir == false)
 				{
 					curUnit->unitYMov = -3;
 					curUnit->isYInAir = true;
@@ -2477,32 +2469,32 @@ static void DE_ProcessInput(void)
 		if (destruct_player[player_index].shotDelay > 0)
 			destruct_player[player_index].shotDelay--;
 		if (destruct_player[player_index].moves.actions[MOVE_FIRE] == true &&
-		    destruct_player[player_index].shotDelay == 0)
+			destruct_player[player_index].shotDelay == 0)
 		{
 			destruct_player[player_index].shotDelay = shotDelay[curUnit->shotType];
 
 			switch (shotDirt[curUnit->shotType])
 			{
-				case EXPL_NONE:
-					break;
+			case EXPL_NONE:
+				break;
 
-				case EXPL_MAGNET:
-					DE_RunMagnet(player_index, curUnit);
-					break;
+			case EXPL_MAGNET:
+				DE_RunMagnet(player_index, curUnit);
+				break;
 
-				case EXPL_DIRT:
-				case EXPL_NORMAL:
-					DE_MakeShot(player_index, curUnit, direction);
-					break;
+			case EXPL_DIRT:
+			case EXPL_NORMAL:
+				DE_MakeShot(player_index, curUnit, direction);
+				break;
 
-				default:
-					assert(false);
+			default:
+				assert(false);
 			}
 		}
 	}
 }
 
-static void DE_CycleWeaponUp(struct destruct_unit_s * unit)
+static void DE_CycleWeaponUp(struct destruct_unit_s* unit)
 {
 	do
 	{
@@ -2512,7 +2504,7 @@ static void DE_CycleWeaponUp(struct destruct_unit_s * unit)
 	} while (weaponSystems[unit->unitType][unit->shotType] == 0);
 }
 
-static void DE_CycleWeaponDown(struct destruct_unit_s * unit)
+static void DE_CycleWeaponDown(struct destruct_unit_s* unit)
 {
 	do
 	{
@@ -2522,7 +2514,7 @@ static void DE_CycleWeaponDown(struct destruct_unit_s * unit)
 	} while (weaponSystems[unit->unitType][unit->shotType] == 0);
 }
 
-static void DE_MakeShot(enum de_player_t curPlayer, const struct destruct_unit_s * curUnit, int direction)
+static void DE_MakeShot(enum de_player_t curPlayer, const struct destruct_unit_s* curUnit, int direction)
 {
 	unsigned int i;
 	unsigned int shotIndex;
@@ -2550,70 +2542,70 @@ static void DE_MakeShot(enum de_player_t curPlayer, const struct destruct_unit_s
 	/* Create our shot.  Some units have differing logic here */
 	switch (curUnit->unitType)
 	{
-		case UNIT_HELI:
+	case UNIT_HELI:
 
-			shotRec[shotIndex].x = curUnit->unitX + curUnit->lastMove * 2 + 5;
-			shotRec[shotIndex].xmov = 0.02f * curUnit->lastMove * curUnit->lastMove * curUnit->lastMove;
+		shotRec[shotIndex].x = curUnit->unitX + curUnit->lastMove * 2 + 5;
+		shotRec[shotIndex].xmov = 0.02f * curUnit->lastMove * curUnit->lastMove * curUnit->lastMove;
 
-			/* If we are trying in vain to move up off the screen, act differently.*/
-			if (destruct_player[curPlayer].moves.actions[MOVE_UP] && curUnit->unitY < 30)
-			{
-				shotRec[shotIndex].y = curUnit->unitY;
-				shotRec[shotIndex].ymov = 0.1f;
+		/* If we are trying in vain to move up off the screen, act differently.*/
+		if (destruct_player[curPlayer].moves.actions[MOVE_UP] && curUnit->unitY < 30)
+		{
+			shotRec[shotIndex].y = curUnit->unitY;
+			shotRec[shotIndex].ymov = 0.1f;
 
-				if (shotRec[shotIndex].xmov < 0)
-					shotRec[shotIndex].xmov += 0.1f;
-				else if (shotRec[shotIndex].xmov > 0)
-					shotRec[shotIndex].xmov -= 0.1f;
-			}
-			else
-			{
-				shotRec[shotIndex].y = curUnit->unitY + 1;
-				shotRec[shotIndex].ymov = 0.5f + curUnit->unitYMov * 0.1f;
-			}
-			break;
+			if (shotRec[shotIndex].xmov < 0)
+				shotRec[shotIndex].xmov += 0.1f;
+			else if (shotRec[shotIndex].xmov > 0)
+				shotRec[shotIndex].xmov -= 0.1f;
+		}
+		else
+		{
+			shotRec[shotIndex].y = curUnit->unitY + 1;
+			shotRec[shotIndex].ymov = 0.5f + curUnit->unitYMov * 0.1f;
+		}
+		break;
 
-		case UNIT_JUMPER: /* Jumpers are normally only special for the left hand player.  Bug?  Or feature? */
+	case UNIT_JUMPER: /* Jumpers are normally only special for the left hand player.  Bug?  Or feature? */
 
-			if (config.jumper_straight[curPlayer])
-			{
-				/* This is identical to the default case.
-				 * I considered letting the switch fall through
-				 * but that's more confusing to people who aren't used
-				 * to that quirk of switch. */
+		if (config.jumper_straight[curPlayer])
+		{
+			/* This is identical to the default case.
+			 * I considered letting the switch fall through
+			 * but that's more confusing to people who aren't used
+			 * to that quirk of switch. */
 
-				shotRec[shotIndex].x    = curUnit->unitX + 6 - cosf(curUnit->angle) * 10 * direction;
-				shotRec[shotIndex].y    = curUnit->unitY - 7 - sinf(curUnit->angle) * 10;
-				shotRec[shotIndex].xmov = -cosf(curUnit->angle) * curUnit->power * direction;
-				shotRec[shotIndex].ymov = -sinf(curUnit->angle) * curUnit->power;
-			}
-			else
-			{
-				/* This is not identical to the default case. */
-
-				shotRec[shotIndex].x = curUnit->unitX + 2;
-				shotRec[shotIndex].xmov = -cosf(curUnit->angle) * curUnit->power * direction;
-
-				if (curUnit->isYInAir == true)
-				{
-					shotRec[shotIndex].ymov = 1;
-					shotRec[shotIndex].y = curUnit->unitY + 2;
-				}
-				else
-				{
-					shotRec[shotIndex].ymov = -2;
-					shotRec[shotIndex].y = curUnit->unitY - 12;
-				}
-			}
-			break;
-
-		default:
-
-			shotRec[shotIndex].x    = curUnit->unitX + 6 - cosf(curUnit->angle) * 10 * direction;
-			shotRec[shotIndex].y    = curUnit->unitY - 7 - sinf(curUnit->angle) * 10;
+			shotRec[shotIndex].x = curUnit->unitX + 6 - cosf(curUnit->angle) * 10 * direction;
+			shotRec[shotIndex].y = curUnit->unitY - 7 - sinf(curUnit->angle) * 10;
 			shotRec[shotIndex].xmov = -cosf(curUnit->angle) * curUnit->power * direction;
 			shotRec[shotIndex].ymov = -sinf(curUnit->angle) * curUnit->power;
-			break;
+		}
+		else
+		{
+			/* This is not identical to the default case. */
+
+			shotRec[shotIndex].x = curUnit->unitX + 2;
+			shotRec[shotIndex].xmov = -cosf(curUnit->angle) * curUnit->power * direction;
+
+			if (curUnit->isYInAir == true)
+			{
+				shotRec[shotIndex].ymov = 1;
+				shotRec[shotIndex].y = curUnit->unitY + 2;
+			}
+			else
+			{
+				shotRec[shotIndex].ymov = -2;
+				shotRec[shotIndex].y = curUnit->unitY - 12;
+			}
+		}
+		break;
+
+	default:
+
+		shotRec[shotIndex].x = curUnit->unitX + 6 - cosf(curUnit->angle) * 10 * direction;
+		shotRec[shotIndex].y = curUnit->unitY - 7 - sinf(curUnit->angle) * 10;
+		shotRec[shotIndex].xmov = -cosf(curUnit->angle) * curUnit->power * direction;
+		shotRec[shotIndex].ymov = -sinf(curUnit->angle) * curUnit->power;
+		break;
 	}
 
 	/* Now set/clear out a few last details. */
@@ -2628,12 +2620,12 @@ static void DE_MakeShot(enum de_player_t curPlayer, const struct destruct_unit_s
 	shotRec[shotIndex].trailc[3] = 0;
 }
 
-static void DE_RunMagnet(enum de_player_t curPlayer, struct destruct_unit_s * magnet)
+static void DE_RunMagnet(enum de_player_t curPlayer, struct destruct_unit_s* magnet)
 {
 	unsigned int i;
 	enum de_player_t curEnemy;
 	int direction;
-	struct destruct_unit_s * enemyUnit;
+	struct destruct_unit_s* enemyUnit;
 
 	curEnemy = (curPlayer == PLAYER_LEFT) ? PLAYER_RIGHT : PLAYER_LEFT;
 	direction = (curPlayer == PLAYER_LEFT) ? -1 : 1;
@@ -2643,8 +2635,8 @@ static void DE_RunMagnet(enum de_player_t curPlayer, struct destruct_unit_s * ma
 	{
 		if (shotRec[i].isAvailable == false)
 		{
-			if ((curPlayer == PLAYER_LEFT  && shotRec[i].x > magnet->unitX) ||
-			    (curPlayer == PLAYER_RIGHT && shotRec[i].x < magnet->unitX))
+			if ((curPlayer == PLAYER_LEFT && shotRec[i].x > magnet->unitX) ||
+				(curPlayer == PLAYER_RIGHT && shotRec[i].x < magnet->unitX))
 			{
 				shotRec[i].xmov += magnet->power * 0.1f * -direction;
 			}
@@ -2655,11 +2647,11 @@ static void DE_RunMagnet(enum de_player_t curPlayer, struct destruct_unit_s * ma
 	for (i = 0; i < config.max_installations; i++, enemyUnit++) /* magnets push coptors */
 	{
 		if (DE_isValidUnit(enemyUnit) &&
-		    enemyUnit->unitType == UNIT_HELI &&
-		    enemyUnit->isYInAir == true)
+			enemyUnit->unitType == UNIT_HELI &&
+			enemyUnit->isYInAir == true)
 		{
 			if ((curEnemy == PLAYER_RIGHT && destruct_player[curEnemy].unit[i].unitX + 11 < 318) ||
-			    (curEnemy == PLAYER_LEFT  && destruct_player[curEnemy].unit[i].unitX > 1))
+				(curEnemy == PLAYER_LEFT && destruct_player[curEnemy].unit[i].unitX > 1))
 			{
 				enemyUnit->unitX -= 2 * direction;
 			}
@@ -2668,28 +2660,28 @@ static void DE_RunMagnet(enum de_player_t curPlayer, struct destruct_unit_s * ma
 	magnet->ani_frame = 1;
 }
 
-static void DE_RaiseAngle(struct destruct_unit_s * unit)
+static void DE_RaiseAngle(struct destruct_unit_s* unit)
 {
 	unit->angle += 0.01f;
 	if (unit->angle > M_PI_2 - 0.01f)
 		unit->angle = M_PI_2 - 0.01f;
 }
 
-static void DE_LowerAngle(struct destruct_unit_s * unit)
+static void DE_LowerAngle(struct destruct_unit_s* unit)
 {
 	unit->angle -= 0.01f;
 	if (unit->angle < 0)
 		unit->angle = 0;
 }
 
-static void DE_RaisePower(struct destruct_unit_s * unit)
+static void DE_RaisePower(struct destruct_unit_s* unit)
 {
 	unit->power += 0.05f;
 	if (unit->power > 5)
 		unit->power = 5;
 }
 
-static void DE_LowerPower(struct destruct_unit_s * unit)
+static void DE_LowerPower(struct destruct_unit_s* unit)
 {
 	unit->power -= 0.05f;
 	if (unit->power < 1)
@@ -2702,7 +2694,7 @@ static void DE_LowerPower(struct destruct_unit_s * unit)
  * otherwise.  This mainly exists because the 'health' var
  * serves two roles and that can get confusing.
  */
-static inline bool DE_isValidUnit(struct destruct_unit_s * unit)
+static inline bool DE_isValidUnit(struct destruct_unit_s* unit)
 {
 	return unit->health > 0;
 }
@@ -2738,7 +2730,7 @@ static void DE_RunTickPlaySounds(void)
 			else
 				tempVolume = fxPlayVol / 2;
 
-			multiSamplePlay(soundSamples[tempSampleIndex-1], soundSampleCount[tempSampleIndex-1], i, tempVolume);
+			multiSamplePlay(soundSamples[tempSampleIndex - 1], soundSampleCount[tempSampleIndex - 1], i, tempVolume);
 			soundQueue[i] = S_NONE;
 		}
 	}
@@ -2752,3 +2744,4 @@ static void JE_pixCool(unsigned int x, unsigned int y, Uint8 c)
 	JE_pix(VGAScreen, x, y - 1, c - 2);
 	JE_pix(VGAScreen, x, y + 1, c - 2);
 }
+

@@ -172,6 +172,28 @@ static void extend_playfield_right_column(SDL_Surface* surface)
 	}
 }
 
+static void copy_screen_to_buffer(Uint8* buffer)
+{
+	Uint8* src = VGAScreen->pixels;
+	for (int y = 0; y < vga_height; ++y)
+	{
+		memcpy(buffer, src, VGAScreen->pitch);
+		buffer += VGAScreen->pitch;
+		src += VGAScreen->pitch;
+	}
+}
+
+static void copy_buffer_to_screen(const Uint8* buffer)
+{
+	Uint8* dst = VGAScreen->pixels;
+	for (int y = 0; y < vga_height; ++y)
+	{
+		memcpy(dst, buffer, VGAScreen->pitch);
+		buffer += VGAScreen->pitch;
+		dst += VGAScreen->pitch;
+	}
+}
+
 inline static void blit_enemy(SDL_Surface *surface, unsigned int i, signed int x_offset, signed int y_offset, signed int sprite_offset)
 {
 	if (enemy[i].sprite2s == NULL)
@@ -2817,26 +2839,26 @@ new_game:
 
 							JE_word tempX = atoi(s + 3);
 							JE_loadPic(VGAScreen, tempX, false);
-							memcpy(pic_buffer, VGAScreen->pixels, sizeof(pic_buffer));
+							copy_screen_to_buffer(pic_buffer);
 
 							service_SDL_events(true);
 
-							for (int z = 0; z <= 199; z++)
+							for (int z = 0; z < vga_height; z++)
 							{
 								if (!newkey)
 								{
 									vga = VGAScreen->pixels;
 									vga2 = VGAScreen2->pixels;
-									pic = pic_buffer + (199 - z) * 320;
+									pic = pic_buffer + (vga_height - 1 - z) * VGAScreen->pitch;
 
 									setDelay(1);
 
-									for (y = 0; y <= 199; y++)
+									for (y = 0; y < vga_height; y++)
 									{
 										if (y <= z)
 										{
-											memcpy(vga, pic, 320);
-											pic += 320;
+											memcpy(vga, pic, VGAScreen->pitch);
+											pic += VGAScreen->pitch;
 										}
 										else
 										{
@@ -2857,7 +2879,7 @@ new_game:
 								}
 							}
 
-							memcpy(VGAScreen->pixels, pic_buffer, sizeof(pic_buffer));
+							copy_buffer_to_screen(pic_buffer);
 						}
 						break;
 
@@ -2869,10 +2891,10 @@ new_game:
 
 							JE_word tempX = atoi(s + 3);
 							JE_loadPic(VGAScreen, tempX, false);
-							memcpy(pic_buffer, VGAScreen->pixels, sizeof(pic_buffer));
+							copy_screen_to_buffer(pic_buffer);
 
 							service_SDL_events(true);
-							for (int z = 0; z <= 199; z++)
+							for (int z = 0; z < vga_height; z++)
 							{
 								if (!newkey)
 								{
@@ -2882,17 +2904,17 @@ new_game:
 
 									setDelay(1);
 
-									for (y = 0; y < 199; y++)
+									for (y = 0; y < vga_height; y++)
 									{
-										if (y <= 199 - z)
+										if (y <= vga_height - 1 - z)
 										{
 											memcpy(vga, vga2, VGAScreen->pitch);
 											vga2 += VGAScreen->pitch;
 										}
 										else
 										{
-											memcpy(vga, pic, 320);
-											pic += 320;
+											memcpy(vga, pic, VGAScreen->pitch);
+											pic += VGAScreen->pitch;
 										}
 										vga += VGAScreen->pitch;
 									}
@@ -2908,7 +2930,7 @@ new_game:
 								}
 							}
 
-							memcpy(VGAScreen->pixels, pic_buffer, sizeof(pic_buffer));
+							copy_buffer_to_screen(pic_buffer);
 						}
 						break;
 
@@ -2920,11 +2942,12 @@ new_game:
 
 							JE_word tempX = atoi(s + 3);
 							JE_loadPic(VGAScreen, tempX, false);
-							memcpy(pic_buffer, VGAScreen->pixels, sizeof(pic_buffer));
+							copy_screen_to_buffer(pic_buffer);
 
 							service_SDL_events(true);
 
-							for (int z = 0; z <= 318; z++)
+							const int width = VGAScreen->pitch;
+							for (int z = 0; z <= width - 2; z++)
 							{
 								if (!newkey)
 								{
@@ -2936,12 +2959,12 @@ new_game:
 
 									for (y = 0; y < vga_height; y++)
 									{
-										memcpy(vga, vga2 + z, 319 - z);
-										vga += 320 - z;
+										memcpy(vga, vga2 + z, width - 1 - z);
+										vga += width - z;
 										vga2 += VGAScreen2->pitch;
 										memcpy(vga, pic, z + 1);
 										vga += z;
-										pic += 320;
+										pic += width;
 									}
 
 									JE_showVGA();
@@ -2955,7 +2978,7 @@ new_game:
 								}
 							}
 
-							memcpy(VGAScreen->pixels, pic_buffer, sizeof(pic_buffer));
+							copy_buffer_to_screen(pic_buffer);
 						}
 						break;
 

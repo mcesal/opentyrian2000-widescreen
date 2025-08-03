@@ -5404,11 +5404,18 @@ void draw_boss_bar(void)
 		boss_bar[1].link_num = 0;
 	}
 
+	const int playfield_left = -2 * PLAYFIELD_X_SHIFT;
+	const int center_x = playfield_left + PLAYFIELD_WIDTH / 2;
+
 	for (unsigned int b = 0; b < bars; b++)
 	{
-		unsigned int x = (bars == 2)
-		               ? ((b == 0) ? 125 : 185)
-		               : ((levelTimer) ? 250 : 155);  // level timer and boss bar would overlap
+		unsigned int x;
+
+		if (bars == 2)
+			x = center_x + ((b == 0) ? -30 : 30);
+		else
+			x = center_x + ((levelTimer) ? 95 : 0);  // level timer and boss bar would overlap
+
 		unsigned int y = (levelTimer) ? 15 : 7;
 
 		JE_barX(x - 25, y, x + 25, y + 5, 115);

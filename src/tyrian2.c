@@ -158,10 +158,10 @@ void JE_starShowVGA(void)
 // 16-pixel-tall column horizontally for the additional playfield width.
 static void extend_playfield_right_column(SDL_Surface* surface)
 {
-	const int src_x = 263;  // last column of the original playfield
+	const int src_x = 262;  // last column of the original playfield
 	const int src_y = 184;
 	const int height = 16;
-	const int copy_width = surface->w - HUD_WIDTH - 264;  // pixels to extend
+	const int copy_width = surface->w - HUD_WIDTH - 263;  // pixels to extend
 
 	Uint8* row = (Uint8*)surface->pixels + src_y * surface->pitch + src_x;
 	for (int y = 0; y < height; ++y)
@@ -802,6 +802,10 @@ start_level_first:
 	JE_drawOptions();
 
 	JE_outText(VGAScreen, HUD_X(268), twoPlayerMode ? 76 : 118, levelName, 12, 4);
+
+	// Ensure the widened playfield blends into the HUD before the fade-in
+	// so no remnants of the old HUD position appear during level start.
+	extend_playfield_right_column(VGAScreen);
 
 	JE_showVGA();
 	JE_gammaCorrect(&colors, gammaCorrection);
@@ -2071,11 +2075,17 @@ draw_player_shot_loop_end:
 			{
 				warningColChange = -warningColChange;
 			}
-			fill_rectangle_xy(VGAScreen, 24, 181, 138, 183, warningCol);
-			fill_rectangle_xy(VGAScreen, 175, 181, 287, 183, warningCol);
-			fill_rectangle_xy(VGAScreen, 24, 0, 287, 3, warningCol);
+			const int playfield_left = -2 * PLAYFIELD_X_SHIFT;
+			const int playfield_right = playfield_left + PLAYFIELD_WIDTH - 1;
+			const char warning_text[] = "WARNING";
+			const int warning_text_width = JE_textWidth(warning_text, TINY_FONT);
+			const int warning_x = playfield_left + (PLAYFIELD_WIDTH - warning_text_width) / 2;
+			const int gap_margin = 1;
+			fill_rectangle_xy(VGAScreen, playfield_left, 181, warning_x - gap_margin - 1, 183, warningCol);
+			fill_rectangle_xy(VGAScreen, warning_x + warning_text_width + gap_margin, 181, playfield_right, 183, warningCol);
+			fill_rectangle_xy(VGAScreen, playfield_left, 0, playfield_right, 3, warningCol);
 
-			JE_outText(VGAScreen, 140, 178, "WARNING", 7, (warningCol % 16) / 2);
+			JE_outText(VGAScreen, warning_x, 178, warning_text, 7, (warningCol % 16) / 2);
 
 		}
 	}

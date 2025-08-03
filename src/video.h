@@ -33,7 +33,7 @@
   * below provide the gameplay and HUD widths as well as a convenience macro
   * for converting legacy hard coded X coordinates to the new screen space.
   */
-#define HUD_WIDTH 56
+#define HUD_WIDTH 57
 #define PLAYFIELD_WIDTH (vga_width - HUD_WIDTH)
 #define PLAYFIELD_X_SHIFT (-12)
 #define HUD_X(x) ((x) + (vga_width - 320))

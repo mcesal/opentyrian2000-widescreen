@@ -4965,7 +4965,7 @@ void JE_mainGamePlayerFunctions(void)
 	mapX3Pos = mapX3Ofs % 24;
 	mapX3bpPos = 1 - (mapX3Ofs / 24);
 
-	mapX2Ofs   = ((tempW-18) * 2) / 3;
+	mapX2Ofs   = ((tempW-17) * 2) / 3;
 	mapX2Pos   = mapX2Ofs % 24;
 	mapX2bpPos = 1 - (mapX2Ofs / 24);
 

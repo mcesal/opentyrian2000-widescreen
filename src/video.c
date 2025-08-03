@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 const char *const scaling_mode_names[ScalingMode_MAX] = {
 	"Center",
@@ -55,6 +56,10 @@ static SDL_Texture *main_window_texture = NULL;
 
 static ScalerFunction scaler_function;
 
+static Uint8 gradient_cache[256][18];
+static Uint32 last_gradient_palette[256];
+static bool gradient_cache_valid = false;
+
 static void init_renderer(void);
 static void deinit_renderer(void);
 static void init_texture(void);
@@ -65,6 +70,8 @@ static void window_center_in_display(int display_index);
 static void calc_dst_render_rect(SDL_Surface *src_surface, SDL_Rect *dst_rect);
 static void scale_and_flip(SDL_Surface *);
 static void blit_with_offset(SDL_Surface* src, SDL_Surface* dst, int x_offset);
+static Uint8 nearest_palette_index(Uint8 r, Uint8 g, Uint8 b);
+static void update_gradient_cache(void);
 
 void init_video(void)
 {
@@ -413,39 +420,78 @@ static void scale_and_flip(SDL_Surface *src_surface)
 	SDL_RenderPresent(main_window_renderer);
 
 	// Save output rect to be used by mouse functions
+	// Save output rect to be used by mouse functions
 	last_output_rect = dst_rect;
+}
+
+static Uint8 nearest_palette_index(Uint8 r, Uint8 g, Uint8 b)
+{
+	int best = 0;
+	int best_dist = INT_MAX;
+
+	for (int i = 0; i < 256; ++i)
+	{
+		int dr = (int)colors[i].r - r;
+		int dg = (int)colors[i].g - g;
+		int db = (int)colors[i].b - b;
+		int dist = dr * dr + dg * dg + db * db;
+		if (dist < best_dist)
+		{
+			best_dist = dist;
+			best = i;
+			if (dist == 0)
+				break;
+		}
+	}
+
+	return (Uint8)best;
+}
+
+static void update_gradient_cache(void)
+{
+	if (!gradient_cache_valid || memcmp(last_gradient_palette, rgb_palette, sizeof(rgb_palette)) != 0)
+	{
+		memcpy(last_gradient_palette, rgb_palette, sizeof(rgb_palette));
+
+		for (int c = 0; c < 256; ++c)
+		{
+			SDL_Color col = colors[c];
+			gradient_cache[c][0] = 0;
+			for (int i = 1; i < menu_x_offset; ++i)
+			{
+				float factor = (float)i / menu_x_offset;
+				Uint8 r = (Uint8)(col.r * factor);
+				Uint8 g = (Uint8)(col.g * factor);
+				Uint8 b = (Uint8)(col.b * factor);
+				gradient_cache[c][i] = nearest_palette_index(r, g, b);
+			}
+		}
+
+		gradient_cache_valid = true;
+	}
 }
 
 static void blit_with_offset(SDL_Surface* src, SDL_Surface* dst, int x_offset)
 {
+	update_gradient_cache();
+
 	for (int y = 0; y < vga_height; ++y)
 	{
 		Uint8* src_row = (Uint8*)src->pixels + y * src->pitch;
 		Uint8* dst_row = (Uint8*)dst->pixels + y * dst->pitch;
 
-		memset(dst_row, 0, dst->pitch);
-
-		/* Copy the 320px wide source to the destination with an offset */
 		memcpy(dst_row + x_offset, src_row, 320);
 
-		/* Extend the leftmost column with a gradient fade to black. */
 		Uint8 left_color = src_row[0];
-		Uint8 left_hue = left_color & 0xF0;
-		Uint8 left_brightness = left_color & 0x0F;
 		for (int i = 0; i < x_offset; ++i)
 		{
-			Uint8 brightness = (left_brightness * i) / x_offset;
-			dst_row[i] = left_hue | brightness;
+			dst_row[i] = gradient_cache[left_color][i];
 		}
 
-		/* Extend the rightmost column with a gradient fade to black. */
 		Uint8 right_color = src_row[319];
-		Uint8 right_hue = right_color & 0xF0;
-		Uint8 right_brightness = right_color & 0x0F;
-		for (int i = 1; i <= x_offset; ++i)
+		for (int i = 0; i < x_offset; ++i)
 		{
-			Uint8 brightness = (right_brightness * (x_offset - i)) / x_offset;
-			dst_row[x_offset + 320 - 1 + i] = right_hue | brightness;
+			dst_row[x_offset + 320 + i] = gradient_cache[right_color][x_offset - 1 - i];
 		}
 	}
 }

@@ -637,6 +637,8 @@ ulong JE_getCost(JE_byte itemType, JE_word itemNum)
 
 bool JE_loadScreen(void)
 {
+	set_menu_centered(true);
+
 	if (shopSpriteSheet.data == NULL)
 		JE_loadCompShapes(&shopSpriteSheet, '1');  // need mouse pointer and arrow sprites
 
@@ -646,7 +648,7 @@ bool JE_loadScreen(void)
 	const size_t menuItemsCount = 12;
 	size_t selectedIndex = 0;
 
-	const int xCenter = vga_width / 2;
+	const int xCenter = 160; // center of 320px menu field
 	const int yMenuHeader = 5;
 	const int xMenuItem = 10;
 	const int xMenuItemName = xMenuItem;
@@ -4234,7 +4236,12 @@ redo:
 	}
 
 	if (play_demo)
-		JE_dString(VGAScreen, 115, 10, miscText[7], SMALL_FONT_SHAPES); // insert coin
+	{
+		const int playfield_left = -2 * PLAYFIELD_X_SHIFT;
+		const int insert_coin_x = playfield_left + (PLAYFIELD_WIDTH - JE_textWidth(miscText[7], SMALL_FONT_SHAPES)) / 2;
+		const int insert_coin_y = 10;
+		JE_dString(VGAScreen, insert_coin_x, insert_coin_y, miscText[7], SMALL_FONT_SHAPES); // insert coin
+	}
 
 	if (this_player->is_alive && !endLevel)
 	{

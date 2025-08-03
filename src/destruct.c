@@ -340,6 +340,7 @@ static unsigned int JE_placementPosition(unsigned int, unsigned int, unsigned in
 //drawing functions
 static void JE_aliasDirt(SDL_Surface*);
 static void DE_RunTickDrawCrosshairs(void);
+static void DE_extendHUDColumn(SDL_Surface*);
 static void DE_RunTickDrawHUD(void);
 static void DE_GravityDrawUnit(enum de_player_t, struct destruct_unit_s*);
 static void DE_RunTickAnimate(void);
@@ -389,6 +390,12 @@ static bool JE_stabilityCheck(unsigned int, unsigned int);
 //sound
 static void DE_RunTickPlaySounds(void);
 static void JE_eSound(unsigned int);
+
+// Utility functions
+static int center_text(const char* s, unsigned int font)
+{
+	return (vga_width - JE_textWidth(s, font)) / 2;
+}
 
 /*** Weapon configurations ***/
 
@@ -704,6 +711,7 @@ static void JE_destructMain(void)
 	enum de_state_t curState;
 
 	JE_loadPic(VGAScreen, 11, false);
+	DE_extendHUDColumn(VGAScreen);
 	JE_introScreen();
 
 	DE_ResetPlayers();
@@ -723,6 +731,7 @@ static void JE_destructMain(void)
 
 			destructFirstTime = true;
 			JE_loadPic(VGAScreen, 11, false);
+			DE_extendHUDColumn(VGAScreen);
 
 			DE_ResetUnits();
 			DE_ResetLevel();
@@ -740,9 +749,9 @@ static void JE_destructMain(void)
 static void JE_introScreen(void)
 {
 	memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->h * VGAScreen2->pitch);
-	JE_outText(VGAScreen, JE_fontCenter(specialName[SA_DESTRUCT - 1], TINY_FONT), 90, specialName[SA_DESTRUCT - 1], 12, 5);
-	JE_outText(VGAScreen, JE_fontCenter(miscText[64], TINY_FONT), 180, miscText[64], 15, 2);
-	JE_outText(VGAScreen, JE_fontCenter(miscText[65], TINY_FONT), 190, miscText[65], 15, 2);
+	JE_outText(VGAScreen, center_text(specialName[SA_DESTRUCT - 1], TINY_FONT), 90, specialName[SA_DESTRUCT - 1], 12, 5);
+	JE_outText(VGAScreen, center_text(miscText[64], TINY_FONT), 180, miscText[64], 15, 2);
+	JE_outText(VGAScreen, center_text(miscText[65], TINY_FONT), 190, miscText[65], 15, 2);
 	JE_showVGA();
 	fade_palette(colors, 15, 0, 255);
 
@@ -770,9 +779,9 @@ static void DrawModeSelectMenu(enum de_mode_t mode)
 
 	/* Helper function of JE_modeSelect.  Do not use elsewhere. */
 	for (i = 0; i < DESTRUCT_MODES; i++)
-		JE_textShade(VGAScreen, JE_fontCenter(destructModeName[i], TINY_FONT), 82 + i * 12, destructModeName[i], 12, (i == mode) * 4, FULL_SHADE);
+		JE_textShade(VGAScreen, center_text(destructModeName[i], TINY_FONT), 82 + i * 12, destructModeName[i], 12, (i == mode) * 4, FULL_SHADE);
 	if (config.allow_custom == true)
-		JE_textShade(VGAScreen, JE_fontCenter("Custom", TINY_FONT), 82 + i * 12, "Custom", 12, (i == mode) * 4, FULL_SHADE);
+		JE_textShade(VGAScreen, center_text("Custom", TINY_FONT), 82 + i * 12, "Custom", 12, (i == mode) * 4, FULL_SHADE);
 }
 
 static enum de_mode_t JE_modeSelect(void)
@@ -1160,6 +1169,25 @@ static void JE_aliasDirt(SDL_Surface* screen)
 	}
 }
 
+static void DE_extendHUDColumn(SDL_Surface* surface)
+{
+	const int src_x = 171;
+	const int src_y = 0;
+	const int height = 12;
+	const int extend = 36;
+
+	if (surface->w <= 320)
+		return;
+
+	for (int y = 0; y < height; ++y)
+	{
+		Uint8* row = (Uint8*)surface->pixels + (src_y + y) * surface->pitch;
+		Uint8 pixel = row[src_x];
+		memmove(row + src_x + extend, row + src_x, surface->w - src_x - extend);
+		memset(row + src_x, pixel, extend);
+	}
+}
+
 static unsigned int JE_placementPosition(unsigned int passed_x, unsigned int width, unsigned int* world)
 {
 	unsigned int i, new_y;
@@ -1399,7 +1427,7 @@ static void JE_pauseScreen(void)
 
 	/* Save our current screen/game world.  We don't want to screw it up while paused. */
 	memcpy(VGAScreen2->pixels, VGAScreen->pixels, VGAScreen2->h * VGAScreen2->pitch);
-	JE_outText(VGAScreen, JE_fontCenter(miscText[22], TINY_FONT), 90, miscText[22], 12, 5);
+	JE_outText(VGAScreen, center_text(miscText[22], TINY_FONT), 90, miscText[22], 12, 5);
 	JE_showVGA();
 
 	do  /* wait until user hits a key */

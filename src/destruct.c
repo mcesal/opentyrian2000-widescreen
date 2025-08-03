@@ -310,7 +310,7 @@ struct destruct_wall_s
 struct destruct_world_s
 {
 	/* Map data & screen pointer */
-	unsigned int baseMap[320];
+	unsigned int baseMap[vga_width];
 	SDL_Surface* VGAScreen;
 	struct destruct_wall_s* mapWalls;
 
@@ -663,6 +663,7 @@ void JE_destructGame(void)
 
 	/* This is the entry function.  Any one-time actions we need to
 	 * perform can go in here. */
+	set_menu_centered(false);
 	JE_clr256(VGAScreen);
 	JE_showVGA();
 
@@ -733,6 +734,7 @@ static void JE_destructMain(void)
 			fade_black(25);
 		} while (curState == STATE_RELOAD);
 	}
+	set_menu_centered(true);
 }
 
 static void JE_introScreen(void)
@@ -926,7 +928,7 @@ static void DE_generateBaseTerrain(unsigned int mapFlags, unsigned int* baseWorl
 	}
 
 	/* Now compute a height for each of our lines. */
-	for (i = 1; i <= 318; i++)
+	for (i = 1; i <= vga_width - 2; i++)
 	{
 		newheight = roundf(sinf(sinewave * i) * HeightMul + sinf(sinewave2 * i) * 15 +
 			cosf(cosinewave * i) * 10 + sinf(cosinewave2 * i) * 15) + 130;
@@ -945,7 +947,7 @@ static void DE_drawBaseTerrain(unsigned int* baseWorld)
 {
 	unsigned int i;
 
-	for (i = 1; i <= 318; i++)
+	for (i = 1; i <= vga_width - 2; i++)
 	{
 		JE_rectangle(VGAScreen, i, baseWorld[i], i, 199, PIXEL_DIRT);
 	}
@@ -969,7 +971,7 @@ static void DE_generateUnits(unsigned int* baseWorld)
 			}
 			else
 			{
-				destruct_player[i].unit[j].unitX = 320 - ((mt_rand() % 120) + 22);
+				destruct_player[i].unit[j].unitX = vga_width - ((mt_rand() % 120) + 22);
 			}
 
 			destruct_player[i].unit[j].unitY = JE_placementPosition(destruct_player[i].unit[j].unitX - 1, 14, baseWorld);
@@ -1047,7 +1049,7 @@ static void DE_generateWalls(struct destruct_world_s* gameWorld)
 		do
 		{
 			isGood = true;
-			wallX = (mt_rand() % 300) + 10;
+			wallX = (mt_rand() % (vga_width - 20)) + 10;
 
 			/* Is this X already occupied?  In the original Tyrian we only
 			 * checked to make sure four units on each side were unobscured.
@@ -1096,7 +1098,7 @@ static void DE_generateRings(SDL_Surface* screen, Uint8 pixel)
 	rings = mt_rand() % 6 + 1;
 	for (i = 1; i <= rings; i++)
 	{
-		tempPosX1 = (mt_rand() % 320);
+		tempPosX1 = (mt_rand() % vga_width);
 		tempPosY1 = (mt_rand() % 160) + 20;
 		tempSize = (mt_rand() % 40) + 10;  /*Size*/
 
@@ -1106,7 +1108,7 @@ static void DE_generateRings(SDL_Surface* screen, Uint8 pixel)
 			tempPosY2 = tempPosY1 + roundf(cosf(tempRadian) * (mt_rand_lt1() * 0.1f + 0.9f) * tempSize);
 			tempPosX2 = tempPosX1 + roundf(sinf(tempRadian) * (mt_rand_lt1() * 0.1f + 0.9f) * tempSize);
 			if ((tempPosY2 > 12) && (tempPosY2 < 200) &&
-				(tempPosX2 > 0) && (tempPosX2 < 319))
+				(tempPosX2 > 0) && (tempPosX2 < vga_width - 1))
 			{
 				((Uint8*)screen->pixels)[tempPosX2 + tempPosY2 * screen->pitch] = pixel;
 			}
@@ -1805,9 +1807,9 @@ static void DE_RunTickExplosions(void)
 			 * going to replicate it w/o risking out of bound arrays. */
 
 			while (tempPosX < 0)
-				tempPosX += 320;
-			while (tempPosX > 320)
-				tempPosX -= 320;
+				tempPosX += vga_width;
+			while (tempPosX >= vga_width)
+				tempPosX -= vga_width;
 
 			/* We don't draw our explosion if it's out of bounds vertically */
 			if (tempPosY >= 200 || tempPosY <= 15)
@@ -1902,7 +1904,7 @@ static void DE_RunTickShots(void)
 				shotRec[i].y -= shotRec[i].ymov;
 				shotRec[i].ymov = -shotRec[i].ymov;
 			}
-			if (shotRec[i].x < 1 || shotRec[i].x > 318)
+			if (shotRec[i].x < 1 || shotRec[i].x > vga_width - 2)
 			{
 				shotRec[i].x -= shotRec[i].xmov;
 				shotRec[i].xmov = -shotRec[i].xmov;
@@ -1924,7 +1926,7 @@ static void DE_RunTickShots(void)
 		}
 
 		/* Shot has gone out of bounds. Eliminate it. */
-		if (shotRec[i].x > 318 || shotRec[i].x < 1)
+		if (shotRec[i].x > vga_width - 2 || shotRec[i].x < 1)
 		{
 			shotRec[i].isAvailable = true;
 			continue;
@@ -2140,11 +2142,11 @@ static void DE_RunTickAI(void)
 			{
 				ptrPlayer->aiMemory.c_Power = 1;
 			}
-			if (mt_rand() % 240 > ptrCurUnit->unitX)
+			if (mt_rand() % (vga_width - 80) > ptrCurUnit->unitX)
 			{
 				ptrPlayer->moves.actions[MOVE_RIGHT] = true;
 			}
-			else if ((mt_rand() % 20) + 300 < ptrCurUnit->unitX)
+			else if ((mt_rand() % 20) + (vga_width - 20) < ptrCurUnit->unitX)
 			{
 				ptrPlayer->moves.actions[MOVE_LEFT] = true;
 			}
@@ -2152,14 +2154,14 @@ static void DE_RunTickAI(void)
 			{
 				ptrPlayer->aiMemory.c_Angle = (mt_rand() % 3) - 1;
 			}
-			if (ptrCurUnit->unitX > 295 && ptrCurUnit->lastMove > 1)
+			if (ptrCurUnit->unitX > vga_width - 25 && ptrCurUnit->lastMove > 1)
 			{
 				ptrPlayer->moves.actions[MOVE_LEFT] = true;
 				ptrPlayer->moves.actions[MOVE_RIGHT] = false;
 			}
-			if (ptrCurUnit->unitType != UNIT_HELI || ptrCurUnit->lastMove > 3 || (ptrCurUnit->unitX > 160 && ptrCurUnit->lastMove > -3))
+			if (ptrCurUnit->unitType != UNIT_HELI || ptrCurUnit->lastMove > 3 || (ptrCurUnit->unitX > vga_width / 2 && ptrCurUnit->lastMove > -3))
 			{
-				if (mt_rand() % (int)roundf(ptrCurUnit->unitY) < 150 && ptrCurUnit->unitYMov < 0.01f && (ptrCurUnit->unitX < 160 || ptrCurUnit->lastMove < 2))
+				if (mt_rand() % (int)roundf(ptrCurUnit->unitY) < 150 && ptrCurUnit->unitYMov < 0.01f && (ptrCurUnit->unitX < vga_width / 2 || ptrCurUnit->lastMove < 2))
 					ptrPlayer->moves.actions[MOVE_FIRE] = true;
 				ptrPlayer->aiMemory.c_noDown = (5 - abs(ptrCurUnit->lastMove)) * (5 - abs(ptrCurUnit->lastMove)) + 3;
 				ptrPlayer->aiMemory.c_Power = 1;
@@ -2299,11 +2301,11 @@ static void DE_RunTickDrawHUD(void)
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		curUnit = &(destruct_player[i].unit[destruct_player[i].unitSelected]);
-		startX = ((i == PLAYER_LEFT) ? 0 : 320 - 150);
+		startX = ((i == PLAYER_LEFT) ? 0 : vga_width - 150);
 
 		fill_rectangle_xy(VGAScreen, startX + 5, 3, startX + 14, 8, 241);
 		JE_rectangle(VGAScreen, startX + 4, 2, startX + 15, 9, 242);
-		JE_rectangle(VGAScreen, startX + 3, 1, startX + 16, 10, 240);
+		JE_rectangle(VGAScreen, startX + 3, 1, startX + 16 + 36, 10, 240);
 		fill_rectangle_xy(VGAScreen, startX + 18, 3, startX + 140, 8, 241);
 		JE_rectangle(VGAScreen, startX + 17, 2, startX + 143, 9, 242);
 		JE_rectangle(VGAScreen, startX + 16, 1, startX + 144, 10, 240);
@@ -2403,7 +2405,7 @@ static void DE_ProcessInput(void)
 						curUnit->isYInAir = true;
 				}
 			}
-			if (destruct_player[player_index].moves.actions[MOVE_RIGHT] == true && curUnit->unitX < 305)
+			if (destruct_player[player_index].moves.actions[MOVE_RIGHT] == true && curUnit->unitX < vga_width - 15)
 			{
 				if (JE_stabilityCheck(curUnit->unitX + 5, roundf(curUnit->unitY)))
 				{
@@ -2650,7 +2652,7 @@ static void DE_RunMagnet(enum de_player_t curPlayer, struct destruct_unit_s* mag
 			enemyUnit->unitType == UNIT_HELI &&
 			enemyUnit->isYInAir == true)
 		{
-			if ((curEnemy == PLAYER_RIGHT && destruct_player[curEnemy].unit[i].unitX + 11 < 318) ||
+			if ((curEnemy == PLAYER_RIGHT && destruct_player[curEnemy].unit[i].unitX + 11 < vga_width - 2) ||
 				(curEnemy == PLAYER_LEFT && destruct_player[curEnemy].unit[i].unitX > 1))
 			{
 				enemyUnit->unitX -= 2 * direction;

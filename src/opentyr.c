@@ -599,10 +599,11 @@ void setupMenu(void)
 				case MENU_ITEM_DESTRUCT:
 				{
 					JE_playSampleNum(S_SELECT);
-
 					fade_black(10);
 
+					set_menu_centered(false);
 					JE_destructGame();
+					set_menu_centered(true);
 
 					restart = true;
 					break;

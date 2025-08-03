@@ -209,7 +209,15 @@ void JE_helpSystem(JE_byte startTopic)
 	const size_t menuItemsCount = COUNTOF(topicName) - 1;
 	size_t selectedIndex = 0;
 
-	const int xCenter = vga_width / 2;
+	/*
+		 * Menus are rendered on a 320px wide virtual screen which is centered
+		 * within the wider VGA buffer.  Using vga_width / 2 centers text within
+		 * the entire buffer which causes a visual offset when the menu is
+		 * blitted to the virtual screen.  Instead, base the center position on
+		 * the virtual screen width to keep headers and labels visually centered
+		 * regardless of the actual buffer width.
+		 */
+	const int xCenter = 320 / 2;
 	const int yMenuHeader = 30;
 	const int yMenuItems = 60;
 	/* reduce spacing to fit new Debug option */
@@ -392,7 +400,8 @@ static bool helpSystemPage(Uint8 *topic, bool *restart)
 {
 	Uint8 page = topicStart[*topic - 1];
 
-	const int xCenter = vga_width / 2;
+	/* See comment in JE_helpSystem regarding the virtual screen width. */
+	const int xCenter = 320 / 2;
 
 	for (; ; )
 	{

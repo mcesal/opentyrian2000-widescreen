@@ -2467,9 +2467,10 @@ void JE_loadMap(void)
 	saveLevel = mainLevel;
 
 new_game:
-	galagaMode  = false;
+	set_menu_centered(true);
+	galagaMode = false;
 	useLastBank = false;
-	extraGame   = false;
+	extraGame = false;
 	haltGame = false;
 
 	gameLoaded = false;

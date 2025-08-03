@@ -4942,7 +4942,7 @@ void JE_mainGamePlayerFunctions(void)
 		u = 0.0f;
 	else if (u > 1.0f)
 		u = 1.0f;
-	tempW = floorf((1.0f - u) * (24 * 3));
+	tempW = floorf((1.0f - u) * (24 * 3)) - 18;
 	mapX3Ofs = tempW;
 	mapX3Pos = mapX3Ofs % 24;
 	mapX3bpPos = 1 - (mapX3Ofs / 24);

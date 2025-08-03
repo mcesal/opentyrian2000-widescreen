@@ -3082,7 +3082,10 @@ new_game:
 	else
 		fade_black(50);
 
-	FILE *level_f = dir_fopen_die(data_dir(), levelFile, "rb");
+	/* Return the display to the normal gameplay offset after the fade */
+	set_menu_centered(false);
+
+	FILE* level_f = dir_fopen_die(data_dir(), levelFile, "rb");
 	fseek(level_f, lvlPos[(lvlFileNum-1) * 2], SEEK_SET);
 
 	JE_char char_mapFile;

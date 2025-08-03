@@ -1737,7 +1737,10 @@ void JE_itemScreen(void)
 	if (gameLoaded)
 		fade_black(10);
 
-	set_menu_centered(false);
+	/* Keep the buy/sell screen centered until after the fade when jumping to
+	   the next level.  Otherwise, reset the offset now. */
+	if (!jumpSection)
+		set_menu_centered(false);
 }
 
 void draw_ship_illustration(void)

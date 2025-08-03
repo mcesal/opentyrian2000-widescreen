@@ -1734,10 +1734,10 @@ void JE_itemScreen(void)
 	}
 #endif
 
-	set_menu_centered(false);
-
 	if (gameLoaded)
 		fade_black(10);
+
+	set_menu_centered(false);
 }
 
 void draw_ship_illustration(void)

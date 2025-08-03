@@ -2305,7 +2305,7 @@ static void DE_RunTickDrawHUD(void)
 
 		fill_rectangle_xy(VGAScreen, startX + 5, 3, startX + 14, 8, 241);
 		JE_rectangle(VGAScreen, startX + 4, 2, startX + 15, 9, 242);
-		JE_rectangle(VGAScreen, startX + 3, 1, startX + 16 + 36, 10, 240);
+		JE_rectangle(VGAScreen, startX + 3, 1, startX + 16, 10, 240);
 		fill_rectangle_xy(VGAScreen, startX + 18, 3, startX + 140, 8, 241);
 		JE_rectangle(VGAScreen, startX + 17, 2, startX + 143, 9, 242);
 		JE_rectangle(VGAScreen, startX + 16, 1, startX + 144, 10, 240);

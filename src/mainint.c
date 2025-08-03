@@ -3342,7 +3342,7 @@ void JE_inGameDisplays(void)
 				strcpy(stemp, JE_getName(temp+1));
 			}
 
-			tempW = (temp == 0) ? 28 : (285 - JE_textWidth(stemp, TINY_FONT));
+			tempW = (temp == 0) ? 28 : (PLAYFIELD_WIDTH + 22 - JE_textWidth(stemp, TINY_FONT));
 			JE_textShade(VGAScreen, tempW, y - 7, stemp, 2, 6, FULL_SHADE);
 		}
 	}

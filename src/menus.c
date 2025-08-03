@@ -58,7 +58,15 @@ bool gameplaySelect(void)
 	const size_t menuItemsCount = COUNTOF(gameplay_name) - 1;
 	size_t selectedIndex = MENU_ITEM_1_PLAYER_FULL_GAME;
 
-	const int xCenter = vga_width / 2;
+	/*
+		 * Menus are rendered on a 320px wide virtual screen which is centered
+		 * within the wider VGA buffer.  Using vga_width / 2 centers text within
+		 * the entire buffer which causes a visual offset when the menu is
+		 * blitted to the virtual screen.  Instead, base the center position on
+		 * the virtual screen width to keep headers and labels visually centered
+		 * regardless of the actual buffer width.
+		 */
+	const int xCenter = 320 / 2;
 	const int yMenuHeader = 20;
 	const int yMenuItems = 54;
 	const int dyMenuItems = 24;
@@ -254,9 +262,8 @@ bool episodeSelect(void)
 	const size_t menuItemsCount = EPISODE_AVAILABLE;
 	size_t selectedIndex = 0;
 
-	const int xCenter = vga_width / 2;
+	const int xCenter = 320 / 2;
 	const int yMenuHeader = 20;
-	const int xMenuItem = 20;
 	const int yMenuItems = 50;
 	const int dyMenuItems = 30;
 	const int hMenuItem = 13;
@@ -278,15 +285,16 @@ bool episodeSelect(void)
 		// Draw menu items.
 		for (size_t i = 0; i < menuItemsCount; ++i)
 		{
-			const char *const text = episode_name[i + 1];
+			const char* const text = episode_name[i + 1];
 
 			wMenuItem[i] = JE_textWidth(text, normal_font);
+			const int x = xCenter - wMenuItem[i] / 2;
 			const int y = yMenuItems + dyMenuItems * i;
 
 			const bool selected = i == selectedIndex;
 			const bool disabled = !episodeAvail[i];
 
-			draw_font_hv_shadow(VGAScreen, xMenuItem, y, text, normal_font, left_aligned, 15, -4 + (selected ? 2 : 0) + (disabled ? -4 : 0), false, 2);
+			draw_font_hv_shadow(VGAScreen, x, y, text, normal_font, left_aligned, 15, -4 + (selected ? 2 : 0) + (disabled ? -4 : 0), false, 2);
 		}
 
 		if (restart)
@@ -330,6 +338,7 @@ bool episodeSelect(void)
 			// Find menu item that was hovered or clicked.
 			for (size_t i = 0; i < menuItemsCount; ++i)
 			{
+				const int xMenuItem = xCenter - wMenuItem[i] / 2;
 				if (mouse_x >= xMenuItem && mouse_x < xMenuItem + wMenuItem[i])
 				{
 					const int yMenuItem = yMenuItems + dyMenuItems * i;
@@ -343,8 +352,8 @@ bool episodeSelect(void)
 						}
 
 						if (newmouse && lastmouse_but == SDL_BUTTON_LEFT &&
-						    lastmouse_x >= xMenuItem && lastmouse_x < xMenuItem + wMenuItem[i] &&
-						    lastmouse_y >= yMenuItem && lastmouse_y < yMenuItem + hMenuItem)
+							lastmouse_x >= xMenuItem && lastmouse_x < xMenuItem + wMenuItem[i] &&
+							lastmouse_y >= yMenuItem && lastmouse_y < yMenuItem + hMenuItem)
 						{
 							action = true;
 						}
@@ -443,7 +452,8 @@ bool difficultySelect(void)
 	size_t selectedIndex = 1;
 	size_t lordProgress = 0;
 
-	const int xCenter = vga_width / 2;
+	/* See gameplaySelect() for rationale behind using a fixed 320px center. */
+	const int xCenter = 320 / 2;
 	const int yMenuHeader = 20;
 	const int yMenuItems = 54;
 	const int dyMenuItems = 24;

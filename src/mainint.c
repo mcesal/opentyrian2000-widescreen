@@ -209,7 +209,15 @@ void JE_helpSystem(JE_byte startTopic)
 	const size_t menuItemsCount = COUNTOF(topicName) - 1;
 	size_t selectedIndex = 0;
 
-	const int xCenter = vga_width / 2;
+	/*
+		 * Menus are rendered on a 320px wide virtual screen which is centered
+		 * within the wider VGA buffer.  Using vga_width / 2 centers text within
+		 * the entire buffer which causes a visual offset when the menu is
+		 * blitted to the virtual screen.  Instead, base the center position on
+		 * the virtual screen width to keep headers and labels visually centered
+		 * regardless of the actual buffer width.
+		 */
+	const int xCenter = 320 / 2;
 	const int yMenuHeader = 30;
 	const int yMenuItems = 60;
 	/* reduce spacing to fit new Debug option */
@@ -392,7 +400,8 @@ static bool helpSystemPage(Uint8 *topic, bool *restart)
 {
 	Uint8 page = topicStart[*topic - 1];
 
-	const int xCenter = vga_width / 2;
+	/* See comment in JE_helpSystem regarding the virtual screen width. */
+	const int xCenter = 320 / 2;
 
 	for (; ; )
 	{
@@ -637,6 +646,8 @@ ulong JE_getCost(JE_byte itemType, JE_word itemNum)
 
 bool JE_loadScreen(void)
 {
+	set_menu_centered(true);
+
 	if (shopSpriteSheet.data == NULL)
 		JE_loadCompShapes(&shopSpriteSheet, '1');  // need mouse pointer and arrow sprites
 
@@ -646,7 +657,7 @@ bool JE_loadScreen(void)
 	const size_t menuItemsCount = 12;
 	size_t selectedIndex = 0;
 
-	const int xCenter = vga_width / 2;
+	const int xCenter = 160; // center of 320px menu field
 	const int yMenuHeader = 5;
 	const int xMenuItem = 10;
 	const int xMenuItemName = xMenuItem;
@@ -3342,7 +3353,7 @@ void JE_inGameDisplays(void)
 				strcpy(stemp, JE_getName(temp+1));
 			}
 
-			tempW = (temp == 0) ? 28 : (285 - JE_textWidth(stemp, TINY_FONT));
+			tempW = (temp == 0) ? 28 : (PLAYFIELD_WIDTH + 22 - JE_textWidth(stemp, TINY_FONT));
 			JE_textShade(VGAScreen, tempW, y - 7, stemp, 2, 6, FULL_SHADE);
 		}
 	}
@@ -4234,7 +4245,12 @@ redo:
 	}
 
 	if (play_demo)
-		JE_dString(VGAScreen, 115, 10, miscText[7], SMALL_FONT_SHAPES); // insert coin
+	{
+		const int playfield_left = -2 * PLAYFIELD_X_SHIFT;
+		const int insert_coin_x = playfield_left + (PLAYFIELD_WIDTH - JE_textWidth(miscText[7], SMALL_FONT_SHAPES)) / 2;
+		const int insert_coin_y = 10;
+		JE_dString(VGAScreen, insert_coin_x, insert_coin_y, miscText[7], SMALL_FONT_SHAPES); // insert coin
+	}
 
 	if (this_player->is_alive && !endLevel)
 	{
@@ -4935,12 +4951,19 @@ void JE_mainGamePlayerFunctions(void)
 	else
 		tempX = player[0].x;
 
-	tempW = floorf((float)(260 - (tempX - 36)) / (260 - 36) * (24 * 3) - 1);
-	mapX3Ofs   = tempW;
-	mapX3Pos   = mapX3Ofs % 24;
+	const float left_bound = 40.0f;
+	const float right_bound = PLAYFIELD_WIDTH + 48;
+	float u = (tempX - left_bound) / (right_bound - left_bound);
+	if (u < 0.0f)
+		u = 0.0f;
+	else if (u > 1.0f)
+		u = 1.0f;
+	tempW = floorf((1.0f - u) * (24 * 3));
+	mapX3Ofs = tempW;
+	mapX3Pos = mapX3Ofs % 24;
 	mapX3bpPos = 1 - (mapX3Ofs / 24);
 
-	mapX2Ofs   = (tempW * 2) / 3;
+	mapX2Ofs   = ((tempW-18) * 2) / 3;
 	mapX2Pos   = mapX2Ofs % 24;
 	mapX2bpPos = 1 - (mapX2Ofs / 24);
 

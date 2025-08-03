@@ -3372,7 +3372,7 @@ bool titleScreen(void)
 	size_t selectedIndex = MENU_ITEM_NEW_GAME;
 	size_t specialNameProgress[SA_ENGAGE] = { 0 };
 
-	const int xCenter = VGAScreen->w / 2;
+	const int xCenter = VGAScreen->w / 2 - (VGAScreen->w - 320) / 2;
 	const int yMenuItems = 104;
 	const int hMenuItem = 13;
 	int wMenuItem[COUNTOF(menuText)] = { 0 };
@@ -3444,7 +3444,7 @@ bool titleScreen(void)
 		memcpy(VGAScreen->pixels, VGAScreen2->pixels, VGAScreen->pitch * VGAScreen->h);
 
 		// Highlight selected menu item.
-		draw_font_hv(VGAScreen, VGAScreen->w / 2, yMenuItems + hMenuItem * selectedIndex, menuText[selectedIndex], normal_font, centered, 15, -1);
+		draw_font_hv(VGAScreen, xCenter, yMenuItems + hMenuItem * selectedIndex, menuText[selectedIndex], normal_font, centered, 15, -1);
 
 		service_SDL_events(true);
 

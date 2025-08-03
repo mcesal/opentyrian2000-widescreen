@@ -266,9 +266,11 @@ void draw_background_3(SDL_Surface *surface)
 		// scroll offset.
 	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
 	Uint8** map = (Uint8**)mapY3Pos + mapX3bpPos - tile_count;
-	
+
 	for (int i = -1; i < 7; i++)
 	{
+		// mapX3Pos already includes a 18-pixel left shift to correct the
+		// cloud layer's widescreen misalignment.
 		blit_background_row(surface, mapX3Pos + PLAYFIELD_X_SHIFT, (i * 28) + backPos3, map);
 
 		map += 15;

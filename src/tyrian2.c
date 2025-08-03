@@ -154,6 +154,24 @@ void JE_starShowVGA(void)
 	skipStarShowVGA = false;
 }
 
+// Expand the bottom-right playfield edge to the HUD by copying a
+// 16-pixel-tall column horizontally for the additional playfield width.
+static void extend_playfield_right_column(SDL_Surface* surface)
+{
+	const int src_x = 263;  // last column of the original playfield
+	const int src_y = 184;
+	const int height = 16;
+	const int copy_width = surface->w - HUD_WIDTH - 264;  // pixels to extend
+
+	Uint8* row = (Uint8*)surface->pixels + src_y * surface->pitch + src_x;
+	for (int y = 0; y < height; ++y)
+	{
+		const Uint8 pixel = row[0];
+		memset(row + 1, pixel, copy_width);
+		row += surface->pitch;
+	}
+}
+
 inline static void blit_enemy(SDL_Surface *surface, unsigned int i, signed int x_offset, signed int y_offset, signed int sprite_offset)
 {
 	if (enemy[i].sprite2s == NULL)
@@ -1150,6 +1168,8 @@ level_loop:
 	if (!endLevel) // draw HUD
 	{
 		VGAScreen = VGAScreenSeg; /* side-effect of game_screen */
+
+		extend_playfield_right_column(VGAScreenSeg);
 
 		/*-----------------------Message Bar------------------------*/
 		if (textErase > 0 && --textErase == 0)

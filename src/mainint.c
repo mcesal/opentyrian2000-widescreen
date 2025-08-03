@@ -4936,18 +4936,18 @@ void JE_mainGamePlayerFunctions(void)
 		tempX = player[0].x;
 
 	const float left_bound = 40.0f;
-	const float right_bound = PLAYFIELD_WIDTH - 8;
+	const float right_bound = PLAYFIELD_WIDTH + 48;
 	float u = (tempX - left_bound) / (right_bound - left_bound);
 	if (u < 0.0f)
 		u = 0.0f;
 	else if (u > 1.0f)
 		u = 1.0f;
-	tempW = floorf((1.0f - u) * (24 * 3)) - 18;
+	tempW = floorf((1.0f - u) * (24 * 3));
 	mapX3Ofs = tempW;
 	mapX3Pos = mapX3Ofs % 24;
 	mapX3bpPos = 1 - (mapX3Ofs / 24);
 
-	mapX2Ofs   = (tempW * 2) / 3;
+	mapX2Ofs   = ((tempW-18) * 2) / 3;
 	mapX2Pos   = mapX2Ofs % 24;
 	mapX2bpPos = 1 - (mapX2Ofs / 24);
 

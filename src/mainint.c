@@ -1986,7 +1986,8 @@ void JE_debugMenu(bool center)
 	int off_x = 0, off_y = 0;
 	if (center)
 	{
-		off_x = (vga_width - DEBUG_MENU_WIDTH) / 2 - DEBUG_MENU_X;
+		int menu_width = MIN(vga_width, 320);
+		off_x = (menu_width - DEBUG_MENU_WIDTH) / 2 - DEBUG_MENU_X;
 		off_y = (vga_height - DEBUG_MENU_HEIGHT) / 2 - DEBUG_MENU_Y;
 	}
 

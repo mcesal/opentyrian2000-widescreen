@@ -422,8 +422,31 @@ static void blit_with_offset(SDL_Surface* src, SDL_Surface* dst, int x_offset)
 	{
 		Uint8* src_row = (Uint8*)src->pixels + y * src->pitch;
 		Uint8* dst_row = (Uint8*)dst->pixels + y * dst->pitch;
+
 		memset(dst_row, 0, dst->pitch);
+
+		/* Copy the 320px wide source to the destination with an offset */
 		memcpy(dst_row + x_offset, src_row, 320);
+
+		/* Extend the leftmost column with a gradient fade to black. */
+		Uint8 left_color = src_row[0];
+		Uint8 left_hue = left_color & 0xF0;
+		Uint8 left_brightness = left_color & 0x0F;
+		for (int i = 0; i < x_offset; ++i)
+		{
+			Uint8 brightness = (left_brightness * i) / x_offset;
+			dst_row[i] = left_hue | brightness;
+		}
+
+		/* Extend the rightmost column with a gradient fade to black. */
+		Uint8 right_color = src_row[319];
+		Uint8 right_hue = right_color & 0xF0;
+		Uint8 right_brightness = right_color & 0x0F;
+		for (int i = 1; i <= x_offset; ++i)
+		{
+			Uint8 brightness = (right_brightness * (x_offset - i)) / x_offset;
+			dst_row[x_offset + 320 - 1 + i] = right_hue | brightness;
+		}
 	}
 }
 

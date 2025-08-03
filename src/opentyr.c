@@ -587,9 +587,11 @@ void setupMenu(void)
 					JE_playSampleNum(S_SELECT);
 
 					fade_black(10);
+					set_menu_centered(false);
 
 					jukebox();
 
+					set_menu_centered(true);
 					restart = true;
 					break;
 				}

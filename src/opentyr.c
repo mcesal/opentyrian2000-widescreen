@@ -172,7 +172,7 @@ void setupMenu(void)
 				{ MENU_ITEM_DISPLAY, "Display:", "Change the display mode.", getDisplayPickerItemsCount, getDisplayPickerItem },
 				{ MENU_ITEM_SCALER, "Scaler:", "Change the pixel art scaling algorithm.", getScalerPickerItemsCount, getScalerPickerItem },
 								{ MENU_ITEM_SCALING_MODE, "Scaling Mode:", "Change the scaling mode.", getScalingModePickerItemsCount, getScalingModePickerItem },
-								{ MENU_ITEM_FPS, "FPS:", "Limit frames per second.", getFPSPickerItemsCount, getFPSPickerItem },
+								{ MENU_ITEM_FPS, "FPS:", "Limit FPS, default is 35 (AFFECTS GAMEPLAY SPEED!)", getFPSPickerItemsCount, getFPSPickerItem },
 								{ MENU_ITEM_DONE, "Done", "Return to the previous menu." },
 								{ -1 }
 						},
@@ -201,14 +201,15 @@ void setupMenu(void)
 	MenuItemId currentPicker = MENU_ITEM_NONE;
 	size_t pickerSelectedIndex = 0;
 
-	const int xCenter = vga_width / 2;
+	/* See comment in JE_helpSystem regarding the virtual screen width. */
+	const int xCenter = 320 / 2;
 	const int yMenuHeader = 4;
-	const int xMenuItem = 45;
-	const int xMenuItemName = xMenuItem;
 	const int wMenuItemName = 135;
-	const int xMenuItemValue = xMenuItemName + wMenuItemName;
 	const int wMenuItemValue = 95;
 	const int wMenuItem = wMenuItemName + wMenuItemValue;
+	const int xMenuItem = xCenter - wMenuItem / 2;
+	const int xMenuItemName = xMenuItem;
+	const int xMenuItemValue = xMenuItemName + wMenuItemName;
 	const int yMenuItems = 37;
 	const int dyMenuItems = 21;
 	const int hMenuItem = 13;

@@ -367,7 +367,7 @@ enemy_still_exists:
 			{
 				if (enemy[i].ex < -5)
 					enemy[i].ex++;
-				if (enemy[i].ex > PLAYFIELD_WIDTH - 19)
+				if (enemy[i].ex > PLAYFIELD_WIDTH)
 					enemy[i].ex--;
 			}
 

@@ -1138,6 +1138,8 @@ void JE_sortHighScores(void)
 
 void JE_highScoreScreen(void)
 {
+	set_menu_centered(true);
+
 	if (shopSpriteSheet.data == NULL)
 		JE_loadCompShapes(&shopSpriteSheet, '1');  // need mouse pointer and arrow sprites
 
@@ -1147,7 +1149,7 @@ void JE_highScoreScreen(void)
 	// Five episodes, three timed battles
 	const size_t episodeCount = 8;
 
-	const int xCenter = vga_width / 2;
+	const int xCenter = 160; // center of 320px menu field
 	const int yMenuHeader = 3;
 	const int yEpisodeHeader = 30;
 	const int xLeftControl = 83;

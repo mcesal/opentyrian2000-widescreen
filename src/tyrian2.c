@@ -98,7 +98,7 @@ void JE_starShowVGA(void)
 			src += game_screen->pitch * 183;
 			for (y = 0; y < 184; y++)
 			{
-				memmove(s, src, 264);
+				memmove(s, src, PLAYFIELD_WIDTH);
 				s += VGAScreenSeg->pitch;
 				src -= game_screen->pitch;
 			}
@@ -106,13 +106,13 @@ void JE_starShowVGA(void)
 		else if (starShowVGASpecialCode == 2 && processorType >= 2)
 		{
 			lighty = 172 - player[0].y;
-			lightx = 281 - player[0].x;
+			lightx = (PLAYFIELD_WIDTH - PLAYFIELD_X_SHIFT + 5) - player[0].x;
 
 			for (y = 184; y; y--)
 			{
 				if (lighty > y)
 				{
-					for (x = 320 - 56; x; x--)
+					for (x = PLAYFIELD_WIDTH; x; x--)
 					{
 						*s = (*src & 0xf0) | ((*src >> 2) & 0x03);
 						s++;
@@ -121,7 +121,7 @@ void JE_starShowVGA(void)
 				}
 				else
 				{
-					for (x = 320 - 56; x; x--)
+					for (x = PLAYFIELD_WIDTH; x; x--)
 					{
 						lightdist = abs(lightx - x) + lighty;
 						if (lightdist < y)
@@ -134,15 +134,15 @@ void JE_starShowVGA(void)
 						src++;
 					}
 				}
-				s += 56 + VGAScreenSeg->pitch - 320;
-				src += 56 + VGAScreenSeg->pitch - 320;
+				s += VGAScreenSeg->pitch - PLAYFIELD_WIDTH;
+				src += game_screen->pitch - PLAYFIELD_WIDTH;
 			}
 		}
 		else
 		{
 			for (y = 0; y < 184; y++)
 			{
-				memmove(s, src, 264);
+				memmove(s, src, PLAYFIELD_WIDTH);
 				s += VGAScreenSeg->pitch;
 				src += game_screen->pitch;
 			}
@@ -152,6 +152,46 @@ void JE_starShowVGA(void)
 
 	quitRequested = false;
 	skipStarShowVGA = false;
+}
+
+// Expand the bottom-right playfield edge to the HUD by copying a
+// 16-pixel-tall column horizontally for the additional playfield width.
+static void extend_playfield_right_column(SDL_Surface* surface)
+{
+	const int src_x = 262;  // last column of the original playfield
+	const int src_y = 184;
+	const int height = 16;
+	const int copy_width = surface->w - HUD_WIDTH - 263;  // pixels to extend
+
+	Uint8* row = (Uint8*)surface->pixels + src_y * surface->pitch + src_x;
+	for (int y = 0; y < height; ++y)
+	{
+		const Uint8 pixel = row[0];
+		memset(row + 1, pixel, copy_width);
+		row += surface->pitch;
+	}
+}
+
+static void copy_screen_to_buffer(Uint8* buffer)
+{
+	Uint8* src = VGAScreen->pixels;
+	for (int y = 0; y < vga_height; ++y)
+	{
+		memcpy(buffer, src, VGAScreen->pitch);
+		buffer += VGAScreen->pitch;
+		src += VGAScreen->pitch;
+	}
+}
+
+static void copy_buffer_to_screen(const Uint8* buffer)
+{
+	Uint8* dst = VGAScreen->pixels;
+	for (int y = 0; y < vga_height; ++y)
+	{
+		memcpy(dst, buffer, VGAScreen->pitch);
+		buffer += VGAScreen->pitch;
+		dst += VGAScreen->pitch;
+	}
 }
 
 inline static void blit_enemy(SDL_Surface *surface, unsigned int i, signed int x_offset, signed int y_offset, signed int sprite_offset)
@@ -210,7 +250,7 @@ void JE_drawEnemy(int enemyOffset) // actually does a whole lot more than just d
 				}
 			}
 
- 			if (enemy[i].ex + tempMapXOfs > -29 && enemy[i].ex + tempMapXOfs < 300)
+			if (enemy[i].ex + tempMapXOfs > -29 && enemy[i].ex + tempMapXOfs < PLAYFIELD_WIDTH + 29)
 			{
 				if (enemy[i].aniactive == 1)
 				{
@@ -298,7 +338,7 @@ void JE_drawEnemy(int enemyOffset) // actually does a whole lot more than just d
 			enemy[i].ey += enemy[i].fixedmovey;
 
 			enemy[i].ex += enemy[i].exc;
-			if (enemy[i].ex < -80 || enemy[i].ex > 340)
+			if (enemy[i].ex < -80 || enemy[i].ex > vga_width + 20)
 				goto enemy_gone;
 
 			enemy[i].ey += enemy[i].eyc;
@@ -327,13 +367,13 @@ enemy_still_exists:
 			{
 				if (enemy[i].ex < -5)
 					enemy[i].ex++;
-				if (enemy[i].ex > 245)
+				if (enemy[i].ex > PLAYFIELD_WIDTH - 19)
 					enemy[i].ex--;
 			}
 
 			enemy[i].ey += tempBackMove;
 
-			if (enemy[i].ex <= -24 || enemy[i].ex >= 296)
+			if (enemy[i].ex <= -24 || enemy[i].ex >= vga_width - 24)
 				goto draw_enemy_end;
 
 			JE_integer tempX = enemy[i].ex;
@@ -769,9 +809,25 @@ start_level_first:
 	
 	JE_loadPic(VGAScreen, twoPlayerMode ? 6 : 3, false);
 
+	// Relocate the HUD to the new right edge when the playfield is wider
+	const int hud_shift = vga_width - 320;
+	if (hud_shift > 0)
+	{
+		for (int y = 0; y < vga_height; ++y)
+		{
+			Uint8* row = (Uint8*)VGAScreen->pixels + y * VGAScreen->pitch;
+			memmove(row + PLAYFIELD_WIDTH, row + 320 - HUD_WIDTH, HUD_WIDTH);
+			memset(row + 320 - HUD_WIDTH, 0, hud_shift);
+		}
+	}
+
 	JE_drawOptions();
 
-	JE_outText(VGAScreen, 268, twoPlayerMode ? 76 : 118, levelName, 12, 4);
+	JE_outText(VGAScreen, HUD_X(268), twoPlayerMode ? 76 : 118, levelName, 12, 4);
+
+	// Ensure the widened playfield blends into the HUD before the fade-in
+	// so no remnants of the old HUD position appear during level start.
+	extend_playfield_right_column(VGAScreen);
 
 	JE_showVGA();
 	JE_gammaCorrect(&colors, gammaCorrection);
@@ -1139,6 +1195,8 @@ level_loop:
 	{
 		VGAScreen = VGAScreenSeg; /* side-effect of game_screen */
 
+		extend_playfield_right_column(VGAScreenSeg);
+
 		/*-----------------------Message Bar------------------------*/
 		if (textErase > 0 && --textErase == 0)
 			blit_sprite(VGAScreenSeg, 16, 189, OPTION_SHAPES, 36);  // in-game message area
@@ -1212,8 +1270,8 @@ level_loop:
 			{
 				old_weapon_bar[i] = item_power;
 
-				int x = twoPlayerMode ? 286 : 289,
-				    y = (i == 0) ? (twoPlayerMode ? 6 : 17) : (twoPlayerMode ? 100 : 38);
+				int x = HUD_X(twoPlayerMode ? 286 : 289),
+					y = (i == 0) ? (twoPlayerMode ? 6 : 17) : (twoPlayerMode ? 100 : 38);
 
 				fill_rectangle_xy(VGAScreenSeg, x, y, x + 1 + 10 * 2, y + 2, 0);
 
@@ -1240,10 +1298,12 @@ level_loop:
 
 			if (temp != lastPower)
 			{
+				const int hud_x1 = HUD_X(269);
+				const int hud_x2 = HUD_X(276);
 				if (temp > lastPower)
-					fill_rectangle_xy(VGAScreenSeg, 269, 113 - 11 - temp, 276, 114 - 11 - lastPower, 113 + temp / 7);
+					fill_rectangle_xy(VGAScreenSeg, hud_x1, 113 - 11 - temp, hud_x2, 114 - 11 - lastPower, 113 + temp / 7);
 				else
-					fill_rectangle_xy(VGAScreenSeg, 269, 113 - 11 - lastPower, 276, 114 - 11 - temp, 0);
+					fill_rectangle_xy(VGAScreenSeg, hud_x1, 113 - 11 - lastPower, hud_x2, 114 - 11 - temp, 0);
 				
 				lastPower = temp;
 			}
@@ -1343,7 +1403,7 @@ level_loop:
 	/*-----------------------Ground Enemy------------------------*/
 	lastEnemyOnScreen = enemyOnScreen;
 
-	tempMapXOfs = mapXOfs;
+	tempMapXOfs = mapXOfs + PLAYFIELD_X_SHIFT;
 	tempBackMove = backMove;
 	JE_drawEnemy(50);
 	JE_drawEnemy(100);
@@ -1414,7 +1474,7 @@ level_loop:
 	{
 		lastEnemyOnScreen = enemyOnScreen;
 
-		tempMapXOfs = mapX2Ofs;
+		tempMapXOfs = mapX2Ofs + PLAYFIELD_X_SHIFT;
 		tempBackMove = 0;
 		JE_drawEnemy(25);
 
@@ -1431,7 +1491,7 @@ level_loop:
 	/* Draw Top Enemy */
 	if (!topEnemyOver)
 	{
-		tempMapXOfs = (background3x1 == 0) ? oldMapX3Ofs : mapXOfs;
+		tempMapXOfs = ((background3x1 == 0) ? oldMapX3Ofs : mapXOfs) + PLAYFIELD_X_SHIFT;
 		tempBackMove = backMove3;
 		JE_drawEnemy(75);
 	}
@@ -1813,7 +1873,7 @@ draw_player_shot_loop_end:
 					}
 				}
 
-				if (enemyShot[z].duration-- == 0 || enemyShot[z].sy > 190 || enemyShot[z].sy <= -14 || enemyShot[z].sx > 275 || enemyShot[z].sx <= 0)
+				if (enemyShot[z].duration-- == 0 || enemyShot[z].sy > 190 || enemyShot[z].sy <= -14 || enemyShot[z].sx > PLAYFIELD_WIDTH || enemyShot[z].sx <= 0)
 				{
 					enemyShotAvail[z] = true;
 				}
@@ -1873,7 +1933,7 @@ draw_player_shot_loop_end:
 	/* Draw Top Enemy */
 	if (topEnemyOver)
 	{
-		tempMapXOfs = (background3x1 == 0) ? oldMapX3Ofs : oldMapXOfs;
+		tempMapXOfs = ((background3x1 == 0) ? oldMapX3Ofs : oldMapXOfs) + PLAYFIELD_X_SHIFT;
 		tempBackMove = backMove3;
 		JE_drawEnemy(75);
 	}
@@ -1883,7 +1943,7 @@ draw_player_shot_loop_end:
 	{
 		lastEnemyOnScreen = enemyOnScreen;
 
-		tempMapXOfs = mapX2Ofs;
+		tempMapXOfs = mapX2Ofs + PLAYFIELD_X_SHIFT;
 		tempBackMove = 0;
 		JE_drawEnemy(25);
 
@@ -1953,7 +2013,7 @@ draw_player_shot_loop_end:
 			}
 			explosions[j].y += explosions[j].deltaY;
 
-			if (explosions[j].y > 200 - 14)
+			if (explosions[j].y > vga_height - 14)
 			{
 				explosions[j].ttl = 0;
 			}
@@ -2037,11 +2097,17 @@ draw_player_shot_loop_end:
 			{
 				warningColChange = -warningColChange;
 			}
-			fill_rectangle_xy(VGAScreen, 24, 181, 138, 183, warningCol);
-			fill_rectangle_xy(VGAScreen, 175, 181, 287, 183, warningCol);
-			fill_rectangle_xy(VGAScreen, 24, 0, 287, 3, warningCol);
+			const int playfield_left = -2 * PLAYFIELD_X_SHIFT;
+			const int playfield_right = playfield_left + PLAYFIELD_WIDTH - 1;
+			const char warning_text[] = "WARNING";
+			const int warning_text_width = JE_textWidth(warning_text, TINY_FONT);
+			const int warning_x = playfield_left + (PLAYFIELD_WIDTH - warning_text_width) / 2;
+			const int gap_margin = 1;
+			fill_rectangle_xy(VGAScreen, playfield_left, 181, warning_x - gap_margin - 1, 183, warningCol);
+			fill_rectangle_xy(VGAScreen, warning_x + warning_text_width + gap_margin, 181, playfield_right, 183, warningCol);
+			fill_rectangle_xy(VGAScreen, playfield_left, 0, playfield_right, 3, warningCol);
 
-			JE_outText(VGAScreen, 140, 178, "WARNING", 7, (warningCol % 16) / 2);
+			JE_outText(VGAScreen, warning_x, 178, warning_text, 7, (warningCol % 16) / 2);
 
 		}
 	}
@@ -2411,7 +2477,7 @@ void JE_loadMap(void)
 
 	char buffer[256];
 	int i;
-	Uint8 pic_buffer[320*200]; /* screen buffer, 8-bit specific */
+	Uint8 pic_buffer[vga_width * vga_height]; /* screen buffer, 8-bit specific */
 	Uint8 *vga, *pic, *vga2; /* screen pointer, 8-bit specific */
 
 	lastCubeMax = cubeMax;
@@ -2423,9 +2489,10 @@ void JE_loadMap(void)
 	saveLevel = mainLevel;
 
 new_game:
-	galagaMode  = false;
+	set_menu_centered(true);
+	galagaMode = false;
 	useLastBank = false;
-	extraGame   = false;
+	extraGame = false;
 	haltGame = false;
 
 	gameLoaded = false;
@@ -2772,26 +2839,26 @@ new_game:
 
 							JE_word tempX = atoi(s + 3);
 							JE_loadPic(VGAScreen, tempX, false);
-							memcpy(pic_buffer, VGAScreen->pixels, sizeof(pic_buffer));
+							copy_screen_to_buffer(pic_buffer);
 
 							service_SDL_events(true);
 
-							for (int z = 0; z <= 199; z++)
+							for (int z = 0; z < vga_height; z++)
 							{
 								if (!newkey)
 								{
 									vga = VGAScreen->pixels;
 									vga2 = VGAScreen2->pixels;
-									pic = pic_buffer + (199 - z) * 320;
+									pic = pic_buffer + (vga_height - 1 - z) * VGAScreen->pitch;
 
 									setDelay(1);
 
-									for (y = 0; y <= 199; y++)
+									for (y = 0; y < vga_height; y++)
 									{
 										if (y <= z)
 										{
-											memcpy(vga, pic, 320);
-											pic += 320;
+											memcpy(vga, pic, VGAScreen->pitch);
+											pic += VGAScreen->pitch;
 										}
 										else
 										{
@@ -2812,7 +2879,7 @@ new_game:
 								}
 							}
 
-							memcpy(VGAScreen->pixels, pic_buffer, sizeof(pic_buffer));
+							copy_buffer_to_screen(pic_buffer);
 						}
 						break;
 
@@ -2824,10 +2891,10 @@ new_game:
 
 							JE_word tempX = atoi(s + 3);
 							JE_loadPic(VGAScreen, tempX, false);
-							memcpy(pic_buffer, VGAScreen->pixels, sizeof(pic_buffer));
+							copy_screen_to_buffer(pic_buffer);
 
 							service_SDL_events(true);
-							for (int z = 0; z <= 199; z++)
+							for (int z = 0; z < vga_height; z++)
 							{
 								if (!newkey)
 								{
@@ -2837,17 +2904,17 @@ new_game:
 
 									setDelay(1);
 
-									for (y = 0; y < 199; y++)
+									for (y = 0; y < vga_height; y++)
 									{
-										if (y <= 199 - z)
+										if (y <= vga_height - 1 - z)
 										{
 											memcpy(vga, vga2, VGAScreen->pitch);
 											vga2 += VGAScreen->pitch;
 										}
 										else
 										{
-											memcpy(vga, pic, 320);
-											pic += 320;
+											memcpy(vga, pic, VGAScreen->pitch);
+											pic += VGAScreen->pitch;
 										}
 										vga += VGAScreen->pitch;
 									}
@@ -2863,7 +2930,7 @@ new_game:
 								}
 							}
 
-							memcpy(VGAScreen->pixels, pic_buffer, sizeof(pic_buffer));
+							copy_buffer_to_screen(pic_buffer);
 						}
 						break;
 
@@ -2875,11 +2942,12 @@ new_game:
 
 							JE_word tempX = atoi(s + 3);
 							JE_loadPic(VGAScreen, tempX, false);
-							memcpy(pic_buffer, VGAScreen->pixels, sizeof(pic_buffer));
+							copy_screen_to_buffer(pic_buffer);
 
 							service_SDL_events(true);
 
-							for (int z = 0; z <= 318; z++)
+							const int width = VGAScreen->pitch;
+							for (int z = 0; z <= width - 2; z++)
 							{
 								if (!newkey)
 								{
@@ -2889,14 +2957,14 @@ new_game:
 
 									setDelay(1);
 
-									for (y = 0; y < 200; y++)
+									for (y = 0; y < vga_height; y++)
 									{
-										memcpy(vga, vga2 + z, 319 - z);
-										vga += 320 - z;
+										memcpy(vga, vga2 + z, width - 1 - z);
+										vga += width - z;
 										vga2 += VGAScreen2->pitch;
 										memcpy(vga, pic, z + 1);
 										vga += z;
-										pic += 320;
+										pic += width;
 									}
 
 									JE_showVGA();
@@ -2910,7 +2978,7 @@ new_game:
 								}
 							}
 
-							memcpy(VGAScreen->pixels, pic_buffer, sizeof(pic_buffer));
+							copy_buffer_to_screen(pic_buffer);
 						}
 						break;
 
@@ -3038,7 +3106,10 @@ new_game:
 	else
 		fade_black(50);
 
-	FILE *level_f = dir_fopen_die(data_dir(), levelFile, "rb");
+	/* Return the display to the normal gameplay offset after the fade */
+	set_menu_centered(false);
+
+	FILE* level_f = dir_fopen_die(data_dir(), levelFile, "rb");
 	fseek(level_f, lvlPos[(lvlFileNum-1) * 2], SEEK_SET);
 
 	JE_char char_mapFile;
@@ -4222,20 +4293,20 @@ void JE_createNewEventEnemy(JE_byte enemyTypeOfs, JE_word enemyOffset, Sint16 un
 		switch (enemyOffset)
 		{
 		case 0:
-			enemy[b-1].ex = eventRec[eventLoc-1].eventdat2 - (mapX - 1) * 24;
-			enemy[b-1].ey -= backMove2;
+			enemy[b - 1].ex = eventRec[eventLoc - 1].eventdat2 - (mapX - 3) * 24;
+			enemy[b - 1].ey -= backMove2;
 			break;
 		case 25:
 		case 75:
-			enemy[b-1].ex = eventRec[eventLoc-1].eventdat2 - (mapX - 1) * 24 - 12;
-			enemy[b-1].ey -= backMove;
+			enemy[b - 1].ex = eventRec[eventLoc - 1].eventdat2 - (mapX - 3) * 24 - 12;
+			enemy[b - 1].ey -= backMove;
 			break;
 		case 50:
 			if (background3x1)
-				enemy[b-1].ex = eventRec[eventLoc-1].eventdat2 - (mapX - 1) * 24 - 12;
+				enemy[b - 1].ex = eventRec[eventLoc - 1].eventdat2 - (mapX - 3) * 24 - 12;
 			else
-				enemy[b-1].ex = eventRec[eventLoc-1].eventdat2 - mapX3 * 24 - 24 * 2 + 6;
-			enemy[b-1].ey -= backMove3;
+				enemy[b - 1].ex = eventRec[eventLoc - 1].eventdat2 - mapX3 * 24 + 6;
+			enemy[b - 1].ey -= backMove3;
 
 			if (background3x1b)
 				enemy[b-1].ex -= 6;

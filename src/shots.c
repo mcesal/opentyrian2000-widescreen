@@ -219,7 +219,7 @@ bool player_shot_move_and_draw(
 		*out_shotx = shot->shotX;
 		*out_shoty = shot->shotY;
 
-		if (shot->shotX < -34 || shot->shotX > 290 ||
+		if (shot->shotX < -34 || shot->shotX > PLAYFIELD_WIDTH + 34 ||
 			shot->shotY < -15 || shot->shotY > 190)
 		{
 			shotAvail[shot_id] = 0;

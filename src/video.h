@@ -23,8 +23,20 @@
 
 #include "SDL.h"
 
-#define vga_width 320
+#define vga_width 356
 #define vga_height 200
+
+ /*
+  * Original Tyrian rendered to a 320x200 framebuffer with 56 pixels on the
+  * right reserved for the HUD.  The width has been expanded to 356 pixels to
+  * achieve a wider aspect ratio while keeping the HUD width intact.  Helpers
+  * below provide the gameplay and HUD widths as well as a convenience macro
+  * for converting legacy hard coded X coordinates to the new screen space.
+  */
+#define HUD_WIDTH 57
+#define PLAYFIELD_WIDTH (vga_width - HUD_WIDTH)
+#define PLAYFIELD_X_SHIFT (-12)
+#define HUD_X(x) ((x) + (vga_width - 320))
 
 typedef enum {
 	SCALE_CENTER,
@@ -58,6 +70,8 @@ void deinit_video(void);
 
 void JE_clr256(SDL_Surface *);
 void JE_showVGA(void);
+
+void set_menu_centered(bool centered);
 
 void mapScreenPointToWindow(Sint32 *inout_x, Sint32 *inout_y);
 void mapWindowPointToScreen(Sint32 *inout_x, Sint32 *inout_y);

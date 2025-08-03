@@ -58,7 +58,7 @@ bool gameplaySelect(void)
 	const size_t menuItemsCount = COUNTOF(gameplay_name) - 1;
 	size_t selectedIndex = MENU_ITEM_1_PLAYER_FULL_GAME;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 20;
 	const int yMenuItems = 54;
 	const int dyMenuItems = 24;
@@ -254,7 +254,7 @@ bool episodeSelect(void)
 	const size_t menuItemsCount = EPISODE_AVAILABLE;
 	size_t selectedIndex = 0;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 20;
 	const int xMenuItem = 20;
 	const int yMenuItems = 50;
@@ -443,7 +443,7 @@ bool difficultySelect(void)
 	size_t selectedIndex = 1;
 	size_t lordProgress = 0;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 20;
 	const int yMenuItems = 54;
 	const int dyMenuItems = 24;
@@ -685,7 +685,7 @@ bool timedBattleSelect(void)
 	const size_t menuItemsCount = COUNTOF(timed_battle_name) - 1;
 	size_t selectedIndex = 0;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 20;
 	const int yMenuItems = 54;
 	const int dyMenuItems = 24;

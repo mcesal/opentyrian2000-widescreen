@@ -230,6 +230,9 @@ void JE_itemScreen(void)
 {
 	bool quit = false;
 
+	/* Center the buy/sell screen independently from the gameplay HUD */
+	set_menu_centered(true);
+
 	if (shopSpriteSheet.data == NULL)
 		JE_loadCompShapes(&shopSpriteSheet, '1');
 
@@ -311,6 +314,8 @@ void JE_itemScreen(void)
 
 	do
 	{
+		/* Re-apply centering after returning from submenus */
+		set_menu_centered(true);
 		quit = false;
 
 		JE_getShipInfo();
@@ -1731,6 +1736,11 @@ void JE_itemScreen(void)
 
 	if (gameLoaded)
 		fade_black(10);
+
+	/* Keep the buy/sell screen centered until after the fade when jumping to
+	   the next level.  Otherwise, reset the offset now. */
+	if (!jumpSection)
+		set_menu_centered(false);
 }
 
 void draw_ship_illustration(void)
@@ -2330,7 +2340,7 @@ void JE_scaleBitmap(SDL_Surface *dst_bitmap, const SDL_Surface *src_bitmap,  int
 	 * But we're well past the point of needing that.*/
 
 	assert(src_bitmap != NULL && dst_bitmap != NULL);
-	assert(x1 >= 0 && y1 >= 0 && x2 < src_bitmap->pitch && y2 < src_bitmap->h);
+	assert(x1 >= 0 && y1 >= 0 && x2 < dst_bitmap->w && y2 < dst_bitmap->h);
 
 	int w = x2 - x1 + 1,
 	    h = y2 - y1 + 1;
@@ -2772,12 +2782,13 @@ void JE_genItemMenu(JE_byte itemNum)
 
 void JE_scaleInPicture(SDL_Surface *dst, const SDL_Surface *src)
 {
-	for (int i = 2; i <= 160; i += 2)
+	for (int i = 2; i <= vga_width / 2; i += 2)
 	{
 		if (JE_anyButton())
 			break;
 
-		JE_scaleBitmap(dst, src, 160 - i, 0, 160 + i - 1, 100 + roundf(i * 0.625f) - 1);
+		JE_scaleBitmap(dst, src, vga_width / 2 - i, 0, vga_width / 2 + i - 1,
+			100 + roundf(i * 200.0f / vga_width) - 1);
 		JE_showVGA();
 
 		SDL_Delay(1);

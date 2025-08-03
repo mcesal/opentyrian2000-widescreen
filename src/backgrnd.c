@@ -35,7 +35,7 @@ JE_word backMove, backMove2, backMove3;
 /*Main Maps*/
 JE_word mapX, mapY, mapX2, mapX3, mapY2, mapY3;
 JE_byte **mapYPos, **mapY2Pos, **mapY3Pos;
-JE_word mapXPos, oldMapXOfs, mapXOfs, mapX2Ofs, mapX2Pos, mapX3Pos, oldMapX3Ofs, mapX3Ofs, tempMapXOfs;
+JE_integer mapXPos, oldMapXOfs, mapXOfs, mapX2Ofs, mapX2Pos, mapX3Pos, oldMapX3Ofs, mapX3Ofs, tempMapXOfs;
 intptr_t mapXbpPos, mapX2bpPos, mapX3bpPos;
 JE_byte map1YDelay, map1YDelayMax, map2YDelay, map2YDelayMax;
 
@@ -51,12 +51,12 @@ void JE_darkenBackground(JE_word neat)  /* wild detail level */
 	
 	for (y = 184; y; y--)
 	{
-		for (x = 264; x; x--)
+		for (x = PLAYFIELD_WIDTH; x; x--)
 		{
-			*s = ((((*s & 0x0f) << 4) - (*s & 0x0f) + ((((x - neat - y) >> 2) + *(s-2) + (y == 184 ? 0 : *(s-(VGAScreen->pitch-1)))) & 0x0f)) >> 4) | (*s & 0xf0);
+			*s = ((((*s & 0x0f) << 4) - (*s & 0x0f) + ((((x - neat - y) >> 2) + *(s - 2) + (y == 184 ? 0 : *(s - (VGAScreen->pitch - 1)))) & 0x0f)) >> 4) | (*s & 0xf0);
 			s++;
 		}
-		s += VGAScreen->pitch - 264;
+		s += VGAScreen->pitch - PLAYFIELD_WIDTH;
 	}
 }
 
@@ -68,18 +68,24 @@ void blit_background_row(SDL_Surface *surface, int x, int y, Uint8 **map)
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
 	
+	// Use two extra tiles to ensure the playfield is fully covered when the
+		// horizontal scroll position is negative.  A single extra tile left a
+		// small uncovered strip on the right edge of the playfield, resulting in
+		// intermittent black bars.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
+	const int row_width = tile_count * 24;
 	for (int y = 0; y < 28; y++)
 	{
 		// not drawing on screen yet; skip y
-		if ((pixels + (12 * 24)) < pixels_ll)
+		if ((pixels + row_width) < pixels_ll)
 		{
 			pixels += surface->pitch;
 			continue;
 		}
-		
-		for (int tile = 0; tile < 12; tile++)
+
+		for (int tile = 0; tile < tile_count; tile++)
 		{
-			Uint8 *data = *(map + tile);
+			Uint8* data = *(map + tile);
 			
 			// no tile; skip tile
 			if (data == NULL)
@@ -102,7 +108,7 @@ void blit_background_row(SDL_Surface *surface, int x, int y, Uint8 **map)
 			}
 		}
 		
-		pixels += surface->pitch - 12 * 24;
+		pixels += surface->pitch - row_width;
 	}
 }
 
@@ -114,18 +120,22 @@ void blit_background_row_blend(SDL_Surface *surface, int x, int y, Uint8 **map)
 	      *pixels_ll = (Uint8 *)surface->pixels,  // lower limit
 	      *pixels_ul = (Uint8 *)surface->pixels + (surface->h * surface->pitch);  // upper limit
 	
+	// See comment in blit_background_row() above for rationale on the
+		// additional tile.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
+	const int row_width = tile_count * 24;
 	for (int y = 0; y < 28; y++)
 	{
 		// not drawing on screen yet; skip y
-		if ((pixels + (12 * 24)) < pixels_ll)
+		if ((pixels + row_width) < pixels_ll)
 		{
 			pixels += surface->pitch;
 			continue;
 		}
-		
-		for (int tile = 0; tile < 12; tile++)
+
+		for (int tile = 0; tile < tile_count; tile++)
 		{
-			Uint8 *data = *(map + tile);
+			Uint8* data = *(map + tile);
 			
 			// no tile; skip tile
 			if (data == NULL)
@@ -148,7 +158,7 @@ void blit_background_row_blend(SDL_Surface *surface, int x, int y, Uint8 **map)
 			}
 		}
 		
-		pixels += surface->pitch - 12 * 24;
+		pixels += surface->pitch - row_width;
 	}
 }
 
@@ -156,12 +166,15 @@ void draw_background_1(SDL_Surface *surface)
 {
 	SDL_FillRect(surface, NULL, 0);
 	
-	Uint8 **map = (Uint8 **)mapYPos + mapXbpPos - 12;
+	// Two extra tiles guarantee full coverage regardless of horizontal
+		// scroll offset.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
+	Uint8** map = (Uint8**)mapYPos + mapXbpPos - tile_count;
 	
 	for (int i = -1; i < 7; i++)
 	{
-		blit_background_row(surface, mapXPos, (i * 28) + backPos, map);
-		
+		blit_background_row(surface, mapXPos + PLAYFIELD_X_SHIFT, (i * 28) + backPos, map);
+
 		map += 14;
 	}
 }
@@ -170,13 +183,15 @@ void draw_background_2(SDL_Surface *surface)
 {
 	if (map2YDelayMax > 1 && backMove2 < 2)
 		backMove2 = (map2YDelay == 1) ? 1 : 0;
-	
+	// Two extra tiles guarantee full coverage regardless of horizontal
+		// scroll offset.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
 	if (background2 != 0)
 	{
 		// water effect combines background 1 and 2 by synchronizing the x coordinate
-		int x = smoothies[1] ? mapXPos : mapX2Pos;
-		
-		Uint8 **map = (Uint8 **)mapY2Pos + (smoothies[1] ? mapXbpPos : mapX2bpPos) - 12;
+		int x = (smoothies[1] ? mapXPos : mapX2Pos) + PLAYFIELD_X_SHIFT;
+
+		Uint8** map = (Uint8**)mapY2Pos + (smoothies[1] ? mapXbpPos : mapX2bpPos) - tile_count;
 		
 		for (int i = -1; i < 7; i++)
 		{
@@ -207,12 +222,15 @@ void draw_background_2_blend(SDL_Surface *surface)
 	if (map2YDelayMax > 1 && backMove2 < 2)
 		backMove2 = (map2YDelay == 1) ? 1 : 0;
 	
-	Uint8 **map = (Uint8 **)mapY2Pos + mapX2bpPos - 12;
+	// Two extra tiles guarantee full coverage regardless of horizontal
+		// scroll offset.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
+	Uint8** map = (Uint8**)mapY2Pos + mapX2bpPos - tile_count;
 	
 	for (int i = -1; i < 7; i++)
 	{
-		blit_background_row_blend(surface, mapX2Pos, (i * 28) + backPos2, map);
-		
+		blit_background_row_blend(surface, mapX2Pos + PLAYFIELD_X_SHIFT, (i * 28) + backPos2, map);
+
 		map += 14;
 	}
 	
@@ -244,12 +262,15 @@ void draw_background_3(SDL_Surface *surface)
 		mapY3Pos -= 15;   /*Map Width*/
 	}
 	
-	Uint8 **map = (Uint8 **)mapY3Pos + mapX3bpPos - 12;
+	// Two extra tiles guarantee full coverage regardless of horizontal
+		// scroll offset.
+	const int tile_count = PLAYFIELD_WIDTH / 24 + 2;
+	Uint8** map = (Uint8**)mapY3Pos + mapX3bpPos - tile_count;
 	
 	for (int i = -1; i < 7; i++)
 	{
-		blit_background_row(surface, mapX3Pos, (i * 28) + backPos3, map);
-		
+		blit_background_row(surface, mapX3Pos + PLAYFIELD_X_SHIFT, (i * 28) + backPos3, map);
+
 		map += 15;
 	}
 }
@@ -285,12 +306,12 @@ void JE_filterScreen(JE_shortint col, JE_shortint int_)
 		
 		for (y = 184; y; y--)
 		{
-			for (x = 264; x; x--)
+			for (x = PLAYFIELD_WIDTH; x; x--)
 			{
 				*s = col | (*s & 0x0f);
 				s++;
 			}
-			s += VGAScreen->pitch - 264;
+			s += VGAScreen->pitch - PLAYFIELD_WIDTH;
 		}
 	}
 	
@@ -301,13 +322,13 @@ void JE_filterScreen(JE_shortint col, JE_shortint int_)
 		
 		for (y = 184; y; y--)
 		{
-			for (x = 264; x; x--)
+			for (x = PLAYFIELD_WIDTH; x; x--)
 			{
 				temp = (*s & 0x0f) + int_;
 				*s = (*s & 0xf0) | (temp >= 0x1f ? 0 : (temp >= 0x0f ? 0x0f : temp));
 				s++;
 			}
-			s += VGAScreen->pitch - 264;
+			s += VGAScreen->pitch - PLAYFIELD_WIDTH;
 		}
 	}
 }
@@ -322,7 +343,7 @@ void lava_filter(SDL_Surface *dst, SDL_Surface *src)
 	assert(src->format->BitsPerPixel == 8 && dst->format->BitsPerPixel == 8);
 	
 	/* we don't need to check for over-reading the pixel surfaces since we only
-	 * read from the top 185+1 scanlines, and there should be 320 */
+		 * read from the top 185+1 scanlines, and the playfield width is vga_width */
 	
 	const int dst_pitch = dst->pitch;
 	Uint8 *dst_pixel = (Uint8 *)dst->pixels + (185 * dst_pitch);
@@ -332,33 +353,36 @@ void lava_filter(SDL_Surface *dst, SDL_Surface *src)
 	const Uint8 *src_pixel = (Uint8 *)src->pixels + (185 * src->pitch);
 	const Uint8 * const src_pixel_ll = (Uint8 *)src->pixels;  // lower limit
 	
-	int w = 320 * 185 - 1;
+	int w = vga_width * 185 - 1;
 	
 	for (int y = 185 - 1; y >= 0; --y)
 	{
-		dst_pixel -= (dst_pitch - 320);  // in case pitch is not 320
-		src_pixel -= (src_pitch - 320);  // in case pitch is not 320
-		
-		for (int x = 320 - 1; x >= 0; x -= 8)
+		dst_pixel -= (dst_pitch - vga_width);  // in case pitch differs
+		src_pixel -= (src_pitch - vga_width);  // in case pitch differs
+
+		for (int x = vga_width; x > 0; )
 		{
 			int waver = abs(((w >> 9) & 0x0f) - 8) - 1;
 			w -= 8;
-			
-			for (int xi = 8 - 1; xi >= 0; --xi)
+
+			int count = MIN(8, x);
+			x -= count;
+
+			for (int xi = 0; xi < count; ++xi)
 			{
 				--dst_pixel;
 				--src_pixel;
-				
+
 				// value is average value of source pixel (2x), destination pixel above, and destination pixel below (all with waver)
 				// hue is red
 				Uint8 value = 0;
-				
+
 				if (src_pixel + waver >= src_pixel_ll)
 					value += (*(src_pixel + waver) & 0x0f) * 2;
 				value += *(dst_pixel + waver + dst_pitch) & 0x0f;
 				if (dst_pixel + waver - dst_pitch >= dst_pixel_ll)
 					value += *(dst_pixel + waver - dst_pitch) & 0x0f;
-				
+
 				*dst_pixel = (value / 4) | 0x70;
 			}
 		}
@@ -372,30 +396,33 @@ void water_filter(SDL_Surface *dst, SDL_Surface *src)
 	Uint8 hue = smoothie_data[1] << 4;
 	
 	/* we don't need to check for over-reading the pixel surfaces since we only
-	 * read from the top 185+1 scanlines, and there should be 320 */
+		 * read from the top 185+1 scanlines, and the playfield width is vga_width */
 	
 	const int dst_pitch = dst->pitch;
 	Uint8 *dst_pixel = (Uint8 *)dst->pixels + (185 * dst_pitch);
 	
 	const Uint8 *src_pixel = (Uint8 *)src->pixels + (185 * src->pitch);
 	
-	int w = 320 * 185 - 1;
+	int w = vga_width * 185 - 1;
 	
 	for (int y = 185 - 1; y >= 0; --y)
 	{
-		dst_pixel -= (dst_pitch - 320);  // in case pitch is not 320
-		src_pixel -= (src->pitch - 320);  // in case pitch is not 320
-		
-		for (int x = 320 - 1; x >= 0; x -= 8)
+		dst_pixel -= (dst_pitch - vga_width);  // in case pitch differs
+		src_pixel -= (src->pitch - vga_width);  // in case pitch differs
+
+		for (int x = vga_width; x > 0; )
 		{
 			int waver = abs(((w >> 10) & 0x07) - 4) - 1;
 			w -= 8;
-			
-			for (int xi = 8 - 1; xi >= 0; --xi)
+
+			int count = MIN(8, x);
+			x -= count;
+
+			for (int xi = 0; xi < count; ++xi)
 			{
 				--dst_pixel;
 				--src_pixel;
-				
+
 				// pixel is copied from source if not blue
 				// otherwise, value is average of value of source pixel and destination pixel below (with waver)
 				if ((*src_pixel & 0x30) == 0)
@@ -422,7 +449,7 @@ void iced_blur_filter(SDL_Surface *dst, SDL_Surface *src)
 	
 	for (int y = 0; y < 184; ++y)
 	{
-		for (int x = 0; x < 320; ++x)
+		for (int x = 0; x < vga_width; ++x)
 		{
 			// value is average value of source pixel and destination pixel
 			// hue is icy blue
@@ -434,8 +461,8 @@ void iced_blur_filter(SDL_Surface *dst, SDL_Surface *src)
 			++src_pixel;
 		}
 		
-		dst_pixel += (dst->pitch - 320);  // in case pitch is not 320
-		src_pixel += (src->pitch - 320);  // in case pitch is not 320
+		dst_pixel += (dst->pitch - vga_width);  // in case pitch differs
+		src_pixel += (src->pitch - vga_width);  // in case pitch differs
 	}
 }
 
@@ -448,7 +475,7 @@ void blur_filter(SDL_Surface *dst, SDL_Surface *src)
 	
 	for (int y = 0; y < 184; ++y)
 	{
-		for (int x = 0; x < 320; ++x)
+		for (int x = 0; x < vga_width; ++x)
 		{
 			// value is average value of source pixel and destination pixel
 			// hue is source pixel hue
@@ -460,8 +487,8 @@ void blur_filter(SDL_Surface *dst, SDL_Surface *src)
 			++src_pixel;
 		}
 		
-		dst_pixel += (dst->pitch - 320);  // in case pitch is not 320
-		src_pixel += (src->pitch - 320);  // in case pitch is not 320
+		dst_pixel += (dst->pitch - vga_width);  // in case pitch differs
+		src_pixel += (src->pitch - vga_width);  // in case pitch differs
 	}
 }
 
@@ -480,9 +507,9 @@ int starfield_speed;
 
 void initialize_starfield(void)
 {
-	for (int i = MAX_STARS-1; i >= 0; --i)
+	for (int i = MAX_STARS - 1; i >= 0; --i)
 	{
-		starfield_stars[i].position = mt_rand() % 320 + mt_rand() % 200 * VGAScreen->pitch;
+		starfield_stars[i].position = mt_rand() % vga_width + mt_rand() % 200 * VGAScreen->pitch;
 		starfield_stars[i].speed = mt_rand() % 3 + 2;
 		starfield_stars[i].color = mt_rand() % 16 + STARFIELD_HUE;
 	}

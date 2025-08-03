@@ -66,6 +66,8 @@ unsigned int Curlpnum;
 
 FILE * InFile;
 
+static Uint8 AnimScreen[320 * 200];
+
 /*** Function decs ***/
 int JE_playRunSkipDump(Uint8 *, unsigned int);
 void JE_closeAnim(void);
@@ -156,6 +158,9 @@ void JE_playAnim(const char *animfile, JE_byte startingframe, JE_byte speed)
 
 	if (JE_loadAnim(animfile) != 0)
 		return; /* Failed to open or process file */
+
+	set_menu_centered(true);
+	memset(AnimScreen, 0, sizeof(AnimScreen));
 
 	/* Blank screen */
 	JE_clr256(VGAScreen);
@@ -305,13 +310,11 @@ int JE_playRunSkipDump(Uint8 *incomingBuffer, unsigned int IncomingBufferLength)
 	#define ANI_LONG_RLE   0x4000
 	#define ANI_STOP       0x0000
 
-	SZ_Init(pBuffer_IN,  incomingBuffer,    IncomingBufferLength);
-	SZ_Init(pBuffer_OUT, VGAScreen->pixels, VGAScreen->h * VGAScreen->pitch);
+	SZ_Init(pBuffer_IN, incomingBuffer, IncomingBufferLength);
+	SZ_Init(pBuffer_OUT, AnimScreen, sizeof(AnimScreen));
 
-	/* 320x200 is the only supported format.
-	 * Assert is here as a hint should our screen size ever changes.
-	 * As for how to decompress to the wrong screen size... */
-	assert(VGAScreen->h * VGAScreen->pitch == 320 * 200);
+	/* 320x200 is the only supported animation format. */
+	assert(sizeof(AnimScreen) == 320 * 200);
 
 	while (true)
 	{
@@ -390,6 +393,13 @@ int JE_playRunSkipDump(Uint8 *incomingBuffer, unsigned int IncomingBufferLength)
 				SZ_Memcpy2(pBuffer_OUT, pBuffer_IN, count);
 			}
 		} /* End of short ops */
+	}
+
+	/* Copy to the main screen, accounting for pitch */
+	for (int y = 0; y < 200; ++y)
+	{
+		memcpy((Uint8*)VGAScreen->pixels + y * VGAScreen->pitch,
+			AnimScreen + y * 320, 320);
 	}
 
 	/* And that's that */

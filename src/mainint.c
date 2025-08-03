@@ -74,7 +74,7 @@ bool pause_pressed = false, ingamemenu_pressed = false;
 #define DEBUG_MENU_X      3
 #define DEBUG_MENU_Y      9
 #define DEBUG_MENU_WIDTH  (257 - DEBUG_MENU_X + 1)
-#define DEBUG_MENU_HEIGHT (181 - DEBUG_MENU_Y + 1)
+#define DEBUG_MENU_HEIGHT (vga_height - 19 - DEBUG_MENU_Y + 1)
 
 static Uint8 debug_menu_backup[DEBUG_MENU_WIDTH * DEBUG_MENU_HEIGHT];
 
@@ -82,10 +82,10 @@ static Uint8 debug_menu_backup[DEBUG_MENU_WIDTH * DEBUG_MENU_HEIGHT];
 void JE_drawTextWindow(const char *text)
 {
 	if (textErase > 0) // erase current text
-		blit_sprite(VGAScreenSeg, 16, 189, OPTION_SHAPES, 36);  // in-game text area
+		blit_sprite(VGAScreenSeg, 16, vga_height - 11, OPTION_SHAPES, 36);  // in-game text area
 
 	textErase = 100;
-	JE_outText(VGAScreenSeg, 20, 190, text, 0, 4);
+	JE_outText(VGAScreenSeg, 20, vga_height - 10, text, 0, 4);
 }
 
 void JE_outCharGlow(JE_word x, JE_word y, const char *s)
@@ -181,15 +181,17 @@ void JE_drawPortConfigButtons(void) // rear weapon pattern indicator
 	if (twoPlayerMode)
 		return;
 
+	const int x_lit = HUD_X(285);
+	const int x_unlit = HUD_X(302);
 	if (player[0].weapon_mode == 1)
 	{
-		blit_sprite(VGAScreenSeg, 285, 44, OPTION_SHAPES, 18);  // lit
-		blit_sprite(VGAScreenSeg, 302, 44, OPTION_SHAPES, 19);  // unlit
+		blit_sprite(VGAScreenSeg, x_lit, 44, OPTION_SHAPES, 18);  // lit
+		blit_sprite(VGAScreenSeg, x_unlit, 44, OPTION_SHAPES, 19);  // unlit
 	}
 	else // == 2
 	{
-		blit_sprite(VGAScreenSeg, 285, 44, OPTION_SHAPES, 19);  // unlit
-		blit_sprite(VGAScreenSeg, 302, 44, OPTION_SHAPES, 18);  // lit
+		blit_sprite(VGAScreenSeg, x_lit, 44, OPTION_SHAPES, 19);  // unlit
+		blit_sprite(VGAScreenSeg, x_unlit, 44, OPTION_SHAPES, 18);  // lit
 	}
 }
 
@@ -207,7 +209,7 @@ void JE_helpSystem(JE_byte startTopic)
 	const size_t menuItemsCount = COUNTOF(topicName) - 1;
 	size_t selectedIndex = 0;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 30;
 	const int yMenuItems = 60;
 	/* reduce spacing to fit new Debug option */
@@ -390,7 +392,7 @@ static bool helpSystemPage(Uint8 *topic, bool *restart)
 {
 	Uint8 page = topicStart[*topic - 1];
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 
 	for (; ; )
 	{
@@ -416,7 +418,7 @@ static bool helpSystemPage(Uint8 *topic, bool *restart)
 		// Restore background.
 		memcpy(VGAScreen->pixels, VGAScreen2->pixels, (size_t)VGAScreen->pitch * VGAScreen->h);
 
-		fill_rectangle_wh(VGAScreen, 0, 192, 320, 8, 0);
+		fill_rectangle_wh(VGAScreen, 0, vga_height - 8, vga_width, 8, 0);
 
 		const char *const text = topicName[*topic - 1];
 
@@ -427,10 +429,10 @@ static bool helpSystemPage(Uint8 *topic, bool *restart)
 		JE_char buffer[128];
 
 		snprintf(buffer, sizeof buffer, "%s %d", miscText[24], page - topicStart[*topic - 1] + 1);
-		draw_font_hv(VGAScreen, 10, 192, buffer, small_font, left_aligned, 13, 5);
+		draw_font_hv(VGAScreen, 10, vga_height - 8, buffer, small_font, left_aligned, 13, 5);
 
 		snprintf(buffer, sizeof buffer, "%s %d of %d", miscText[25], page, MAX_PAGE);
-		draw_font_hv(VGAScreen, 320 - 10, 192, buffer, small_font, right_aligned, 13, 5);
+		draw_font_hv(VGAScreen, vga_width - 10, vga_height - 8, buffer, small_font, right_aligned, 13, 5);
 
 		// Draw text.
 
@@ -644,7 +646,7 @@ bool JE_loadScreen(void)
 	const size_t menuItemsCount = 12;
 	size_t selectedIndex = 0;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 5;
 	const int xMenuItem = 10;
 	const int xMenuItemName = xMenuItem;
@@ -657,14 +659,14 @@ bool JE_loadScreen(void)
 	const int xLeftControl = 83;
 	const int xRightControl = 213;
 	const int wControl = 24;
-	const int yControls = 179;
+	const int yControls = vga_height - 21;
 
 	for (; ; )
 	{
 		if (restart)
 		{
 			JE_loadPic(VGAScreen2, 2, false);
-			fill_rectangle_wh(VGAScreen2, 0, 192, 320, 8, 0);
+			fill_rectangle_wh(VGAScreen2, 0, vga_height - 8, vga_width, 8, 0);
 		}
 
 		// Restore background.
@@ -724,7 +726,7 @@ bool JE_loadScreen(void)
 			blit_sprite2x2(VGAScreen, xRightControl, yControls, shopSpriteSheet, 281);
 
 		helpBoxColor = 15;
-		JE_helpBox(VGAScreen, 103, 182, miscText[55], 25);
+		JE_helpBox(VGAScreen, 103, vga_height - 18, miscText[55], 25);
 
 		if (restart)
 		{
@@ -1134,13 +1136,13 @@ void JE_highScoreScreen(void)
 	// Five episodes, three timed battles
 	const size_t episodeCount = 8;
 
-	const int xCenter = 320 / 2;
+	const int xCenter = vga_width / 2;
 	const int yMenuHeader = 3;
 	const int yEpisodeHeader = 30;
 	const int xLeftControl = 83;
 	const int xRightControl = 213;
 	const int wControl = 24;
-	const int yControls = 179;
+	const int yControls = vga_height - 21;
 
 	char buffer[64];
 	int boardOnePlayer, boardTwoPlayer;
@@ -1150,7 +1152,7 @@ void JE_highScoreScreen(void)
 		if (restart)
 		{
 			JE_loadPic(VGAScreen2, 2, false);
-			fill_rectangle_wh(VGAScreen2, 0, 192, 320, 8, 0);
+			fill_rectangle_wh(VGAScreen2, 0, vga_height - 8, vga_width, 8, 0);
 
 			// Draw header.
 			draw_font_hv_shadow(VGAScreen2, xCenter, yMenuHeader, miscText[50], large_font, centered, 15, -3, false, 2);
@@ -1234,7 +1236,7 @@ void JE_highScoreScreen(void)
 			blit_sprite2x2(VGAScreen, xRightControl, yControls, shopSpriteSheet, 281);
 
 		helpBoxColor = 15;
-		JE_helpBox(VGAScreen, 103, 182, miscText[56], 25);
+		JE_helpBox(VGAScreen, 103, vga_height - 18, miscText[56], 25);
 
 		if (restart)
 		{
@@ -1496,8 +1498,8 @@ void JE_doInGameSetup(void)
 		else
 		{
 			/*
-			JE_barShade(3, 160, 257, 180); /-*Help Box*-/
-			JE_barShade(5, 162, 255, 178);
+				   JE_barShade(3, vga_height - 20, 257, vga_height); /-*Help Box*-/
+						JE_barShade(5, vga_height - 18, 255, vga_height - 2);
 			tempScreenSeg = VGAScreen;
 			JE_dString(VGAScreen, 10, 165, "Waiting for other player.", SMALL_FONT_SHAPES);
 			JE_showVGA();
@@ -1984,7 +1986,8 @@ void JE_debugMenu(bool center)
 	int off_x = 0, off_y = 0;
 	if (center)
 	{
-		off_x = (vga_width - DEBUG_MENU_WIDTH) / 2 - DEBUG_MENU_X;
+		int menu_width = MIN(vga_width, 320);
+		off_x = (menu_width - DEBUG_MENU_WIDTH) / 2 - DEBUG_MENU_X;
 		off_y = (vga_height - DEBUG_MENU_HEIGHT) / 2 - DEBUG_MENU_Y;
 	}
 
@@ -2015,8 +2018,8 @@ void JE_debugMenu(bool center)
 	bool done = false;
 	while (!done)
 	{
-		JE_barShade(VGAScreen, 3 + off_x, 9 + off_y, 257 + off_x, 181 + off_y);
-		JE_barShade(VGAScreen, 5 + off_x, 11 + off_y, 255 + off_x, 179 + off_y);
+		JE_barShade(VGAScreen, 3 + off_x, 9 + off_y, 257 + off_x, vga_height - 19 + off_y);
+		JE_barShade(VGAScreen, 5 + off_x, 11 + off_y, 255 + off_x, vga_height - 21 + off_y);
 
 		for (size_t i = 0; i < menuCount; ++i)
 		{
@@ -2145,11 +2148,11 @@ void JE_inGameHelp(void)
 	JE_clearKeyboard();
 	JE_wipeKey();
 
-	JE_barShade(VGAScreen, 1, 1, 262, 182); /*Main Box*/
-	JE_barShade(VGAScreen, 3, 3, 260, 180);
-	JE_barShade(VGAScreen, 5, 5, 258, 178);
-	JE_barShade(VGAScreen, 7, 7, 256, 176);
-	fill_rectangle_xy(VGAScreen, 9, 9, 254, 174, 0);
+	JE_barShade(VGAScreen, 1, 1, 262, vga_height - 18); /*Main Box*/
+	JE_barShade(VGAScreen, 3, 3, 260, vga_height - 20);
+	JE_barShade(VGAScreen, 5, 5, 258, vga_height - 22);
+	JE_barShade(VGAScreen, 7, 7, 256, vga_height - 24);
+	fill_rectangle_xy(VGAScreen, 9, 9, 254, vga_height - 26, 0);
 
 	if (twoPlayerMode)  // Two-Player Help
 	{
@@ -2213,8 +2216,8 @@ void JE_inGameHelp(void)
 	}
 
 	// "press a key"
-	blit_sprite(VGAScreenSeg, 16, 189, OPTION_SHAPES, 36);  // in-game text area
-	JE_outText(VGAScreenSeg, 120 - JE_textWidth(miscText[5-1], TINY_FONT) / 2 + 20, 190, miscText[5-1], 0, 4);
+	blit_sprite(VGAScreenSeg, 16, vga_height - 11, OPTION_SHAPES, 36);  // in-game text area
+	JE_outText(VGAScreenSeg, 120 - JE_textWidth(miscText[5 - 1], TINY_FONT) / 2 + 20, vga_height - 10, miscText[5 - 1], 0, 4);
 
 	do
 	{
@@ -2468,7 +2471,7 @@ void JE_highScoreCheck(void)
 				textGlowBrightness = 10;
 				JE_outTextGlow(VGAScreenSeg, 150, (slot * 12) + 65, t2kHighScores[table][slot].playerName);
 				textGlowBrightness = 10;
-				JE_outTextGlow(VGAScreenSeg, JE_fontCenter(miscText[4], TINY_FONT), 180, miscText[4]);
+				JE_outTextGlow(VGAScreenSeg, JE_fontCenter(miscText[4], TINY_FONT), vga_height, miscText[4]);
 
 				JE_showVGA();
 
@@ -2850,7 +2853,7 @@ void JE_playCredits(void)
 		else if (shipxc > 10)
 			ship_sprite += (shipxc > 20) ? 4 : 2;
 
-		blit_sprite2x2(VGAScreen, shipx / 40, 184 - (ticks % 200), spriteSheet9, ship_sprite);
+		blit_sprite2x2(VGAScreen, shipx / 40, (vga_height - 16) - (ticks % vga_height), spriteSheet9, ship_sprite);
 
 		const int bottom_line = (ticks / 3) / 20;
 		int y = 20 - ((ticks / 3) % 20);
@@ -2875,10 +2878,10 @@ void JE_playCredits(void)
 		}
 
 		fill_rectangle_xy(VGAScreen, 0,  0, 319, 10, 0);
-		fill_rectangle_xy(VGAScreen, 0, 190, 319, 199, 0);
+		fill_rectangle_xy(VGAScreen, 0, vga_height - 10, vga_width - 1, vga_height - 1, 0);
 
 		if (currentpic == sprite_table[EXTRA_SHAPES].count - 1)
-			JE_outTextAdjust(VGAScreen, 5, 180, miscText[54], 2, -2, SMALL_FONT_SHAPES, false);  // levels-in-episode
+			JE_outTextAdjust(VGAScreen, 5, vga_height, miscText[54], 2, -2, SMALL_FONT_SHAPES, false);  // levels-in-episode
 
 		if (bottom_line == lines_max - 8)
 			fade_song();
@@ -3296,10 +3299,10 @@ void JE_inGameDisplays(void)
 	{
 		snprintf(tempstr, sizeof(tempstr), "%lu", player[i].cash);
 
-		if (smoothies[6-1])
-			JE_textShade(VGAScreen, 30 + 200 * i, 175, tempstr, 8, 8, FULL_SHADE);
+		if (smoothies[6 - 1])
+			JE_textShade(VGAScreen, 30 + 200 * i, vga_height - 25, tempstr, 8, 8, FULL_SHADE);
 		else
-			JE_textShade(VGAScreen, 30 + 200 * i, 175, tempstr, 2, 4, FULL_SHADE);
+			JE_textShade(VGAScreen, 30 + 200 * i, vga_height - 25, tempstr, 2, 4, FULL_SHADE);
 	}
 
 	/*Special Weapon?*/
@@ -4189,7 +4192,7 @@ redo:
 		else
 		{
 			this_player->y -= levelEndWarp;
-			if (this_player->y < -200)
+			if (this_player->y < -vga_height)
 				reallyEndLevel = true;
 
 			int trail_spacing = 1;
@@ -4335,9 +4338,9 @@ redo:
 
 	if (!endLevel)
 	{
-		if (this_player->x > 256)
+		if (this_player->x > PLAYFIELD_WIDTH - 8)
 		{
-			this_player->x = 256;
+			this_player->x = PLAYFIELD_WIDTH - 8;
 			constantLastX = -constantLastX;
 		}
 		if (this_player->x < 40)
@@ -4800,7 +4803,8 @@ redo:
 
 										// draw sidekick refill ammo gauge
 										const int y = hud_sidekick_y[twoPlayerMode ? 1 : 0][i] + 13;
-										draw_segmented_gauge(VGAScreenSeg, 284, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
+										const int hud_x = HUD_X(284);
+										draw_segmented_gauge(VGAScreenSeg, hud_x, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
 									}
 
 									if (button[1 + i] && (cheatInfiniteSidekickAmmo || this_player->sidekick[i].ammo > 0))
@@ -4821,8 +4825,9 @@ redo:
 										const int y = hud_sidekick_y[twoPlayerMode ? 1 : 0][i] + 13;
 										if (!cheatInfiniteSidekickAmmo)
 										{
-											fill_rectangle_xy(VGAScreenSeg, 284, y, 312, y + 2, 0);
-											draw_segmented_gauge(VGAScreenSeg, 284, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
+											const int hud_x = HUD_X(284);
+											fill_rectangle_xy(VGAScreenSeg, hud_x, y, hud_x + 28, y + 2, 0);
+											draw_segmented_gauge(VGAScreenSeg, hud_x, y, 112, 2, 2, MAX(1, ammo_max / 10), this_player->sidekick[i].ammo);
 										}
 									}
 								}

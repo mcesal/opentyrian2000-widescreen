@@ -311,13 +311,18 @@ struct destruct_world_s
 {
 	/* Map data & screen pointer */
 	unsigned int baseMap[320];
-	SDL_Surface * VGAScreen;
-	struct destruct_wall_s * mapWalls;
+	SDL_Surface* VGAScreen;
+	struct destruct_wall_s* mapWalls;
 
 	/* Map configuration */
 	enum de_mode_t destructMode;
 	unsigned int mapFlags;
 };
+
+/* Width adjustment for the expanded playfield.  All destruct objects
+ * are drawn one tile (16px) to the right so that they line up with
+ * the background. */
+#define DESTRUCT_X_OFFSET 16
 
 /*** Function decs ***/
 //Prep functions
@@ -947,7 +952,8 @@ static void DE_drawBaseTerrain(unsigned int * baseWorld)
 
 	for (i = 1; i <= 318; i++)
 	{
-		JE_rectangle(VGAScreen, i, baseWorld[i], i, 199, PIXEL_DIRT);
+		JE_rectangle(VGAScreen, i + DESTRUCT_X_OFFSET, baseWorld[i],
+			i + DESTRUCT_X_OFFSET, 199, PIXEL_DIRT);
 	}
 }
 
@@ -963,16 +969,18 @@ static void DE_generateUnits(unsigned int * baseWorld)
 		for (j = 0; j < basetypes[baseLookup[i][world.destructMode]][0]; j++)
 		{
 			/* Not everything is the same between players */
+			unsigned int unit_map_x;
 			if (i == PLAYER_LEFT)
 			{
-				destruct_player[i].unit[j].unitX = (mt_rand() % 120) + 10;
+				unit_map_x = (mt_rand() % 120) + 10;
 			}
 			else
 			{
-				destruct_player[i].unit[j].unitX = 320 - ((mt_rand() % 120) + 22);
+				unit_map_x = 320 - ((mt_rand() % 120) + 22);
 			}
 
-			destruct_player[i].unit[j].unitY = JE_placementPosition(destruct_player[i].unit[j].unitX - 1, 14, baseWorld);
+			destruct_player[i].unit[j].unitX = unit_map_x + DESTRUCT_X_OFFSET;
+			destruct_player[i].unit[j].unitY = JE_placementPosition(unit_map_x - 1, 14, baseWorld);
 			destruct_player[i].unit[j].unitType = basetypes[baseLookup[i][world.destructMode]][(mt_rand() % 10) + 1];
 
 			/* Sats are special cases since they are useless.  They don't count
@@ -1016,7 +1024,7 @@ static void DE_generateUnits(unsigned int * baseWorld)
 
 static void DE_generateWalls(struct destruct_world_s * gameWorld)
 {
-	unsigned int i, j, wallX;
+	unsigned int i, j, wallX_map;
 	unsigned int wallHeight, remainWalls;
 	unsigned int tries;
 	bool isGood;
@@ -1047,7 +1055,7 @@ static void DE_generateWalls(struct destruct_world_s * gameWorld)
 		do
 		{
 			isGood = true;
-			wallX = (mt_rand() % 300) + 10;
+			wallX_map = (mt_rand() % 300) + 10;
 
 			/* Is this X already occupied?  In the original Tyrian we only
 			 * checked to make sure four units on each side were unobscured.
@@ -1060,8 +1068,8 @@ static void DE_generateWalls(struct destruct_world_s * gameWorld)
 			{
 				for (j = 0; j < config.max_installations; j++)
 				{
-					if ((wallX > destruct_player[i].unit[j].unitX - 12) &&
-					    (wallX < destruct_player[i].unit[j].unitX + 13))
+					if ((wallX_map > destruct_player[i].unit[j].unitX - DESTRUCT_X_OFFSET - 12) &&
+						(wallX_map < destruct_player[i].unit[j].unitX - DESTRUCT_X_OFFSET + 13))
 					{
 						isGood = false;
 						goto label_outer_break; /* I do feel that outer breaking is a legitimate goto use. */
@@ -1078,8 +1086,8 @@ label_outer_break:
 		for (i = 1; i <= wallHeight; i++)
 		{
 			gameWorld->mapWalls[remainWalls - i].wallExist = true;
-			gameWorld->mapWalls[remainWalls - i].wallX = wallX;
-			gameWorld->mapWalls[remainWalls - i].wallY = JE_placementPosition(wallX, 12, gameWorld->baseMap) - 14 * i;
+			gameWorld->mapWalls[remainWalls - i].wallX = wallX_map + DESTRUCT_X_OFFSET;
+			gameWorld->mapWalls[remainWalls - i].wallY = JE_placementPosition(wallX_map, 12, gameWorld->baseMap) - 14 * i;
 		}
 
 		remainWalls -= wallHeight;
@@ -1096,7 +1104,7 @@ static void DE_generateRings(SDL_Surface * screen, Uint8 pixel)
 	rings = mt_rand() % 6 + 1;
 	for (i = 1; i <= rings; i++)
 	{
-		tempPosX1 = (mt_rand() % 320);
+		tempPosX1 = (mt_rand() % 320) + DESTRUCT_X_OFFSET;
 		tempPosY1 = (mt_rand() % 160) + 20;
 		tempSize = (mt_rand() % 40) + 10;  /*Size*/
 
@@ -1105,10 +1113,10 @@ static void DE_generateRings(SDL_Surface * screen, Uint8 pixel)
 			tempRadian = mt_rand_lt1() * (2 * M_PI);
 			tempPosY2 = tempPosY1 + roundf(cosf(tempRadian) * (mt_rand_lt1() * 0.1f + 0.9f) * tempSize);
 			tempPosX2 = tempPosX1 + roundf(sinf(tempRadian) * (mt_rand_lt1() * 0.1f + 0.9f) * tempSize);
-			if ((tempPosY2 > 12) && (tempPosY2 < 200) &&
-			    (tempPosX2 > 0) && (tempPosX2 < 319))
+			if ((tempPosY2 > 12) && (tempPosY2 < vga_height) &&
+				(tempPosX2 > DESTRUCT_X_OFFSET) && (tempPosX2 < 319 + DESTRUCT_X_OFFSET))
 			{
-				((Uint8 *)screen->pixels)[tempPosX2 + tempPosY2 * screen->pitch] = pixel;
+				((Uint8*)screen->pixels)[tempPosX2 + tempPosY2 * screen->pitch] = pixel;
 			}
 		}
 	}
@@ -1810,7 +1818,7 @@ static void DE_RunTickExplosions(void)
 				tempPosX -= 320;
 
 			/* We don't draw our explosion if it's out of bounds vertically */
-			if (tempPosY >= 200 || tempPosY <= 15)
+			if (tempPosY >= vga_height || tempPosY <= 15)
 				continue;
 
 			/* And now the drawing.  There are only two types of explosions

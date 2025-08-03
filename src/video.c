@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 const char *const scaling_mode_names[ScalingMode_MAX] = {
 	"Center",
@@ -43,6 +44,10 @@ static SDL_Rect last_output_rect = { 0, 0, vga_width, vga_height };
 SDL_Surface *VGAScreen, *VGAScreenSeg;
 SDL_Surface *VGAScreen2;
 SDL_Surface *game_screen;
+static SDL_Surface* menu_screen;
+
+static const int menu_x_offset = (vga_width - 320) / 2;
+static int current_x_offset = (vga_width - 320) / 2;
 
 SDL_Window *main_window = NULL;
 static SDL_Renderer *main_window_renderer = NULL;
@@ -50,6 +55,10 @@ SDL_PixelFormat *main_window_tex_format = NULL;
 static SDL_Texture *main_window_texture = NULL;
 
 static ScalerFunction scaler_function;
+
+static Uint8 gradient_cache[256][18];
+static Uint32 last_gradient_palette[256];
+static bool gradient_cache_valid = false;
 
 static void init_renderer(void);
 static void deinit_renderer(void);
@@ -60,6 +69,9 @@ static int window_get_display_index(void);
 static void window_center_in_display(int display_index);
 static void calc_dst_render_rect(SDL_Surface *src_surface, SDL_Rect *dst_rect);
 static void scale_and_flip(SDL_Surface *);
+static void blit_with_offset(SDL_Surface* src, SDL_Surface* dst, int x_offset);
+static Uint8 nearest_palette_index(Uint8 r, Uint8 g, Uint8 b);
+static void update_gradient_cache(void);
 
 void init_video(void)
 {
@@ -77,12 +89,14 @@ void init_video(void)
 	VGAScreen = VGAScreenSeg = SDL_CreateRGBSurface(0, vga_width, vga_height, 8, 0, 0, 0, 0);
 	VGAScreen2 = SDL_CreateRGBSurface(0, vga_width, vga_height, 8, 0, 0, 0, 0);
 	game_screen = SDL_CreateRGBSurface(0, vga_width, vga_height, 8, 0, 0, 0, 0);
+	menu_screen = SDL_CreateRGBSurface(0, vga_width, vga_height, 8, 0, 0, 0, 0);
 
 	// The game code writes to surface->pixels directly without locking, so make sure that we
 	// indeed created software surfaces that support this.
 	assert(!SDL_MUSTLOCK(VGAScreen));
 	assert(!SDL_MUSTLOCK(VGAScreen2));
 	assert(!SDL_MUSTLOCK(game_screen));
+	assert(!SDL_MUSTLOCK(menu_screen));
 
 	JE_clr256(VGAScreen);
 
@@ -120,6 +134,7 @@ void deinit_video(void)
 	SDL_FreeSurface(VGAScreenSeg);
 	SDL_FreeSurface(VGAScreen2);
 	SDL_FreeSurface(game_screen);
+	SDL_FreeSurface(menu_screen);
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
@@ -311,9 +326,17 @@ void JE_clr256(SDL_Surface *screen)
 	SDL_FillRect(screen, NULL, 0);
 }
 
-void JE_showVGA(void) 
-{ 
-	scale_and_flip(VGAScreen); 
+void JE_showVGA(void)
+{
+	if (current_x_offset != 0)
+	{
+		blit_with_offset(VGAScreen, menu_screen, current_x_offset);
+		scale_and_flip(menu_screen);
+	}
+	else
+	{
+		scale_and_flip(VGAScreen);
+	}
 }
 
 static void calc_dst_render_rect(SDL_Surface *const src_surface, SDL_Rect *const dst_rect)
@@ -397,20 +420,99 @@ static void scale_and_flip(SDL_Surface *src_surface)
 	SDL_RenderPresent(main_window_renderer);
 
 	// Save output rect to be used by mouse functions
+	// Save output rect to be used by mouse functions
 	last_output_rect = dst_rect;
+}
+
+static Uint8 nearest_palette_index(Uint8 r, Uint8 g, Uint8 b)
+{
+	int best = 0;
+	int best_dist = INT_MAX;
+
+	for (int i = 0; i < 256; ++i)
+	{
+		int dr = (int)colors[i].r - r;
+		int dg = (int)colors[i].g - g;
+		int db = (int)colors[i].b - b;
+		int dist = dr * dr + dg * dg + db * db;
+		if (dist < best_dist)
+		{
+			best_dist = dist;
+			best = i;
+			if (dist == 0)
+				break;
+		}
+	}
+
+	return (Uint8)best;
+}
+
+static void update_gradient_cache(void)
+{
+	if (!gradient_cache_valid || memcmp(last_gradient_palette, rgb_palette, sizeof(rgb_palette)) != 0)
+	{
+		memcpy(last_gradient_palette, rgb_palette, sizeof(rgb_palette));
+
+		for (int c = 0; c < 256; ++c)
+		{
+			SDL_Color col = colors[c];
+			gradient_cache[c][0] = 0;
+			for (int i = 1; i < menu_x_offset; ++i)
+			{
+				float factor = (float)i / menu_x_offset;
+				Uint8 r = (Uint8)(col.r * factor);
+				Uint8 g = (Uint8)(col.g * factor);
+				Uint8 b = (Uint8)(col.b * factor);
+				gradient_cache[c][i] = nearest_palette_index(r, g, b);
+			}
+		}
+
+		gradient_cache_valid = true;
+	}
+}
+
+static void blit_with_offset(SDL_Surface* src, SDL_Surface* dst, int x_offset)
+{
+	update_gradient_cache();
+
+	for (int y = 0; y < vga_height; ++y)
+	{
+		Uint8* src_row = (Uint8*)src->pixels + y * src->pitch;
+		Uint8* dst_row = (Uint8*)dst->pixels + y * dst->pitch;
+
+		memcpy(dst_row + x_offset, src_row, 320);
+
+		Uint8 left_color = src_row[0];
+		for (int i = 0; i < x_offset; ++i)
+		{
+			dst_row[i] = gradient_cache[left_color][i];
+		}
+
+		Uint8 right_color = src_row[319];
+		for (int i = 0; i < x_offset; ++i)
+		{
+			dst_row[x_offset + 320 + i] = gradient_cache[right_color][x_offset - 1 - i];
+		}
+	}
+}
+
+void set_menu_centered(bool centered)
+{
+	current_x_offset = centered ? menu_x_offset : 0;
 }
 
 /** Maps a specified point in game screen coordinates to window coordinates. */
 void mapScreenPointToWindow(Sint32 *const inout_x, Sint32 *const inout_y)
 {
-	*inout_x = (2 * *inout_x + 1) * last_output_rect.w / (2 * VGAScreen->w) + last_output_rect.x;
+	Sint32 x = *inout_x + current_x_offset;
+	*inout_x = (2 * x + 1) * last_output_rect.w / (2 * VGAScreen->w) + last_output_rect.x;
 	*inout_y = (2 * *inout_y + 1) * last_output_rect.h / (2 * VGAScreen->h) + last_output_rect.y;
 }
 
 /** Maps a specified point in window coordinates to game screen coordinates. */
 void mapWindowPointToScreen(Sint32 *const inout_x, Sint32 *const inout_y)
 {
-	*inout_x = (2 * (*inout_x - last_output_rect.x) + 1) * VGAScreen->w / (2 * last_output_rect.w);
+	*inout_x = (2 * (*inout_x - last_output_rect.x) + 1) * VGAScreen->w / (2 * last_output_rect.w) - current_x_offset;
 	*inout_y = (2 * (*inout_y - last_output_rect.y) + 1) * VGAScreen->h / (2 * last_output_rect.h);
 }
 

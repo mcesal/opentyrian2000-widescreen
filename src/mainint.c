@@ -643,6 +643,13 @@ ulong JE_getCost(JE_byte itemType, JE_word itemNum)
 		break;
 	}
 
+	if (tougherProgression)
+	{
+		cost *= 10;
+		upgradeCost *= 10;
+		downgradeCost *= 10;
+	}
+
 	return cost;
 }
 
@@ -2024,6 +2031,7 @@ void JE_debugMenu(bool center)
 						"Inf Armor",
 						"Auto-Adjust Difficulty",
 						"Difficulty",
+						"Tougher Progression",
 						"Return"
 	};
 
@@ -2149,6 +2157,9 @@ void JE_debugMenu(bool center)
 			case 16:
 				snprintf(buf, sizeof(buf), "%s", difficultyNameB[difficultyLevel]);
 				break;
+			case 17:
+				sprintf(buf, "%s", tougherProgression ? "ON" : "OFF");
+				break;
 			default:
 				buf[0] = '\0';
 				break;
@@ -2196,6 +2207,7 @@ void JE_debugMenu(bool center)
 				case 14: cheatInfiniteArmor = !cheatInfiniteArmor; break;
 				case 15: difficultyAdjust = !difficultyAdjust; break;
 				case 16: if (difficultyLevel > DIFFICULTY_WIMP) --difficultyLevel; break;
+				case 17: tougherProgression = !tougherProgression; break;
 				default: break;
 				}
 				break;
@@ -2219,6 +2231,7 @@ void JE_debugMenu(bool center)
 				case 14: cheatInfiniteArmor = !cheatInfiniteArmor; break;
 				case 15: difficultyAdjust = !difficultyAdjust; break;
 				case 16: if (difficultyLevel < DIFFICULTY_10) ++difficultyLevel; break;
+				case 17: tougherProgression = !tougherProgression; break;
 				default: break;
 				}
 				break;
@@ -2226,7 +2239,7 @@ void JE_debugMenu(bool center)
 			case SDL_SCANCODE_SPACE:
 				if (selected == menuCount - 1)
 					done = true;
-				else if (selected == 10 || (selected >= 11 && selected <= 16))
+				else if (selected == 10 || (selected >= 11 && selected <= 17))
 				{
 					// toggles handled above
 				}

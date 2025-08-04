@@ -304,6 +304,7 @@ extern JE_boolean cheatInfiniteShields;
 extern JE_boolean cheatInfiniteArmor;
 extern JE_boolean autoFireSpecial;
 extern JE_boolean chargeSidekickAutofire;
+extern JE_boolean tougherProgression;
 extern JE_boolean difficultyAdjust;
 extern JE_boolean allPlayersGone;
 extern const uint shadowYDist;

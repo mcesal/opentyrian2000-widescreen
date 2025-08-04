@@ -2001,7 +2001,7 @@ void JE_debugMenu(bool center)
 	{
 		int menu_width = MIN(vga_width, 320);
 		off_x = (menu_width - DEBUG_MENU_WIDTH) / 2 - DEBUG_MENU_X;
-		off_y = (vga_height - DEBUG_MENU_HEIGHT) / 2 - DEBUG_MENU_Y;
+		off_y = (vga_height - (DEBUG_MENU_HEIGHT + 10)) / 2 - DEBUG_MENU_Y + 1;
 	}
 
 	const char* menuItems[] = {

@@ -74,7 +74,8 @@ bool pause_pressed = false, ingamemenu_pressed = false;
 #define DEBUG_MENU_X      3
 #define DEBUG_MENU_Y      9
 #define DEBUG_MENU_WIDTH  (257 - DEBUG_MENU_X + 1)
-#define DEBUG_MENU_HEIGHT (vga_height - 19 - DEBUG_MENU_Y + 1)
+/* total height of debug menu area */
+#define DEBUG_MENU_HEIGHT (vga_height - 9 - DEBUG_MENU_Y + 1)
 
 static Uint8 debug_menu_backup[DEBUG_MENU_WIDTH * DEBUG_MENU_HEIGHT];
 
@@ -1853,7 +1854,7 @@ JE_boolean JE_inGameSetup(void)
 				JE_playSampleNum(S_SELECT);
 
 				/* capture debug menu area */
-				for (int yy = 0; yy < DEBUG_MENU_HEIGHT+10; ++yy)
+				for (int yy = 0; yy < DEBUG_MENU_HEIGHT; ++yy)
 				{
 					memcpy(&debug_menu_backup[yy * DEBUG_MENU_WIDTH],
 						(Uint8*)VGAScreen2->pixels +
@@ -1864,7 +1865,7 @@ JE_boolean JE_inGameSetup(void)
 				JE_debugMenu(false);
 
 				/* restore debug menu area */
-				for (int yy = 00; yy < DEBUG_MENU_HEIGHT+10; ++yy)
+				for (int yy = 0; yy < DEBUG_MENU_HEIGHT; ++yy)
 				{
 					memcpy((Uint8*)VGAScreen->pixels +
 						(DEBUG_MENU_Y + yy) * VGAScreen->pitch + DEBUG_MENU_X,
@@ -2001,7 +2002,7 @@ void JE_debugMenu(bool center)
 	{
 		int menu_width = MIN(vga_width, 320);
 		off_x = (menu_width - DEBUG_MENU_WIDTH) / 2 - DEBUG_MENU_X;
-		off_y = (vga_height - (DEBUG_MENU_HEIGHT + 10)) / 2 - DEBUG_MENU_Y + 1;
+		off_y = (vga_height - DEBUG_MENU_HEIGHT) / 2 - DEBUG_MENU_Y + 1;
 	}
 
 	const char* menuItems[] = {

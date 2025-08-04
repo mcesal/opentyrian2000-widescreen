@@ -425,6 +425,7 @@ void JE_saveGame(JE_byte slot, const char *name)
 	saveFiles[slot - 1].input2 = inputDevice[1];
 
 	saveFiles[slot - 1].autoFireSpecial = autoFireSpecial;
+	saveFiles[slot - 1].chargeSidekickAutofire = chargeSidekickAutofire;
 	saveFiles[slot - 1].difficultyAdjust = difficultyAdjust;
 	saveFiles[slot - 1].cheatInfiniteSidekickAmmo = cheatInfiniteSidekickAmmo;
 	saveFiles[slot - 1].cheatInfiniteShields = cheatInfiniteShields;
@@ -496,6 +497,7 @@ void JE_loadGame(JE_byte slot)
 	inputDevice[1] = saveFiles[slot - 1].input2;
 
 	autoFireSpecial = saveFiles[slot - 1].autoFireSpecial;
+	chargeSidekickAutofire = saveFiles[slot - 1].chargeSidekickAutofire;
 	difficultyAdjust = saveFiles[slot - 1].difficultyAdjust;
 	cheatInfiniteSidekickAmmo = saveFiles[slot - 1].cheatInfiniteSidekickAmmo;
 	cheatInfiniteShields = saveFiles[slot - 1].cheatInfiniteShields;
@@ -920,6 +922,9 @@ void JE_loadConfiguration(void)
 			memcpy(&temp, p, 1); p++;  // autoFireSpecial
 			saveFiles[z].autoFireSpecial = temp != 0;
 
+			memcpy(&temp, p, 1); p++;  // chargeSidekickAutofire
+			saveFiles[z].chargeSidekickAutofire = temp != 0;
+
 			memcpy(&temp, p, 1); p++;  // difficultyAdjust
 			saveFiles[z].difficultyAdjust = temp != 0;
 
@@ -1007,6 +1012,7 @@ void JE_loadConfiguration(void)
 			}
 
 			saveFiles[z].autoFireSpecial = false;
+			saveFiles[z].chargeSidekickAutofire = true;
 			saveFiles[z].difficultyAdjust = true;
 			saveFiles[z].cheatInfiniteSidekickAmmo = false;
 			saveFiles[z].cheatInfiniteShields = false;
@@ -1109,6 +1115,9 @@ void JE_saveConfiguration(void)
 		memcpy(p, &tempSaveFile.highScoreDiff, sizeof(JE_byte)); p++;
 
 		temp = tempSaveFile.autoFireSpecial != false;
+		memcpy(p, &temp, 1); p++;
+
+		temp = tempSaveFile.chargeSidekickAutofire != false;
 		memcpy(p, &temp, 1); p++;
 
 		temp = tempSaveFile.difficultyAdjust != false;

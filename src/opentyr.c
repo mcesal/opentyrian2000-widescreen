@@ -834,7 +834,7 @@ int main(int argc, char *argv[])
 	/* Insert debug equipment and level select options in the buy/sell menu */
 		   /* Fix misplaced debug labels in the buy/sell menu.  Entries 7-9 should
 				* be "Equipment", "Level Select", and "Quit Game" respectively. */
-	strncpy(menuInt[1][6], "Debug Equip", sizeof(menuInt[1][6]));
+	strncpy(menuInt[1][6], "Debug Menu", sizeof(menuInt[1][6]));
 	menuInt[1][6][sizeof(menuInt[1][6]) - 1] = '\0';
 	strncpy(menuInt[1][7], "Debug Level", sizeof(menuInt[1][7]));
 	menuInt[1][7][sizeof(menuInt[1][7]) - 1] = '\0';

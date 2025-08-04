@@ -49,6 +49,7 @@
 #include "varz.h"
 #include "vga256d.h"
 #include "video.h"
+#include "lvlmast.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -2045,32 +2046,115 @@ void JE_debugMenu(bool center)
 			draw_font_hv_shadow(VGAScreen, 10 + off_x, y, menuItems[i], normal_font, left_aligned, 15, -4 + (sel ? 2 : 0), false, 2);
 
 			char buf[40];
+			bool invalid = false;
 			switch (i)
 			{
-			case 0:  snprintf(buf, sizeof(buf), "%s", ships[player[0].items.ship].name); break;
-			case 1:  snprintf(buf, sizeof(buf), "%s", weaponPort[player[0].items.weapon[FRONT_WEAPON].id].name); break;
-			case 2:  snprintf(buf, sizeof(buf), "%d", player[0].items.weapon[FRONT_WEAPON].power); break;
-			case 3:  snprintf(buf, sizeof(buf), "%s", weaponPort[player[0].items.weapon[REAR_WEAPON].id].name); break;
-			case 4:  snprintf(buf, sizeof(buf), "%d", player[0].items.weapon[REAR_WEAPON].power); break;
-			case 5:  snprintf(buf, sizeof(buf), "%s", shields[player[0].items.shield].name); break;
-			case 6:  snprintf(buf, sizeof(buf), "%s", powerSys[player[0].items.generator].name); break;
-			case 7:  snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[LEFT_SIDEKICK]].name); break;
-			case 8:  snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[RIGHT_SIDEKICK]].name); break;
-			case 9:  snprintf(buf, sizeof(buf), "%s", special[player[0].items.special].name); break;
-			case 10: sprintf(buf, "%s", autoFireSpecial ? "ON" : "OFF"); break;
-			case 11: sprintf(buf, "%s", cheatInfiniteSidekickAmmo ? "ON" : "OFF"); break;
-			case 12: sprintf(buf, "%s", cheatInfiniteShields ? "ON" : "OFF"); break;
-			case 13: sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF"); break;
-			case 14: sprintf(buf, "%s", difficultyAdjust ? "ON" : "OFF"); break;
-			case 15: snprintf(buf, sizeof(buf), "%s", difficultyNameB[difficultyLevel]); break;
-			default: buf[0] = '\0'; break;
+			case 0:
+				if (player[0].items.ship <= SHIP_NUM)
+					snprintf(buf, sizeof(buf), "%s", ships[player[0].items.ship].name);
+				else
+				{
+					snprintf(buf, sizeof(buf), "%d", player[0].items.ship);
+					invalid = true;
+				}
+				break;
+			case 1:
+				if (player[0].items.weapon[FRONT_WEAPON].id <= PORT_NUM)
+					snprintf(buf, sizeof(buf), "%s", weaponPort[player[0].items.weapon[FRONT_WEAPON].id].name);
+				else
+				{
+					snprintf(buf, sizeof(buf), "%d", player[0].items.weapon[FRONT_WEAPON].id);
+					invalid = true;
+				}
+				break;
+			case 2:
+				snprintf(buf, sizeof(buf), "%d", player[0].items.weapon[FRONT_WEAPON].power);
+				break;
+			case 3:
+				if (player[0].items.weapon[REAR_WEAPON].id <= PORT_NUM)
+					snprintf(buf, sizeof(buf), "%s", weaponPort[player[0].items.weapon[REAR_WEAPON].id].name);
+				else
+				{
+					snprintf(buf, sizeof(buf), "%d", player[0].items.weapon[REAR_WEAPON].id);
+					invalid = true;
+				}
+				break;
+			case 4:
+				snprintf(buf, sizeof(buf), "%d", player[0].items.weapon[REAR_WEAPON].power);
+				break;
+			case 5:
+				if (player[0].items.shield <= SHIELD_NUM)
+					snprintf(buf, sizeof(buf), "%s", shields[player[0].items.shield].name);
+				else
+				{
+					snprintf(buf, sizeof(buf), "%d", player[0].items.shield);
+					invalid = true;
+				}
+				break;
+			case 6:
+				if (player[0].items.generator <= POWER_NUM)
+					snprintf(buf, sizeof(buf), "%s", powerSys[player[0].items.generator].name);
+				else
+				{
+					snprintf(buf, sizeof(buf), "%d", player[0].items.generator);
+					invalid = true;
+				}
+				break;
+			case 7:
+				if (player[0].items.sidekick[LEFT_SIDEKICK] <= OPTION_NUM)
+					snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[LEFT_SIDEKICK]].name);
+				else
+				{
+					snprintf(buf, sizeof(buf), "%d", player[0].items.sidekick[LEFT_SIDEKICK]);
+					invalid = true;
+				}
+				break;
+			case 8:
+				if (player[0].items.sidekick[RIGHT_SIDEKICK] <= OPTION_NUM)
+					snprintf(buf, sizeof(buf), "%s", options[player[0].items.sidekick[RIGHT_SIDEKICK]].name);
+				else
+				{
+					snprintf(buf, sizeof(buf), "%d", player[0].items.sidekick[RIGHT_SIDEKICK]);
+					invalid = true;
+				}
+				break;
+			case 9:
+				if (player[0].items.special <= SPECIAL_NUM)
+					snprintf(buf, sizeof(buf), "%s", special[player[0].items.special].name);
+				else
+				{
+					snprintf(buf, sizeof(buf), "%d", player[0].items.special);
+					invalid = true;
+				}
+				break;
+			case 10:
+				sprintf(buf, "%s", autoFireSpecial ? "ON" : "OFF");
+				break;
+			case 11:
+				sprintf(buf, "%s", cheatInfiniteSidekickAmmo ? "ON" : "OFF");
+				break;
+			case 12:
+				sprintf(buf, "%s", cheatInfiniteShields ? "ON" : "OFF");
+				break;
+			case 13:
+				sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF");
+				break;
+			case 14:
+				sprintf(buf, "%s", difficultyAdjust ? "ON" : "OFF");
+				break;
+			case 15:
+				snprintf(buf, sizeof(buf), "%s", difficultyNameB[difficultyLevel]);
+				break;
+			default:
+				buf[0] = '\0';
+				break;
 			}
 
 			/* trim trailing whitespace */
 			for (int j = (int)strlen(buf) - 1; j >= 0 && isspace((unsigned char)buf[j]); --j)
 				buf[j] = '\0';
 
-			draw_font_hv(VGAScreen, 250 + off_x, y + 2, buf, small_font, right_aligned, 15, 4);
+			draw_font_hv(VGAScreen, 250 + off_x, y + 2, buf, small_font, right_aligned, invalid ? 4 : 15, 4);
 		}
 
 		JE_showVGA();

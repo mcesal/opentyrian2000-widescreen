@@ -58,24 +58,6 @@ inline static void blit_enemy(SDL_Surface *surface, unsigned int i, signed int x
 
 boss_bar_t boss_bar[2];
 
-static void apply_tougher_progression_to_link(Uint8 link_num)
-{
-	if (!tougherProgression || link_num == 0)
-		return;
-
-	if (link_num != boss_bar[0].link_num && link_num != boss_bar[1].link_num)
-		return;
-
-	for (size_t i = 0; i < COUNTOF(enemy); ++i)
-	{
-		if (enemyAvail[i] != 1 && enemy[i].linknum == link_num && enemy[i].armorleft < 255)
-		{
-			unsigned int armor = enemy[i].armorleft * 20;
-			enemy[i].armorleft = (armor > 254) ? 254 : armor;
-		}
-	}
-}
-
 /* Level Event Data */
 JE_boolean quit, loadLevelOk;
 
@@ -4357,7 +4339,6 @@ void JE_createNewEventEnemy(JE_byte enemyTypeOfs, JE_word enemyOffset, Sint16 un
 	enemy[b - 1].ey += eventRec[eventLoc - 1].eventdat5;
 	enemy[b - 1].eyc += eventRec[eventLoc - 1].eventdat3;
 	enemy[b - 1].linknum = eventRec[eventLoc - 1].eventdat4;
-	apply_tougher_progression_to_link(enemy[b - 1].linknum);
 	enemy[b - 1].fixedmovey = eventRec[eventLoc - 1].eventdat6;
 }
 
@@ -5265,8 +5246,6 @@ void JE_eventSystem(void)
 	case 79:
 		boss_bar[0].link_num = eventRec[eventLoc - 1].eventdat;
 		boss_bar[1].link_num = eventRec[eventLoc - 1].eventdat2;
-		apply_tougher_progression_to_link(boss_bar[0].link_num);
-		apply_tougher_progression_to_link(boss_bar[1].link_num);
 		break;
 
 	case 80:  // skip events if in 2-player mode

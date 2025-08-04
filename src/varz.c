@@ -287,7 +287,6 @@ JE_boolean  cheatInfiniteShields = false;
 JE_boolean  cheatInfiniteArmor = false;
 JE_boolean  autoFireSpecial = false;
 JE_boolean  chargeSidekickAutofire = false;
-JE_boolean  tougherProgression = false;
 JE_boolean  difficultyAdjust = true;
 
 /*PlayerData*/

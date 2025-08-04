@@ -2177,7 +2177,10 @@ draw_player_shot_loop_end:
 	if (displayTime > 0)
 	{
 		displayTime--;
-		JE_outTextAndDarken(VGAScreen, 90, 10, miscText[59], 15, (JE_byte)flash - 8, FONT_SHAPES);
+		const int playfield_left = -2 * PLAYFIELD_X_SHIFT;
+		const int secret_text_width = JE_textWidth(miscText[59], FONT_SHAPES);
+		const int secret_text_x = playfield_left + (PLAYFIELD_WIDTH - secret_text_width) / 2;
+		JE_outTextAndDarken(VGAScreen, secret_text_x, 10, miscText[59], 15, (JE_byte)flash - 8, FONT_SHAPES);
 		flash += flashChange;
 		if (flash > 4 || flash == 0)
 			flashChange = -flashChange;
@@ -2241,7 +2244,12 @@ draw_player_shot_loop_end:
 				if (play_demo || normalBonusLevelCurrent || bonusLevelCurrent)
 					reallyEndLevel = true;
 				else
-					JE_dString(VGAScreen, 120, 60, miscText[21], FONT_SHAPES); // game over
+				{
+					const int playfield_left = -2 * PLAYFIELD_X_SHIFT;
+					const int game_over_width = JE_textWidth(miscText[21], FONT_SHAPES);
+					const int game_over_x = playfield_left + (PLAYFIELD_WIDTH - game_over_width) / 2;
+					JE_dString(VGAScreen, game_over_x, 60, miscText[21], FONT_SHAPES); // game over
+				}
 
 				if (firstGameOver)
 				{

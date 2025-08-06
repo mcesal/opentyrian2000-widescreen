@@ -2495,7 +2495,20 @@ void JE_drawMainMenuHelpText(void)
 	JE_byte temp;
 
 	temp = curSel[curMenu] - 2;
-	if (curMenu == MENU_JOYSTICK_CONFIG) // joystick settings menu help
+
+	if (curMenu == MENU_DEBUG_PLAY_LEVEL)
+	{
+		if (curSel[curMenu] == menuChoices[MENU_DEBUG_PLAY_LEVEL])
+		{
+			memcpy(tempStr, mainMenuHelp[12 - 1], sizeof(tempStr));
+		}
+		else
+		{
+			snprintf(tempStr, sizeof(tempStr), "Debug: Play the level %s.",
+				debugMenuInt[curSel[curMenu] - 1]);
+		}
+	}
+	else if (curMenu == MENU_JOYSTICK_CONFIG) // joystick settings menu help
 	{
 		const int help[16] = { 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 24, 11 };
 		memcpy(tempStr, mainMenuHelp[help[curSel[curMenu] - 2]], sizeof(tempStr));

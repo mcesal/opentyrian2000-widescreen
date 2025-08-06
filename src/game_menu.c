@@ -731,12 +731,11 @@ void JE_itemScreen(void)
 
 		/* Draw crap on the left side of the screen, i.e. two player scores, ship graphic, etc. */
 		if ((curMenu >= MENU_FULL_GAME && curMenu <= MENU_OPTIONS) ||
-		    curMenu == MENU_KEYBOARD_CONFIG ||
-		    curMenu == MENU_LOAD_SAVE ||
-			(curMenu >= MENU_2_PLAYER_ARCADE &&
-				curMenu != MENU_DEBUG_PLAY_LEVEL) ||
-		    (curMenu == MENU_UPGRADE_SUB &&
-		     (curSel[MENU_UPGRADES] == 2 || curSel[MENU_UPGRADES] == 5)))
+			curMenu == MENU_KEYBOARD_CONFIG ||
+			curMenu == MENU_LOAD_SAVE ||
+			(curMenu >= MENU_2_PLAYER_ARCADE) ||
+			(curMenu == MENU_UPGRADE_SUB &&
+				(curSel[MENU_UPGRADES] == 2 || curSel[MENU_UPGRADES] == 5)))
 		{
 			if (twoPlayerMode)
 			{

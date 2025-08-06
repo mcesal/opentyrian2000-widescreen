@@ -43,6 +43,7 @@
 #include "video.h"
 
 #include <assert.h>
+#include <limits.h>
 
 enum
 {
@@ -215,12 +216,22 @@ JE_longint JE_cashLeft(void)
 	{
 	case 3:
 	case 4:
-		for (uint i = 1; i < player[0].items.weapon[curSel[MENU_UPGRADES]-3].power; ++i)
+	{
+		long base_cost = weaponPort[itemNum].cost;
+		if (engageMode)
 		{
-			tempW += weaponPort[itemNum].cost * i;
-			tempL -= tempW;
+			if (base_cost > LONG_MAX / 10)
+				base_cost = LONG_MAX;
+			else
+				base_cost *= 10;
+		}
+		for (uint i = 1; i < player[0].items.weapon[curSel[MENU_UPGRADES] - 3].power; ++i)
+		{
+			long step_cost = weapon_upgrade_cost(base_cost, i);
+			tempL -= step_cost;
 		}
 		break;
+	}
 	}
 
 	return tempL;
@@ -555,7 +566,7 @@ void JE_itemScreen(void)
 		{
 			/* Move cursor until we hit either "Done" or a weapon the player can afford */
 			while (curSel[MENU_UPGRADE_SUB] < menuChoices[MENU_UPGRADE_SUB] &&
-			       JE_getCost(curSel[MENU_UPGRADES], itemAvail[itemAvailMap[curSel[MENU_UPGRADES]-2]-1][curSel[MENU_UPGRADE_SUB]-2]) > player[0].cash)
+				JE_getCost(curSel[MENU_UPGRADES], itemAvail[itemAvailMap[curSel[MENU_UPGRADES] - 2] - 1][curSel[MENU_UPGRADE_SUB] - 2]) > (unsigned long)player[0].cash)
 			{
 				curSel[MENU_UPGRADE_SUB] += lastDirection;
 				if (curSel[MENU_UPGRADE_SUB] < 2)
@@ -614,7 +625,7 @@ void JE_itemScreen(void)
 			for (tempW = 1; tempW < menuChoices[curMenu]; tempW++)
 			{
 				int tempY = 40 + (tempW-1) * 26; /* Calculate y position */
-				uint temp_cost;
+				unsigned long temp_cost;
 
 				/* Is this a item or None/DONE? */
 				if (tempW < menuChoices[MENU_UPGRADE_SUB] - 1)
@@ -628,7 +639,7 @@ void JE_itemScreen(void)
 					temp_cost = 0;
 				}
 
-				int afford_shade = (temp_cost > player[0].cash) ? 4 : 0;  // can player afford current weapon at all
+				int afford_shade = (temp_cost > (unsigned long)player[0].cash) ? 4 : 0;  // can player afford current weapon at all
 
 				temp = itemAvail[itemAvailMap[curSel[MENU_UPGRADES]-2]-1][tempW-1]; /* Item ID */
 				switch (curSel[MENU_UPGRADES]-1)
@@ -689,7 +700,7 @@ void JE_itemScreen(void)
 				{
 					char buf[20];
 
-					snprintf(buf, sizeof buf, "Cost: %d", temp_cost);
+					snprintf(buf, sizeof buf, "Cost: %lu", temp_cost);
 					JE_textShade(VGAScreen, 187, tempY+10, buf, temp2 / 16, temp2 % 16 - 8 - afford_shade, DARKEN);
 				}
 			}
@@ -1269,7 +1280,7 @@ void JE_itemScreen(void)
 						else
 						{
 							if (curMenu == MENU_UPGRADE_SUB &&
-							    JE_getCost(curSel[MENU_UPGRADES], itemAvail[itemAvailMap[curSel[MENU_UPGRADES]-2]-1][selection-2]) > player[0].cash)
+								JE_getCost(curSel[MENU_UPGRADES], itemAvail[itemAvailMap[curSel[MENU_UPGRADES] - 2] - 1][selection - 2]) > (unsigned long)player[0].cash)
 							{
 								JE_playSampleNum(S_CLINK);
 							}

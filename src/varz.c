@@ -288,6 +288,7 @@ JE_boolean  cheatInfiniteArmor = false;
 JE_boolean  autoFireSpecial = false;
 JE_boolean  chargeSidekickAutofire = false;
 JE_boolean  difficultyAdjust = true;
+JE_boolean  engageMode = false;
 
 /*PlayerData*/
 JE_boolean allPlayersGone; /*Both players dead and finished exploding*/

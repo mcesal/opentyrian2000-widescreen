@@ -430,6 +430,7 @@ void JE_saveGame(JE_byte slot, const char *name)
 	saveFiles[slot - 1].cheatInfiniteSidekickAmmo = cheatInfiniteSidekickAmmo;
 	saveFiles[slot - 1].cheatInfiniteShields = cheatInfiniteShields;
 	saveFiles[slot - 1].cheatInfiniteArmor = cheatInfiniteArmor;
+	saveFiles[slot - 1].engageMode = engageMode;
 
 	strcpy(saveFiles[slot-1].name, name);
 	
@@ -502,6 +503,7 @@ void JE_loadGame(JE_byte slot)
 	cheatInfiniteSidekickAmmo = saveFiles[slot - 1].cheatInfiniteSidekickAmmo;
 	cheatInfiniteShields = saveFiles[slot - 1].cheatInfiniteShields;
 	cheatInfiniteArmor = saveFiles[slot - 1].cheatInfiniteArmor;
+	engageMode = saveFiles[slot - 1].engageMode;
 
 	for (uint port = 0; port < 2; ++port)
 	{
@@ -936,6 +938,9 @@ void JE_loadConfiguration(void)
 
 			memcpy(&temp, p, 1); p++;  // cheatInfiniteArmor
 			saveFiles[z].cheatInfiniteArmor = temp != 0;
+
+			memcpy(&temp, p, 1); p++;  // engageMode
+			saveFiles[z].engageMode = temp != 0;
 		}
 
 		/* SYN: This is truncating to bytes. I have no idea what this is doing or why. */
@@ -1018,6 +1023,7 @@ void JE_loadConfiguration(void)
 			saveFiles[z].cheatInfiniteSidekickAmmo = false;
 			saveFiles[z].cheatInfiniteShields = false;
 			saveFiles[z].cheatInfiniteArmor = false;
+			saveFiles[z].engageMode = false;
 		}
 
 		for (z = 0; z < 10; ++z)
@@ -1131,6 +1137,9 @@ void JE_saveConfiguration(void)
 		memcpy(p, &temp, 1); p++;
 
 		temp = tempSaveFile.cheatInfiniteArmor != false;
+		memcpy(p, &temp, 1); p++;
+
+		temp = tempSaveFile.engageMode != false;
 		memcpy(p, &temp, 1); p++;
 	}
 	

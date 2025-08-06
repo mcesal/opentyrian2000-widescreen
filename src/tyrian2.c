@@ -1574,6 +1574,14 @@ level_loop:
 
 						int armorleft = enemy[b].armorleft;
 
+						bool has_boss_bar = false;
+						for (unsigned int i = 0; i < COUNTOF(boss_bar); i++)
+							if (enemy[b].linknum == boss_bar[i].link_num)
+								has_boss_bar = true;
+
+						if (engageMode && has_boss_bar)
+							damage = (damage + 19) / 20;
+
 						temp = enemy[b].linknum;
 						if (temp == 0)
 							temp = 255;

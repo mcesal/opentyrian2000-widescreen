@@ -46,6 +46,7 @@
 #include "shots.h"
 #include "sndmast.h"
 #include "sprite.h"
+#include "tyrian2.h"
 #include "varz.h"
 #include "vga256d.h"
 #include "video.h"
@@ -54,6 +55,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <string.h>
+#include <limits.h>
 
 bool button[4];
 
@@ -63,8 +65,8 @@ const JE_byte topicStart[TOPICS] = { 0, 1, 2, 3, 7, 255 };
 
 JE_shortint constantLastX;
 JE_word textErase;
-JE_word upgradeCost;
-JE_word downgradeCost;
+ulong upgradeCost;
+ulong downgradeCost;
 JE_boolean performSave;
 JE_boolean jumpSection;
 JE_boolean useLastBank; /* See if I want to use the last 16 colors for DisplayText */
@@ -626,7 +628,7 @@ ulong JE_getCost(JE_byte itemType, JE_word itemNum)
 		cost = weaponPort[itemNum].cost;
 
 		const uint port = itemType - 3,
-		           item_power = player[0].items.weapon[port].power - 1;
+			item_power = player[0].items.weapon[port].power - 1;
 
 		downgradeCost = weapon_upgrade_cost(cost, item_power);
 		upgradeCost = weapon_upgrade_cost(cost, item_power + 1);
@@ -642,8 +644,24 @@ ulong JE_getCost(JE_byte itemType, JE_word itemNum)
 		cost = options[itemNum].cost;
 		break;
 	}
+
+	if (expertMode)
+	{
+		if (cost > LONG_MAX / 10)
+			cost = LONG_MAX;
+		else
+			cost = cost * 75 / 10;
+
+		if (itemType == 3 || itemType == 4)
+		{
+			downgradeCost = (downgradeCost > ULONG_MAX / 75/10) ? ULONG_MAX : downgradeCost * 75/10;
+			upgradeCost = (upgradeCost > ULONG_MAX / 75/10) ? ULONG_MAX : upgradeCost * 75/10;
+		}
+	}
+
 	return cost;
 }
+
 
 bool JE_loadScreen(void)
 {
@@ -2021,9 +2039,9 @@ void JE_debugMenu(bool center)
 						"Inf Sidekick Ammo",
 						"Inf Shields",
 						"Inf Armor",
+						"Expert Mode",
 						"Auto-Adjust Difficulty",
-						"Difficulty",
-						"Return"
+						"Difficulty"
 	};
 
 	const size_t menuCount = sizeof(menuItems) / sizeof(menuItems[0]);
@@ -2143,9 +2161,12 @@ void JE_debugMenu(bool center)
 				sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF");
 				break;
 			case 15:
-				sprintf(buf, "%s", difficultyAdjust ? "ON" : "OFF");
+				sprintf(buf, "%s", expertMode ? "ON" : "OFF");
 				break;
 			case 16:
+				sprintf(buf, "%s", difficultyAdjust ? "ON" : "OFF");
+				break;
+			case 17:
 				snprintf(buf, sizeof(buf), "%s", difficultyNameB[difficultyLevel]);
 				break;
 			default:
@@ -2193,8 +2214,9 @@ void JE_debugMenu(bool center)
 				case 12: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
 				case 13: cheatInfiniteShields = !cheatInfiniteShields; break;
 				case 14: cheatInfiniteArmor = !cheatInfiniteArmor; break;
-				case 15: difficultyAdjust = !difficultyAdjust; break;
-				case 16: if (difficultyLevel > DIFFICULTY_WIMP) --difficultyLevel; break;
+				case 15: expertMode = !expertMode; break;
+				case 16: difficultyAdjust = !difficultyAdjust; break;
+				case 17: if (difficultyLevel > DIFFICULTY_WIMP) --difficultyLevel; break;
 				default: break;
 				}
 				break;
@@ -2216,8 +2238,9 @@ void JE_debugMenu(bool center)
 				case 12: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
 				case 13: cheatInfiniteShields = !cheatInfiniteShields; break;
 				case 14: cheatInfiniteArmor = !cheatInfiniteArmor; break;
-				case 15: difficultyAdjust = !difficultyAdjust; break;
-				case 16: if (difficultyLevel < DIFFICULTY_10) ++difficultyLevel; break;
+				case 15: expertMode = !expertMode; break;
+				case 16: difficultyAdjust = !difficultyAdjust; break;
+				case 17: if (difficultyLevel < DIFFICULTY_10) ++difficultyLevel; break;
 				default: break;
 				}
 				break;
@@ -2225,7 +2248,7 @@ void JE_debugMenu(bool center)
 			case SDL_SCANCODE_SPACE:
 				if (selected == menuCount - 1)
 					done = true;
-				else if (selected == 10 || (selected >= 11 && selected <= 16))
+				else if (selected == 10 || (selected >= 11 && selected <= 17))
 				{
 					// toggles handled above
 				}
@@ -5399,6 +5422,8 @@ void JE_playerCollide(Player *this_player, JE_byte playerNum_)
 					if (armorleft > damageRate)
 						armorleft = damageRate;
 
+					int damage_to_enemy = armorleft;
+
 					JE_playerDamage(armorleft, this_player);
 
 					// player ship gets push-back from collision
@@ -5407,6 +5432,14 @@ void JE_playerCollide(Player *this_player, JE_byte playerNum_)
 						this_player->x_velocity += (enemy[z].exc * enemy[z].armorleft) / 2;
 						this_player->y_velocity += (enemy[z].eyc * enemy[z].armorleft) / 2;
 					}
+
+					bool has_boss_bar = false;
+					for (unsigned int i = 0; i < COUNTOF(boss_bar); i++)
+						if (enemy[z].linknum == boss_bar[i].link_num)
+							has_boss_bar = true;
+
+					if (expertMode && has_boss_bar)
+						damage_to_enemy = (damage_to_enemy + 24) / 25;
 
 					int armorleft2 = enemy[z].armorleft;
 					if (armorleft2 == 255)
@@ -5418,11 +5451,11 @@ void JE_playerCollide(Player *this_player, JE_byte playerNum_)
 
 					b = z;
 
-					if (armorleft2 > armorleft)
+					if (armorleft2 > damage_to_enemy)
 					{
 						// damage enemy
 						if (enemy[z].armorleft != 255)
-							enemy[z].armorleft -= armorleft;
+							enemy[z].armorleft -= damage_to_enemy;
 						soundQueue[5] = S_ENEMY_HIT;
 					}
 					else

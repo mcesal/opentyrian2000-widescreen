@@ -29,8 +29,8 @@ extern bool button[4]; // fire, left fire, right fire, mode swap
 
 extern JE_shortint constantLastX;
 extern JE_word textErase;
-extern JE_word upgradeCost;
-extern JE_word downgradeCost;
+extern ulong upgradeCost;
+extern ulong downgradeCost;
 extern JE_boolean performSave;
 extern JE_boolean jumpSection;
 extern JE_boolean useLastBank;

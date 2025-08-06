@@ -315,9 +315,13 @@ JE_integer player_shot_create(JE_word portNum, uint bay_i, JE_word PX, JE_word P
 
 	const JE_WeaponType* weapon = &weapons[wpNum];
 
-	if (power < weaponPort[portNum].poweruse)
+	uint power_use = weaponPort[portNum].poweruse;
+	if (expertMode)
+		power_use = power_use * 3 / 2;
+
+	if (power < power_use)
 		return MAX_PWEAPON;
-	power -= weaponPort[portNum].poweruse;
+	power -= power_use;
 
 	if (weapon->sound > 0)
 		soundQueue[soundChannel[bay_i]] = weapon->sound;

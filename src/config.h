@@ -107,7 +107,7 @@ typedef struct
 	JE_boolean    cheatInfiniteSidekickAmmo;
 	JE_boolean    cheatInfiniteShields;
 	JE_boolean    cheatInfiniteArmor;
-	JE_boolean    engageMode;
+	JE_boolean    expertMode;
 } JE_SaveFileType;
 
 typedef JE_SaveFileType JE_SaveFilesType[SAVE_FILES_NUM]; /* [1..savefilesnum] */

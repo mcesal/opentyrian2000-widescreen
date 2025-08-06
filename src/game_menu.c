@@ -223,7 +223,7 @@ JE_longint JE_cashLeft(void)
 			if (base_cost > LONG_MAX / 10)
 				base_cost = LONG_MAX;
 			else
-				base_cost = base_cost * 75 / 10;
+				base_cost = base_cost * 10;
 		}
 		for (uint i = 1; i < player[0].items.weapon[curSel[MENU_UPGRADES] - 3].power; ++i)
 		{
@@ -2912,7 +2912,9 @@ void JE_menuFunction(JE_byte select)
 		case 8: // debug play level
 			load_debug_levels();
 			curMenu = MENU_DEBUG_PLAY_LEVEL;
-			newPal = 18;
+			/* Use the standard menu palette so ship graphics retain
+			 * correct colors instead of using the map palette. */
+			newPal = 1;
 			/* clear ship area to avoid leftover graphics */
 			fill_rectangle_xy(VGAScreen, 1, 1, 145, 170, 0);
 			unsigned int count = MIN(debugLevelCount, DEBUG_MENU_MAX - 2);

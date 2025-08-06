@@ -650,12 +650,12 @@ ulong JE_getCost(JE_byte itemType, JE_word itemNum)
 		if (cost > LONG_MAX / 10)
 			cost = LONG_MAX;
 		else
-			cost = cost * 75 / 10;
+			cost = cost * 10;
 
 		if (itemType == 3 || itemType == 4)
 		{
-			downgradeCost = (downgradeCost > ULONG_MAX / 75/10) ? ULONG_MAX : downgradeCost * 75/10;
-			upgradeCost = (upgradeCost > ULONG_MAX / 75/10) ? ULONG_MAX : upgradeCost * 75/10;
+			downgradeCost = (downgradeCost > ULONG_MAX / 10) ? ULONG_MAX : downgradeCost * 10;
+			upgradeCost = (upgradeCost > ULONG_MAX / 10) ? ULONG_MAX : upgradeCost * 10;
 		}
 	}
 

@@ -1580,7 +1580,7 @@ level_loop:
 								has_boss_bar = true;
 
 						if (engageMode && has_boss_bar)
-							damage = (damage + 19) / 20;
+							damage = (damage + 24) / 25;
 
 						temp = enemy[b].linknum;
 						if (temp == 0)

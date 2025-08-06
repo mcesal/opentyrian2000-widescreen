@@ -65,8 +65,8 @@ const JE_byte topicStart[TOPICS] = { 0, 1, 2, 3, 7, 255 };
 
 JE_shortint constantLastX;
 JE_word textErase;
-JE_word upgradeCost;
-JE_word downgradeCost;
+ulong upgradeCost;
+ulong downgradeCost;
 JE_boolean performSave;
 JE_boolean jumpSection;
 JE_boolean useLastBank; /* See if I want to use the last 16 colors for DisplayText */
@@ -654,8 +654,8 @@ ulong JE_getCost(JE_byte itemType, JE_word itemNum)
 
 		if (itemType == 3 || itemType == 4)
 		{
-			downgradeCost = (downgradeCost > USHRT_MAX / 10) ? USHRT_MAX : downgradeCost * 10;
-			upgradeCost = (upgradeCost > USHRT_MAX / 10) ? USHRT_MAX : upgradeCost * 10;
+			downgradeCost = (downgradeCost > ULONG_MAX / 10) ? ULONG_MAX : downgradeCost * 10;
+			upgradeCost = (upgradeCost > ULONG_MAX / 10) ? ULONG_MAX : upgradeCost * 10;
 		}
 	}
 
@@ -5439,7 +5439,7 @@ void JE_playerCollide(Player *this_player, JE_byte playerNum_)
 							has_boss_bar = true;
 
 					if (engageMode && has_boss_bar)
-						damage_to_enemy = (damage_to_enemy + 19) / 20;
+						damage_to_enemy = (damage_to_enemy + 24) / 25;
 
 					int armorleft2 = enemy[z].armorleft;
 					if (armorleft2 == 255)

@@ -608,7 +608,10 @@ void JE_itemScreen(void)
 					rightPower = item_level < 11; // can upgrade
 
 					if (rightPower)
-						rightPowerAfford = JE_cashLeft() >= upgradeCost; // can afford upgrade
+					{
+						JE_longint cash_left = JE_cashLeft();
+						rightPowerAfford = cash_left >= 0 && (ulong)cash_left >= upgradeCost; // can afford upgrade
+					}
 				}
 			}
 			else
@@ -3474,13 +3477,13 @@ void JE_weaponSimUpdate(void)
 		{
 			if (leftPower)
 			{
-				sprintf(buf, "%d", downgradeCost);
+				sprintf(buf, "%lu", downgradeCost);
 				JE_outText(VGAScreen, 26, 137, buf, 1, 4);
 			}
 			if (rightPower)
 			{
-				sprintf(buf, "%d", upgradeCost);
-				JE_outText(VGAScreen, 108, 137, buf, (rightPowerAfford) ? 1 : 7, 4);
+				sprintf(buf, "%lu", upgradeCost);
+				JE_outText(VGAScreen, 104, 137, buf, (rightPowerAfford) ? 1 : 7, 4);
 			}
 
 			sprintf(buf, "%s %d", miscTextB[5], temp);

@@ -1234,40 +1234,51 @@ void JE_itemScreen(void)
 				JE_playSampleNum(S_CURSOR);
 			}
 
-			if (mouseY > 20 &&
-			    mouseX > 170 &&
-			    mouseX < 308 &&
-			    curMenu != MENU_DATA_CUBE_SUB)
+			if (mouseY > 20 && curMenu != MENU_DATA_CUBE_SUB)
 			{
-				const JE_byte mouseSelectionY[MENU_MAX] = { 16, 16, 16, 16, 26, 12, 11, 28, 0, 16, 16, 16, 8, 16, 24, 16 };
+				int selection = menuChoices[curMenu] + 1; /* invalid by default */
 
-				int selection = (mouseY - 38) / mouseSelectionY[curMenu]+2;
-
-				if (curMenu == MENU_2_PLAYER_ARCADE)
+				if (curMenu == MENU_DEBUG_PLAY_LEVEL)
 				{
-					if (selection > 5)
-						selection--;
-					if (selection > 3)
-						selection--;
+					if (mouseX > 165 && mouseX < 325 && mouseY >= 38)
+					{
+						int col = (mouseX - 165) / 80;
+						int row = (mouseY - 38) / 8;
+						selection = row * 2 + col + 2;
+					}
 				}
-
-				if (curMenu == MENU_FULL_GAME)
+				else if (mouseX > 170 && mouseX < 308)
 				{
-					if (selection > 8)
-						selection = 8;
-				}
+					const JE_byte mouseSelectionY[MENU_MAX] = { 16, 16, 16, 16, 26, 12, 11, 28, 0, 16, 16, 16, 8, 16, 24, 16 };
 
-				// is play next level screen?
-				if (curMenu == MENU_PLAY_NEXT_LEVEL)
-				{
-					if (selection == menuChoices[curMenu] + 1)
-						selection = menuChoices[curMenu];
+					selection = (mouseY - 38) / mouseSelectionY[curMenu] + 2;
+
+					if (curMenu == MENU_2_PLAYER_ARCADE)
+					{
+						if (selection > 5)
+							selection--;
+						if (selection > 3)
+							selection--;
+					}
+
+					if (curMenu == MENU_FULL_GAME)
+					{
+						if (selection > 8)
+							selection = 8;
+					}
+
+					/* is play next level screen? */
+					if (curMenu == MENU_PLAY_NEXT_LEVEL)
+					{
+						if (selection == menuChoices[curMenu] + 1)
+							selection = menuChoices[curMenu];
+					}
 				}
 
 				if (selection <= menuChoices[curMenu])
 				{
 					if (curMenu == MENU_UPGRADE_SUB &&
-					    selection == menuChoices[MENU_UPGRADE_SUB])
+						selection == menuChoices[MENU_UPGRADE_SUB])
 					{
 						player[0].cash = JE_cashLeft();
 						curMenu = MENU_UPGRADES;
@@ -1295,11 +1306,11 @@ void JE_itemScreen(void)
 								curSel[curMenu] = selection;
 							}
 
-							// in front or rear weapon upgrade screen?
+							/* in front or rear weapon upgrade screen? */
 							if (curMenu == MENU_UPGRADE_SUB &&
-							    (curSel[MENU_UPGRADES] == 3 || curSel[MENU_UPGRADES] == 4))
+								(curSel[MENU_UPGRADES] == 3 || curSel[MENU_UPGRADES] == 4))
 							{
-								player[0].items.weapon[curSel[MENU_UPGRADES]-3].power = temp_weapon_power[curSel[MENU_UPGRADE_SUB]-2];
+								player[0].items.weapon[curSel[MENU_UPGRADES] - 3].power = temp_weapon_power[curSel[MENU_UPGRADE_SUB] - 2];
 							}
 						}
 					}

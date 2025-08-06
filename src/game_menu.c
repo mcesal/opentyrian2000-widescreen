@@ -218,12 +218,12 @@ JE_longint JE_cashLeft(void)
 	case 4:
 	{
 		long base_cost = weaponPort[itemNum].cost;
-		if (engageMode)
+		if (expertMode)
 		{
 			if (base_cost > LONG_MAX / 10)
 				base_cost = LONG_MAX;
 			else
-				base_cost *= 10;
+				base_cost = base_cost * 75 / 10;
 		}
 		for (uint i = 1; i < player[0].items.weapon[curSel[MENU_UPGRADES] - 3].power; ++i)
 		{

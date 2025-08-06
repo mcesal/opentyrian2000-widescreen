@@ -1579,7 +1579,7 @@ level_loop:
 							if (enemy[b].linknum == boss_bar[i].link_num)
 								has_boss_bar = true;
 
-						if (engageMode && has_boss_bar)
+						if (expertMode && has_boss_bar)
 							damage = (damage + 24) / 25;
 
 						temp = enemy[b].linknum;

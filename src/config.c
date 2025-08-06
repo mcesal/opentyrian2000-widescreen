@@ -430,7 +430,7 @@ void JE_saveGame(JE_byte slot, const char *name)
 	saveFiles[slot - 1].cheatInfiniteSidekickAmmo = cheatInfiniteSidekickAmmo;
 	saveFiles[slot - 1].cheatInfiniteShields = cheatInfiniteShields;
 	saveFiles[slot - 1].cheatInfiniteArmor = cheatInfiniteArmor;
-	saveFiles[slot - 1].engageMode = engageMode;
+	saveFiles[slot - 1].engageMode = expertMode;
 
 	strcpy(saveFiles[slot-1].name, name);
 	
@@ -503,7 +503,7 @@ void JE_loadGame(JE_byte slot)
 	cheatInfiniteSidekickAmmo = saveFiles[slot - 1].cheatInfiniteSidekickAmmo;
 	cheatInfiniteShields = saveFiles[slot - 1].cheatInfiniteShields;
 	cheatInfiniteArmor = saveFiles[slot - 1].cheatInfiniteArmor;
-	engageMode = saveFiles[slot - 1].engageMode;
+	expertMode = saveFiles[slot - 1].engageMode;
 
 	for (uint port = 0; port < 2; ++port)
 	{

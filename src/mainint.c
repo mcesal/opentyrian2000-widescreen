@@ -645,17 +645,17 @@ ulong JE_getCost(JE_byte itemType, JE_word itemNum)
 		break;
 	}
 
-	if (engageMode)
+	if (expertMode)
 	{
 		if (cost > LONG_MAX / 10)
 			cost = LONG_MAX;
 		else
-			cost *= 10;
+			cost = cost * 75 / 10;
 
 		if (itemType == 3 || itemType == 4)
 		{
-			downgradeCost = (downgradeCost > ULONG_MAX / 10) ? ULONG_MAX : downgradeCost * 10;
-			upgradeCost = (upgradeCost > ULONG_MAX / 10) ? ULONG_MAX : upgradeCost * 10;
+			downgradeCost = (downgradeCost > ULONG_MAX / 75/10) ? ULONG_MAX : downgradeCost * 75/10;
+			upgradeCost = (upgradeCost > ULONG_MAX / 75/10) ? ULONG_MAX : upgradeCost * 75/10;
 		}
 	}
 
@@ -2039,7 +2039,7 @@ void JE_debugMenu(bool center)
 						"Inf Sidekick Ammo",
 						"Inf Shields",
 						"Inf Armor",
-						"Engage Mode",
+						"Expert Mode",
 						"Auto-Adjust Difficulty",
 						"Difficulty"
 	};
@@ -2161,7 +2161,7 @@ void JE_debugMenu(bool center)
 				sprintf(buf, "%s", cheatInfiniteArmor ? "ON" : "OFF");
 				break;
 			case 15:
-				sprintf(buf, "%s", engageMode ? "ON" : "OFF");
+				sprintf(buf, "%s", expertMode ? "ON" : "OFF");
 				break;
 			case 16:
 				sprintf(buf, "%s", difficultyAdjust ? "ON" : "OFF");
@@ -2214,7 +2214,7 @@ void JE_debugMenu(bool center)
 				case 12: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
 				case 13: cheatInfiniteShields = !cheatInfiniteShields; break;
 				case 14: cheatInfiniteArmor = !cheatInfiniteArmor; break;
-				case 15: engageMode = !engageMode; break;
+				case 15: expertMode = !expertMode; break;
 				case 16: difficultyAdjust = !difficultyAdjust; break;
 				case 17: if (difficultyLevel > DIFFICULTY_WIMP) --difficultyLevel; break;
 				default: break;
@@ -2238,7 +2238,7 @@ void JE_debugMenu(bool center)
 				case 12: cheatInfiniteSidekickAmmo = !cheatInfiniteSidekickAmmo; break;
 				case 13: cheatInfiniteShields = !cheatInfiniteShields; break;
 				case 14: cheatInfiniteArmor = !cheatInfiniteArmor; break;
-				case 15: engageMode = !engageMode; break;
+				case 15: expertMode = !expertMode; break;
 				case 16: difficultyAdjust = !difficultyAdjust; break;
 				case 17: if (difficultyLevel < DIFFICULTY_10) ++difficultyLevel; break;
 				default: break;
@@ -5438,7 +5438,7 @@ void JE_playerCollide(Player *this_player, JE_byte playerNum_)
 						if (enemy[z].linknum == boss_bar[i].link_num)
 							has_boss_bar = true;
 
-					if (engageMode && has_boss_bar)
+					if (expertMode && has_boss_bar)
 						damage_to_enemy = (damage_to_enemy + 24) / 25;
 
 					int armorleft2 = enemy[z].armorleft;

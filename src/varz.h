@@ -305,7 +305,7 @@ extern JE_boolean cheatInfiniteArmor;
 extern JE_boolean autoFireSpecial;
 extern JE_boolean chargeSidekickAutofire;
 extern JE_boolean difficultyAdjust;
-extern JE_boolean engageMode;
+extern JE_boolean expertMode;
 extern JE_boolean allPlayersGone;
 extern const uint shadowYDist;
 extern JE_real optionSatelliteRotate;
